@@ -48,6 +48,9 @@
     const selected = getSelected() || 'settings';
     const matching = [...document.querySelectorAll('.settings-leaf')].find((item) => slug(item.dataset.label) === selected);
     const label = matching?.dataset.label || 'Settings';
+    const showFacilityGrid = label === 'Facility';
+    document.querySelector('[data-facility-grid]')?.toggleAttribute('hidden', !showFacilityGrid);
+    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityGrid);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
       const active = item === matching;
       item.classList.toggle('active', active);

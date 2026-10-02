@@ -9,13 +9,14 @@
   <script src="../../assets/js/theme.js" data-theme-view="facility"></script>
   <script src="../../assets/js/settings-sidebar.js" defer></script>
   <script src="../../assets/js/sidebar-collapse.js" defer></script>
+  <script src="../../assets/js/facility-grid.js" defer></script>
 </head>
 <body data-root="../../">
   <div class="app-shell">
     <div id="sidebar-container"></div>
     <div class="main-wrapper">
       <div id="topbar-container"></div>
-      <main class="page-container">
+      <main class="page-container settings-page-container">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
           <a href="../home.html">Facility</a>
           <svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
@@ -27,15 +28,39 @@
           <h1 class="page-title" data-page-title>Facility Settings</h1>
           <p class="page-subtitle" data-page-subtitle>Manage administrative configuration for your facility.</p>
         </header>
-        <section class="workspace" aria-label="Settings workspace">
+        <section class="workspace" aria-label="Settings workspace" data-settings-overview>
           <div class="workspace-inner">
             <span class="workspace-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/><circle cx="8" cy="5" r="1"/><circle cx="16" cy="12" r="1"/><circle cx="10" cy="19" r="1"/></svg></span>
             <h2 data-workspace-title>Settings workspace</h2>
             <p>Administrative configuration workspace ready for incremental buildout.</p>
           </div>
         </section>
+        <section class="facility-grid" aria-label="Facilities grid" data-facility-grid hidden>
+          <div class="facility-toolbar">
+            <div class="facility-toolbar-primary"><button class="button button-primary" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Facility</button><button class="button button-secondary" type="button" disabled>Download Sample</button><button class="button button-secondary" type="button" disabled>Export</button><button class="button button-secondary" type="button" disabled>Upload</button></div>
+            <div class="facility-filter-grid" aria-label="Facility filters">
+              <label class="facility-filter"><span>Arabic Name</span><input type="search" data-facility-filter="arabicName" placeholder="Search Arabic name"></label>
+              <label class="facility-filter"><span>English Name</span><input type="search" data-facility-filter="englishName" placeholder="Search English name"></label>
+              <label class="facility-filter"><span>Unified ID</span><input type="search" data-facility-filter="unifiedId" placeholder="Search Unified ID"></label>
+              <label class="facility-filter"><span>License Number</span><input type="search" data-facility-filter="licenseNumber" placeholder="Search license number"></label>
+              <button class="button button-secondary facility-advanced-toggle" type="button" aria-expanded="false" aria-controls="facility-advanced-filters" data-advanced-toggle><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6h16M7 12h10m-7 6h4"/><circle cx="18" cy="6" r="1.5"/><circle cx="7" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>Advanced filters</button>
+            </div>
+            <div class="facility-advanced-filters" id="facility-advanced-filters" data-advanced-filters hidden>
+              <label class="facility-filter"><span>Country</span><select data-facility-filter="country"><option value="">All countries</option></select></label>
+              <label class="facility-filter"><span>City</span><select data-facility-filter="city"><option value="">All cities</option></select></label>
+              <label class="facility-filter"><span>District</span><select data-facility-filter="district"><option value="">All districts</option></select></label>
+              <label class="facility-filter"><span>Phone Number</span><input type="search" data-facility-filter="phone" placeholder="Search phone number"></label>
+              <label class="facility-filter"><span>Status</span><select data-facility-filter="status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+            </div>
+          </div>
+          <div class="facility-table-card">
+            <div class="facility-table-scroll"><table class="facility-table"><thead><tr><th scope="col">Name</th><th scope="col">Unified ID</th><th scope="col">Phone Number</th><th scope="col">Country</th><th scope="col">City</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody data-facility-rows></tbody></table><div class="facility-empty" data-facility-empty hidden>No facilities match these filters.</div></div>
+            <footer class="facility-pagination"><span data-facility-result-count aria-live="polite"></span><div class="facility-page-controls"><span data-facility-page-label></span><button class="icon-button" type="button" data-page="first" aria-label="First page" title="First page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></svg></button><button class="icon-button" type="button" data-page="previous" aria-label="Previous page" title="Previous page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="icon-button" type="button" data-page="next" aria-label="Next page" title="Next page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="icon-button" type="button" data-page="last" aria-label="Last page" title="Last page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m13 17 5-5-5-5M6 17l5-5-5-5"/></svg></button></div></footer>
+          </div>
+        </section>
       </main>
     </div>
   </div>
+  <div class="facility-toast" data-facility-toast role="status" aria-live="polite"></div>
 </body>
 </html>
