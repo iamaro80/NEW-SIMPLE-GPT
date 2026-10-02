@@ -118,6 +118,12 @@
   }
 
   document.querySelector('#register-patient').addEventListener('click', () => openModal('new'));
+  modal.querySelector('[data-scroll-target]').addEventListener('click', (event) => {
+    const target = document.getElementById(event.currentTarget.dataset.scrollTarget);
+    if (!target) return;
+    target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    target.focus({ preventScroll: true });
+  });
   search.addEventListener('input', render);
   modal.querySelectorAll('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModal));
   modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });

@@ -257,9 +257,16 @@ button { color: inherit; }
 .patient-modal-header .eyebrow { margin: 0 0 5px; color: hsl(var(--primary)); font-size: 9px; font-weight: 700; letter-spacing: .12em; }
 .patient-modal-header h2 { margin: 0; font-size: 18px; letter-spacing: -.025em; }
 .patient-modal-header p:last-child { margin: 5px 0 0; color: hsl(var(--muted-foreground)); font-size: 11px; }
+.patient-section-shortcut { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 5px 8px; border: 1px solid hsl(var(--border)); border-radius: 6px; background: hsl(var(--card)); color: hsl(var(--primary)); font: inherit; font-size: 10px; font-weight: 600; cursor: pointer; }
+.patient-section-shortcut:hover { background: hsl(var(--muted)); }
+.patient-section-shortcut:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.patient-section-shortcut svg { width: 14px; height: 14px; }
 .patient-modal-header .icon-button { flex: 0 0 auto; }
-.patient-modal-body { overflow: auto; padding: 17px 22px 22px; }
+.patient-modal form { min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; }
+.patient-modal-body { min-height: 0; flex: 1 1 auto; overflow: auto; padding: 17px 22px 22px; }
 .patient-form-section { min-width: 0; margin: 0 0 17px; padding: 0; border: 0; }
+.patient-form-section[id] { scroll-margin-top: 12px; }
+.patient-form-section[id]:focus { outline: 2px solid hsl(var(--ring) / .45); outline-offset: 5px; border-radius: 4px; }
 .patient-form-section:last-child { margin-bottom: 0; }
 .patient-form-section legend { width: 100%; margin-bottom: 12px; padding: 0 0 8px; border-bottom: 1px solid hsl(var(--border)); font-size: 12px; font-weight: 650; }
 .patient-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 14px; }
@@ -277,6 +284,7 @@ button { color: inherit; }
 .form-check input { width: 15px; height: 15px; margin: 0; accent-color: hsl(var(--primary)); }
 .patient-modal-footer { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 22px; border-top: 1px solid hsl(var(--border)); background: hsl(var(--card)); }
 .patient-modal-footer > div { display: flex; gap: 8px; }
+.patient-modal .button[hidden] { display: none; }
 .required-hint { color: hsl(var(--muted-foreground)); font-size: 10px; }
 .patient-toast { position: fixed; z-index: 60; right: 24px; bottom: 24px; max-width: min(380px, calc(100% - 48px)); padding: 11px 15px; transform: translateY(12px); border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--popover)); color: hsl(var(--popover-foreground)); box-shadow: 0 8px 28px hsl(222 30% 10% / .14); opacity: 0; pointer-events: none; font-size: 11px; transition: opacity .18s ease, transform .18s ease; }
 .patient-toast.is-visible { transform: translateY(0); opacity: 1; }
