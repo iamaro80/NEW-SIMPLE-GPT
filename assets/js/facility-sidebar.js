@@ -20,10 +20,13 @@
     };
     return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.file}</svg>`;
   };
-  const link = (item, current) => `<a class="nav-link${item.path === current ? ' active' : ''}" href="${item.path}"${item.path === current ? ' aria-current="page"' : ''}>${icon(item.icon)}<span>${item.label}</span></a>`;
+  const link = (item) => {
+    const active = new URL(item.path, window.location.href).pathname === window.location.pathname;
+    return `<a class="nav-link${active ? ' active' : ''}" href="${item.path}"${active ? ' aria-current="page"' : ''}>${icon(item.icon)}<span>${item.label}</span></a>`;
+  };
   const groups = [
     { label: 'Patient Access', icon: 'users', items: [
-      ['Patient Registration', 'registration.html', 'clipboard'], ['Direct Billing Enrollment', 'direct-billing.html', 'wallet'], ['Appointments', 'appointments.html', 'calendar'], ['Check-in & Arrival', 'check-in.html', 'check'], ['Eligibility Request', 'eligibility-request.html', 'file'], ['Eligibility History', 'eligibility-history.html', 'chart'],
+      ['Patients', 'patients/', 'clipboard'], ['Direct Billing Enrollment', 'direct-billing.html', 'wallet'], ['Appointments', 'appointments.html', 'calendar'], ['Check-in & Arrival', 'check-in.html', 'check'], ['Eligibility Request', 'eligibility-request.html', 'file'], ['Eligibility History', 'eligibility-history.html', 'chart'],
     ] },
     { label: 'Clinical and Coding', icon: 'heart', items: [['Clinical Charting', 'charting.html', 'clipboard'], ['Medical Coding', 'medical-coding.html', 'code']], folder: 'clinical-coding' },
     { label: 'Financial and Billing', icon: 'wallet', items: [['Pre-Authorization', 'pre-authorization.html', 'check'], ['Encounter Billing', 'encounter-billing.html', 'file'], ['Patient Billing B2C', 'patient-billing.html', 'wallet'], ['Insurance Claims B2B', 'insurance-claims.html', 'file']], folder: 'rcm-billing' },
@@ -44,11 +47,11 @@
   const topbar = document.querySelector('#topbar-container');
   const childrenHtml = (group) => {
     const folder = group.folder || 'patient-access';
-    const items = group.items.map(([label, file, ico]) => link({ label, icon: ico, path: url(folder, file) }, current)).join('');
+    const items = group.items.map(([label, file, ico]) => link({ label, icon: ico, path: url(folder, file) })).join('');
     const open = folder === currentFolder || group.items.some(([, file]) => `${folder}/${file}` === current);
     return `<section class="nav-group"><button class="nav-group-button" type="button" aria-expanded="${open}" aria-controls="group-${folder}">${icon(group.icon)}<span>${group.label}</span>${icon('chevron', 'chevron')}</button><div id="group-${folder}" class="nav-children"${open ? '' : ' hidden'}>${items}</div></section>`;
   };
-  sidebar.innerHTML = `<aside class="sidebar" id="facility-sidebar" aria-label="Facility navigation" data-collapsible-sidebar data-sidebar-view="facility"><div class="sidebar-brand"><a class="brand" href="${rootPath}index.html"><span class="brand-mark">${icon('heart', '')}</span><span class="brand-name">RCM SMB Facility<small>Healthcare operations</small></span></a><button class="icon-button sidebar-collapse-toggle" type="button" data-sidebar-toggle aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar"></button></div><nav class="side-scroll"><div class="nav-caption">Workspace</div>${link(home, current)}${link(dashboard, current)}<div class="nav-caption">Operations</div>${groups.map(childrenHtml).join('')}</nav><div class="sidebar-bottom">${link(setting, current)}</div></aside><div class="scrim" data-scrim></div>`;
+  sidebar.innerHTML = `<aside class="sidebar" id="facility-sidebar" aria-label="Facility navigation" data-collapsible-sidebar data-sidebar-view="facility"><div class="sidebar-brand"><a class="brand" href="${rootPath}index.html"><span class="brand-mark">${icon('heart', '')}</span><span class="brand-name">RCM SMB Facility<small>Healthcare operations</small></span></a><button class="icon-button sidebar-collapse-toggle" type="button" data-sidebar-toggle aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar"></button></div><nav class="side-scroll"><div class="nav-caption">Workspace</div>${link(home)}${link(dashboard)}<div class="nav-caption">Operations</div>${groups.map(childrenHtml).join('')}</nav><div class="sidebar-bottom">${link(setting)}</div></aside><div class="scrim" data-scrim></div>`;
   topbar.innerHTML = `<header class="topbar"><div class="topbar-left"><button class="icon-button mobile-menu" type="button" data-menu-toggle aria-label="Open navigation">${icon('grid', '')}</button><a class="launcher-link" href="${rootPath}index.html">← Launcher</a><span class="topbar-divider"></span><span class="context-label">Health Facility View</span></div><div class="topbar-right"><label class="search-box">${icon('search', '')}<input type="search" aria-label="Search navigation" placeholder="Search navigation…"></label><button class="icon-button" type="button" data-theme-toggle aria-label="Toggle theme"></button></div></header>`;
   document.querySelector('[data-breadcrumb-current]').textContent = title;
   const folderLabel = groups.find((group) => group.folder === currentFolder)?.label || (currentFolder === 'patient-access' ? 'Patient Access' : 'Workspace');
