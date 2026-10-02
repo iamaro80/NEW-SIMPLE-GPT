@@ -235,8 +235,6 @@ button { color: inherit; }
 .eligibility-badge::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ""; }
 .eligibility-badge.is-eligible { background: hsl(154 54% 93%); color: hsl(154 55% 30%); }
 .eligibility-badge.is-ineligible { background: hsl(0 70% 96%); color: hsl(0 55% 43%); }
-.patient-status-badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; background: hsl(154 54% 93%); color: hsl(154 55% 30%); font-size: 10px; }
-.patient-status-badge.is-inactive { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
 [data-theme="dark"] .eligibility-badge.is-eligible { background: hsl(154 45% 20%); color: hsl(154 55% 75%); }
 [data-theme="dark"] .eligibility-badge.is-ineligible { background: hsl(0 45% 23%); color: hsl(0 65% 78%); }
 .eligibility-check { padding: 5px 8px; border: 1px solid hsl(var(--border)); border-radius: 6px; background: hsl(var(--card)); color: hsl(var(--foreground)); font: inherit; font-size: 10px; cursor: pointer; }

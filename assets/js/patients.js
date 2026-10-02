@@ -26,7 +26,6 @@
     more: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>',
     eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>',
     edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 8.4 15.6 5 4.8 15.8 4 20Z"/></svg>',
-    status: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>',
   };
 
   function escapeHtml(value = '') {
@@ -52,10 +51,9 @@
         <td class="patient-mrn">${escapeHtml(patient.mrn)}</td><td>${escapeHtml(patient.documentId)}</td><td>${escapeHtml(patient.documentType)}</td>
         <td>${escapeHtml(patient.firstName)}</td><td>${escapeHtml(patient.lastName)}</td><td>${escapeHtml(patient.nationality)}</td>
         <td><span class="eligibility-badge ${statusClass}">${escapeHtml(patient.eligibilityStatus || 'Not checked')}</span></td>
-        <td><span class="patient-status-badge ${patient.active === false ? 'is-inactive' : 'is-active'}">${patient.active === false ? 'Inactive' : 'Active'}</span></td>
         <td><button class="eligibility-check" type="button" data-action="eligibility" data-index="${index}">Check eligibility</button></td>
         <td><div class="row-action-wrap"><button class="row-menu-trigger" type="button" aria-label="Actions for ${escapeHtml(patient.firstName)} ${escapeHtml(patient.lastName)}" aria-haspopup="menu" aria-expanded="false" data-action="menu" data-index="${index}">${icons.more}</button>
-          <div class="row-menu" role="menu" hidden><button type="button" role="menuitem" data-action="view" data-index="${index}">${icons.eye}View</button><button type="button" role="menuitem" data-action="edit" data-index="${index}">${icons.edit}Edit</button><button type="button" role="menuitem" data-action="toggle-status" data-index="${index}">${icons.status}${patient.active === false ? 'Activate' : 'Deactivate'}</button></div></div></td>
+          <div class="row-menu" role="menu" hidden><button type="button" role="menuitem" data-action="view" data-index="${index}">${icons.eye}View</button><button type="button" role="menuitem" data-action="edit" data-index="${index}">${icons.edit}Edit</button></div></div></td>
       </tr>`;
     }).join('');
     count.textContent = `${matches.length} ${matches.length === 1 ? 'patient' : 'patients'}`;
@@ -151,11 +149,6 @@
     } else if (action === 'view' || action === 'edit') {
       closeMenu();
       openModal(action, index);
-    } else if (action === 'toggle-status') {
-      const patient = patients[index];
-      patient.active = patient.active === false;
-      render();
-      showToast(`${patient.firstName} ${patient.lastName} ${patient.active ? 'activated' : 'deactivated'}.`);
     } else if (action === 'eligibility') {
       patients[index].eligibilityStatus = 'Eligible';
       patients[index].lastEligibilityCheck = new Date().toISOString();
