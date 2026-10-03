@@ -290,6 +290,17 @@ button { color: inherit; }
 .facility-toast { position: fixed; z-index: 30; right: 24px; bottom: 24px; padding: 11px 15px; transform: translateY(10px); border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--popover)); color: hsl(var(--popover-foreground)); box-shadow: 0 8px 28px hsl(222 30% 10% / .14); opacity: 0; pointer-events: none; font-size: 11px; transition: opacity .18s ease, transform .18s ease; }
 .facility-toast.is-visible { transform: translateY(0); opacity: 1; }
 .facility-modal { width: min(1080px, 100%); }
+.branches-toolbar { display: grid; gap: 14px; }
+.branches-filter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; }
+.branches-filter-actions { grid-column: 1 / -1; display: flex; gap: 8px; }
+.branches-filter-actions .button svg { width: 15px; height: 15px; }
+.branches-table { min-width: 760px; }
+.branch-code { font-variant-numeric: tabular-nums; font-weight: 650; }
+.branch-arabic-name { display: block; min-width: 100px; text-align: right; }
+.branch-modal { width: min(620px, 100%); }
+.branch-modal .patient-form-section { overflow: hidden; margin: 0; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.branch-modal .patient-form-grid { padding: 15px; }
+.branch-modal .form-field small { color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 400; }
 .facility-modal .form-field input[readonly] { background: hsl(var(--muted) / .55); color: hsl(var(--muted-foreground)); }
 .facility-modal .form-field input[type="color"] { min-height: 35px; padding: 4px; }
 .facility-modal .form-field textarea { min-height: 70px; }
@@ -323,8 +334,8 @@ button { color: inherit; }
   font-weight: 650;
 }
 .facility-modal .patient-form-grid { padding: 15px; }
-@media (max-width: 900px) { .settings-page-container { width: calc(100% - 40px); } .facility-filter-grid, .facility-advanced-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 580px) { .settings-page-container { width: calc(100% - 28px); } .facility-filter-grid, .facility-advanced-filters { grid-template-columns: 1fr; } .facility-toolbar-primary { align-items: stretch; } .facility-toolbar-primary .button { flex: 1 1 calc(50% - 8px); } .facility-pagination { align-items: flex-start; flex-direction: column; } .facility-page-controls { align-self: flex-end; } }
+@media (max-width: 900px) { .settings-page-container { width: calc(100% - 40px); } .facility-filter-grid, .facility-advanced-filters, .branches-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .settings-page-container { width: calc(100% - 28px); } .facility-filter-grid, .facility-advanced-filters, .branches-filter-grid { grid-template-columns: 1fr; } .branches-filter-actions { grid-column: auto; } .facility-toolbar-primary { align-items: stretch; } .facility-toolbar-primary .button { flex: 1 1 calc(50% - 8px); } .facility-pagination { align-items: flex-start; flex-direction: column; } .facility-page-controls { align-self: flex-end; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 
 /* Patients workspace */

@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8f7f3">
   <title>Facility Settings · RCM SMB</title>
-  <link rel="stylesheet" href="../../assets/css/shadcn.css?v=facility-settings-profile-1">
+  <link rel="stylesheet" href="../../assets/css/shadcn.css?v=facility-branches-1">
   <script src="../../assets/js/theme.js" data-theme-view="facility"></script>
-  <script src="../../assets/js/settings-sidebar.js?v=facility-settings-profile-1" defer></script>
+  <script src="../../assets/js/settings-sidebar.js?v=facility-branches-1" defer></script>
   <script src="../../assets/js/sidebar-collapse.js?v=facility-focus-2" defer></script>
   <script src="../../assets/js/facility-store.js?v=facility-focus-2" defer></script>
   <script src="../../assets/js/facility-grid.js?v=facility-record-workspace-1" defer></script>
   <script src="../../assets/js/facility-settings-profile.js?v=1" defer></script>
+  <script src="../../assets/js/facility-branches.js?v=1" defer></script>
 </head>
 <body data-root="../../" data-current-facility-id="1">
   <div class="app-shell">
@@ -40,6 +41,27 @@
         <section class="facility-profile-page" aria-label="Current facility profile" data-current-facility-profile hidden>
           <div class="facility-profile-heading"><div><p class="eyebrow">FACILITY PROFILE</p><h2 data-current-facility-name></h2><p data-current-facility-id-label></p></div><button class="button button-secondary" type="button" data-current-facility-edit>Edit Facility</button></div>
           <div class="facility-profile-sections" data-current-facility-sections></div>
+        </section>
+        <section class="facility-grid branches-page" aria-label="Branches" data-branches-grid hidden>
+          <div class="branches-toolbar">
+            <div class="branches-filter-grid" role="search" aria-label="Filter branches">
+              <label class="facility-filter"><span>Code</span><input type="search" data-branch-filter="code" placeholder="Search code"></label>
+              <label class="facility-filter"><span>English Name</span><input type="search" data-branch-filter="englishName" placeholder="Search English name"></label>
+              <label class="facility-filter"><span>Arabic Name</span><input type="search" data-branch-filter="arabicName" placeholder="Search Arabic name" dir="rtl"></label>
+              <label class="facility-filter"><span>Prefix</span><input type="search" data-branch-filter="prefix" placeholder="Search prefix"></label>
+              <label class="facility-filter"><span>Status</span><select data-branch-filter="status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+              <div class="branches-filter-actions">
+                <button class="button button-primary" type="button" data-branch-search><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>Search</button>
+                <button class="button button-secondary" type="button" data-branch-reset><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"></path><path d="M3 3v5h5"></path></svg>Reset</button>
+              </div>
+            </div>
+            <div class="facility-toolbar-primary"><button class="button button-primary" type="button" data-branch-add><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add Branch</button></div>
+          </div>
+          <div class="facility-table-card">
+            <div class="facility-table-scroll"><table class="facility-table branches-table"><thead><tr><th scope="col">Code</th><th scope="col">English Name</th><th scope="col">Arabic Name</th><th scope="col">Prefix</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody data-branch-rows></tbody></table></div>
+            <div class="facility-empty" data-branch-empty hidden>No branches match your filters.</div>
+            <footer class="facility-pagination"><span data-branch-result-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-branch-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-branch-page="previous" aria-label="Previous page">‹</button><span data-branch-page-label></span><button class="icon-button" type="button" data-branch-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-branch-page="last" aria-label="Last page">»</button></div></footer>
+          </div>
         </section>
       </main>
     </div>
@@ -96,5 +118,16 @@
     </section>
   </div>
   <div class="facility-toast" data-facility-toast role="status" aria-live="polite"></div>
+  <div class="patient-modal-backdrop" id="branch-modal" hidden>
+    <section class="patient-modal branch-modal" role="dialog" aria-modal="true" aria-labelledby="branch-modal-title" aria-describedby="branch-modal-description">
+      <header class="patient-modal-header"><div><p class="eyebrow">BRANCH RECORD</p><h2 id="branch-modal-title">Add Branch</h2><p id="branch-modal-description">Enter the branch details.</p></div><button type="button" class="icon-button" data-branch-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></header>
+      <form id="branch-form"><div class="patient-modal-body"><fieldset class="patient-form-section"><legend class="sr-only">Basic Information</legend><div class="facility-form-section-heading">Basic Information</div><div class="patient-form-grid">
+        <label class="form-field"><span>Code</span><input name="code" readonly aria-describedby="branch-code-help"><small id="branch-code-help">Generated automatically.</small></label>
+        <label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required autocomplete="off"></label>
+        <label class="form-field"><span>Arabic Name</span><input name="arabicName" dir="rtl" autocomplete="off"></label>
+        <label class="form-field"><span>Prefix</span><input name="prefix" autocomplete="off"></label>
+      </div></fieldset></div><footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-branch-cancel>Cancel</button><button type="submit" class="button button-primary" data-branch-save>Create</button></div></footer></form>
+    </section>
+  </div>
 </body>
 </html>

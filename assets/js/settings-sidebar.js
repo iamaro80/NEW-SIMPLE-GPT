@@ -59,8 +59,10 @@
     const matching = [...document.querySelectorAll('.settings-leaf')].find((item) => (item.dataset.route || slug(item.dataset.label)) === selected);
     const label = matching?.dataset.label || 'Settings';
     const showFacilityProfile = matching?.dataset.route === 'facility-profile';
+    const showBranches = matching?.dataset.route === 'branches';
     document.querySelector('[data-current-facility-profile]')?.toggleAttribute('hidden', !showFacilityProfile);
-    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile);
+    document.querySelector('[data-branches-grid]')?.toggleAttribute('hidden', !showBranches);
+    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
       const active = item === matching;
       item.classList.toggle('active', active);
