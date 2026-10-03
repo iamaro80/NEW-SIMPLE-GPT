@@ -298,6 +298,37 @@ button { color: inherit; }
 .structure-filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .structure-table { min-width: 1080px; }
 .structure-modal { width: min(760px, 100%); }
+.billing-summary-row { display: grid; grid-template-columns: minmax(150px, 1.2fr) repeat(3, minmax(120px, 1fr)); gap: 10px; align-items: stretch; }
+.billing-summary-card { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 7px 12px; border: 1px solid hsl(var(--border)); border-radius: 7px; background: hsl(var(--card)); }
+.billing-summary-card span { color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 600; }
+.billing-summary-card strong { font-size: 13px; font-weight: 650; }
+.billing-period-table { min-width: 1040px; }
+.period-status { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 600; }
+.period-status-open { background: hsl(154 54% 93%); color: hsl(154 55% 30%); }
+.period-status-pending-closure { background: hsl(42 78% 92%); color: hsl(31 76% 31%); }
+.period-status-closed { background: hsl(0 65% 95%); color: hsl(0 55% 43%); }
+.period-status-future { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+[data-theme="dark"] .period-status-open { background: hsl(154 45% 20%); color: hsl(154 55% 75%); }
+[data-theme="dark"] .period-status-pending-closure { background: hsl(35 42% 24%); color: hsl(38 80% 76%); }
+[data-theme="dark"] .period-status-closed { background: hsl(0 45% 23%); color: hsl(0 65% 78%); }
+.billing-switch { width: 35px; height: 20px; display: inline-flex; align-items: center; padding: 2px; border: 1px solid hsl(var(--border)); border-radius: 999px; background: hsl(var(--muted)); cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+.billing-switch span { width: 14px; height: 14px; border-radius: 50%; background: hsl(var(--card)); box-shadow: 0 1px 2px hsl(222 25% 10% / .18); transition: transform .15s ease; }
+.billing-switch.is-on { border-color: hsl(var(--primary)); background: hsl(var(--primary)); }
+.billing-switch.is-on span { transform: translateX(15px); }
+.billing-switch:disabled, .period-action:disabled { opacity: .42; cursor: not-allowed; }
+.period-row-actions, .cost-center-actions { display: flex; align-items: center; gap: 4px; }
+.period-action { width: 31px; height: 31px; }
+.period-action svg { width: 16px; height: 16px; }
+.cost-center-table { min-width: 760px; }
+.cost-center-name { display: inline-block; font-weight: 620; }
+.cost-center-name.is-child { position: relative; margin-left: 25px; color: hsl(var(--muted-foreground)); font-weight: 500; }
+.cost-center-name.is-child::before { position: absolute; top: -10px; left: -14px; width: 8px; height: 18px; border-bottom: 1px solid hsl(var(--border)); border-left: 1px solid hsl(var(--border)); content: ""; }
+.cost-center-child-row { background: hsl(var(--muted) / .16); }
+.cost-center-parent-row td { border-top-width: 1px; }
+.form-field-checkbox { min-height: 35px; display: flex; flex-direction: row; align-items: center; gap: 8px; align-self: end; cursor: pointer; }
+.form-field-checkbox input { width: 15px; min-height: 15px; height: 15px; margin: 0; accent-color: hsl(var(--primary)); }
+.cost-parent-context strong { min-height: 35px; display: flex; align-items: center; padding: 0 9px; border: 1px solid hsl(var(--border)); border-radius: 6px; background: hsl(var(--muted) / .45); font-size: 11px; font-weight: 500; }
+.form-field[hidden] { display: none; }
 .branches-table { min-width: 760px; }
 .branch-code { font-variant-numeric: tabular-nums; font-weight: 650; }
 .branch-arabic-name { display: block; min-width: 100px; text-align: right; }
@@ -338,8 +369,8 @@ button { color: inherit; }
   font-weight: 650;
 }
 .facility-modal .patient-form-grid { padding: 15px; }
-@media (max-width: 900px) { .settings-page-container { width: calc(100% - 40px); } .facility-filter-grid, .facility-advanced-filters, .branches-filter-grid, .department-filter-grid, .structure-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 580px) { .settings-page-container { width: calc(100% - 28px); } .facility-filter-grid, .facility-advanced-filters, .branches-filter-grid, .department-filter-grid, .structure-filter-grid { grid-template-columns: 1fr; } .facility-toolbar-primary { align-items: stretch; } .facility-toolbar-primary .button { flex: 1 1 calc(50% - 8px); } .facility-pagination { align-items: flex-start; flex-direction: column; } .facility-page-controls { align-self: flex-end; } }
+@media (max-width: 900px) { .settings-page-container { width: calc(100% - 40px); } .facility-filter-grid, .facility-advanced-filters, .branches-filter-grid, .department-filter-grid, .structure-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .billing-summary-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .settings-page-container { width: calc(100% - 28px); } .facility-filter-grid, .facility-advanced-filters, .branches-filter-grid, .department-filter-grid, .structure-filter-grid, .billing-summary-row { grid-template-columns: 1fr; } .facility-toolbar-primary { align-items: stretch; } .facility-toolbar-primary .button { flex: 1 1 calc(50% - 8px); } .facility-pagination { align-items: flex-start; flex-direction: column; } .facility-page-controls { align-self: flex-end; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 
 /* Patients workspace */

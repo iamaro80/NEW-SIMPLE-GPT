@@ -61,7 +61,7 @@
     const showFacilityProfile = matching?.dataset.route === 'facility-profile';
     const showBranches = matching?.dataset.route === 'branches';
     const showDepartments = matching?.dataset.route === 'departments';
-    const showFacilityStructure = ['divisions', 'locations', 'rooms'].includes(matching?.dataset.route);
+    const showFacilityStructure = ['divisions', 'locations', 'rooms', 'billing-period', 'cost-centers'].includes(matching?.dataset.route);
     document.querySelector('[data-current-facility-profile]')?.toggleAttribute('hidden', !showFacilityProfile);
     document.querySelector('[data-branches-grid]')?.toggleAttribute('hidden', !showBranches);
     document.querySelector('[data-departments-grid]')?.toggleAttribute('hidden', !showDepartments);
