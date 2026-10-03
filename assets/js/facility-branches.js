@@ -4,11 +4,16 @@
 
   const facilityId = document.body.dataset.currentFacilityId || '1';
   const storageKey = `rcm-facility-branches:v1:${facilityId}`;
-  const seed = [
+  const extractionSeed = [
     ['test', 'B'], ['1111', '111'], ['Mazen11111', 'DMw11111'], ['Mazen11', 'DMw11'],
     ['Mazen', 'DMw'], ['mazentestttttt', 'we'], ['Centeral Clinic', 'CC'],
-  ].map(([englishName, prefix], index) => ({
-    code: String(index + 1), englishName, arabicName: '', prefix, active: true,
+  ];
+  const seed = Array.from({ length: 7 }, (_, index) => ({
+    code: String(index + 1),
+    englishName: `Branch ${index + 1}`,
+    arabicName: `الفرع ${index + 1}`,
+    prefix: `BR${index + 1}`,
+    active: true,
   }));
 
   const rows = grid.querySelector('[data-branch-rows]');
@@ -46,7 +51,26 @@
       const saved = localStorage.getItem(storageKey);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          let migrated = false;
+          const records = parsed.map((branch) => {
+            const seedIndex = extractionSeed.findIndex(([englishName, prefix], index) =>
+              String(branch.code) === String(index + 1)
+              && branch.englishName === englishName
+              && branch.prefix === prefix
+              && !branch.arabicName,
+            );
+            if (seedIndex < 0) return branch;
+            migrated = true;
+            return {
+              ...branch,
+              ...seed[seedIndex],
+              active: branch.active ?? seed[seedIndex].active,
+            };
+          });
+          if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
+          return records;
+        }
       } else {
         localStorage.setItem(storageKey, JSON.stringify(seed));
       }
@@ -189,17 +213,14 @@
   });
 
   grid.querySelector('[data-branch-add]').addEventListener('click', (event) => openModal('new', null, event.currentTarget));
-  grid.querySelector('[data-branch-search]').addEventListener('click', () => { appliedFilters = readFilters(); page = 1; closeMenus(); render(); });
-  grid.querySelector('[data-branch-reset]').addEventListener('click', () => {
-    grid.querySelectorAll('[data-branch-filter]').forEach((field) => { field.value = ''; });
-    appliedFilters = {};
-    page = 1;
-    closeMenus();
-    render();
+  grid.querySelectorAll('[data-branch-filter]').forEach((field) => {
+    field.addEventListener(field.matches('select') ? 'change' : 'input', () => {
+      appliedFilters = readFilters();
+      page = 1;
+      closeMenus();
+      render();
+    });
   });
-  grid.querySelectorAll('[data-branch-filter]').forEach((field) => field.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') { event.preventDefault(); grid.querySelector('[data-branch-search]').click(); }
-  }));
   grid.querySelectorAll('[data-branch-page]').forEach((button) => button.addEventListener('click', () => {
     const totalPages = Math.max(1, Math.ceil(filteredBranches().length / pageSize));
     if (button.dataset.branchPage === 'first') page = 1;
