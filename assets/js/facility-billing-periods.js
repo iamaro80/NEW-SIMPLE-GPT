@@ -14,7 +14,27 @@
     edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 8.4 15.6 5 4.8 15.8 4 20Z"/></svg>',
   };
 
-  function monthlyPeriods(year) {
+  function periodsForYear(year, frequency) {
+    if (frequency === 'Yearly') {
+      return [{
+        id: `${year}-yearly`, name: String(year), year, startDate: dateString(year, 1, 1), endDate: dateString(year, 12, 31),
+        status: 'Future', payerOnly: false, allowClaimCreation: true, fiscalYearType: 'Gregorian Fiscal', frequency,
+      }];
+    }
+    if (frequency === 'Weekly') {
+      const yearLength = Math.round((Date.UTC(year + 1, 0, 1) - Date.UTC(year, 0, 1)) / 86400000);
+      return Array.from({ length: Math.ceil(yearLength / 7) }, (_, index) => {
+        const start = new Date(Date.UTC(year, 0, 1 + index * 7));
+        const end = new Date(Date.UTC(year, 0, Math.min(yearLength, (index + 1) * 7)));
+        const week = index + 1;
+        return {
+          id: `${year}-weekly-${week}`, name: `${year}-W${String(week).padStart(2, '0')}`, year, week,
+          startDate: dateString(start.getUTCFullYear(), start.getUTCMonth() + 1, start.getUTCDate()),
+          endDate: dateString(end.getUTCFullYear(), end.getUTCMonth() + 1, end.getUTCDate()),
+          status: 'Future', payerOnly: false, allowClaimCreation: true, fiscalYearType: 'Gregorian Fiscal', frequency,
+        };
+      });
+    }
     return Array.from({ length: 12 }, (_, index) => {
       const month = index + 1;
       const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
@@ -48,14 +68,15 @@
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed;
       }
-      const seeded = monthlyPeriods(2026);
+      const seeded = periodsForYear(2026, 'Monthly');
       localStorage.setItem(storageKey, JSON.stringify(seeded));
       return seeded;
-    } catch { return monthlyPeriods(2026); }
+    } catch { return periodsForYear(2026, 'Monthly'); }
   }
 
   let periods = load();
   let selectedYear = 2026;
+  let selectedFrequency = 'Monthly';
   let toastTimer;
   const page = document.createElement('section');
   page.className = 'facility-grid billing-period-page';
@@ -67,21 +88,22 @@
       <div class="branches-add-row"><button class="button button-primary" type="button" data-period-add>${icons.add}Add Billing Periods</button></div>
       <div class="billing-summary-row">
         <label class="facility-filter"><span>Year</span><select data-period-year>${years.map((year) => `<option value="${year}"${year === 2026 ? ' selected' : ''}>${year}</option>`).join('')}</select></label>
+        <label class="facility-filter"><span>Billing Periods</span><select data-period-frequency><option>Weekly</option><option selected>Monthly</option><option>Yearly</option></select></label>
         <div class="billing-summary-card"><span>Year</span><strong data-summary-year>26</strong></div>
-        <div class="billing-summary-card"><span>Billing Frequency</span><strong>Monthly</strong></div>
+        <div class="billing-summary-card"><span>Billing Frequency</span><strong data-summary-frequency>Monthly</strong></div>
         <div class="billing-summary-card"><span>Fiscal Year Type</span><strong>Gregorian Fiscal</strong></div>
       </div>
     </div>
     <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table billing-period-table"><thead><tr><th scope="col">Name</th><th scope="col">Start Date</th><th scope="col">End Date</th><th scope="col">Status</th><th scope="col">Payer Only</th><th scope="col">Allow Claim Creation</th><th scope="col">Actions</th></tr></thead><tbody data-period-rows></tbody></table></div>
-      <div class="facility-empty" data-period-empty hidden>No billing periods exist for this year. Use Add Billing Periods to generate them.</div>
+      <div class="facility-empty" data-period-empty hidden>No billing periods exist for this year and frequency. Use Add Billing Periods to generate them.</div>
       <footer class="facility-pagination"><span data-period-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-period-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-period-page="previous" aria-label="Previous page">‹</button><span data-period-page-label></span><button class="icon-button" type="button" data-period-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-period-page="last" aria-label="Last page">»</button></div></footer>
     </div>
     <div class="patient-modal-backdrop" data-period-modal hidden><section class="patient-modal branch-modal" role="dialog" aria-modal="true" aria-labelledby="period-modal-title" aria-describedby="period-modal-description">
-      <header class="patient-modal-header"><div><p class="eyebrow">BILLING PERIOD</p><h2 id="period-modal-title">Add Billing Periods</h2><p id="period-modal-description">Generate monthly periods for a fiscal year.</p></div><button class="icon-button" type="button" data-period-close aria-label="Close dialog">${icons.close}</button></header>
+      <header class="patient-modal-header"><div><p class="eyebrow">BILLING PERIOD</p><h2 id="period-modal-title">Add Billing Periods</h2><p id="period-modal-description">Generate periods for the selected frequency and fiscal year.</p></div><button class="icon-button" type="button" data-period-close aria-label="Close dialog">${icons.close}</button></header>
       <form data-period-form><div class="patient-modal-body"><fieldset class="patient-form-section"><legend class="sr-only">Billing Period Setup</legend><div class="facility-form-section-heading">Billing Period Setup</div><div class="patient-form-grid">
         <label class="form-field"><span>Fiscal Year Type <b>*</b></span><select name="fiscalYearType" required><option>Gregorian Fiscal</option></select></label>
         <label class="form-field"><span>Fiscal Year <b>*</b></span><select name="year" required>${years.map((year) => `<option value="${year}">${year}</option>`).join('')}</select></label>
-        <label class="form-field"><span>Billing Periods <b>*</b></span><select name="frequency" required><option>Monthly</option></select></label>
+        <label class="form-field"><span>Billing Periods <b>*</b></span><select name="frequency" required><option>Weekly</option><option selected>Monthly</option><option>Yearly</option></select></label>
       </div></fieldset></div><footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-period-cancel>Cancel</button><button type="submit" class="button button-primary">Generate</button></div></footer></form>
     </section></div>
     <div class="patient-modal-backdrop" data-period-edit-modal hidden><section class="patient-modal branch-modal" role="dialog" aria-modal="true" aria-labelledby="period-edit-title" aria-describedby="period-edit-description">
@@ -94,10 +116,12 @@
 
   const rows = page.querySelector('[data-period-rows]');
   const yearSelect = page.querySelector('[data-period-year]');
+  const frequencySelect = page.querySelector('[data-period-frequency]');
   const count = page.querySelector('[data-period-count]');
   const pageLabel = page.querySelector('[data-period-page-label]');
   const empty = page.querySelector('[data-period-empty]');
   const summaryYear = page.querySelector('[data-summary-year]');
+  const summaryFrequency = page.querySelector('[data-summary-frequency]');
   const modal = page.querySelector('[data-period-modal]');
   const form = page.querySelector('[data-period-form]');
   const editModal = page.querySelector('[data-period-edit-modal]');
@@ -119,7 +143,7 @@
     toastTimer = setTimeout(() => target.classList.remove('is-visible'), 2300);
   }
 
-  function filtered() { return periods.filter((period) => Number(period.year) === Number(selectedYear)); }
+  function filtered() { return periods.filter((period) => Number(period.year) === Number(selectedYear) && period.frequency === selectedFrequency); }
 
   function switchMarkup(label, checked, disabled, action, id) {
     return `<button type="button" class="billing-switch${checked ? ' is-on' : ''}" role="switch" aria-label="${label} for ${escapeHtml(id)}" aria-checked="${checked}" data-period-action="${action}" data-period-id="${escapeHtml(id)}"${disabled ? ' disabled' : ''}><span></span></button>`;
@@ -162,6 +186,7 @@
     returnFocus = event.currentTarget;
     form.reset();
     form.elements.year.value = String(selectedYear);
+    form.elements.frequency.value = selectedFrequency;
     modal.hidden = false;
     document.body.classList.add('patient-modal-open');
     modal.querySelector('[data-period-close]').focus();
@@ -169,6 +194,12 @@
   yearSelect.addEventListener('change', () => {
     selectedYear = Number(yearSelect.value);
     summaryYear.textContent = String(selectedYear).slice(-2);
+    currentPage = 1;
+    render();
+  });
+  frequencySelect.addEventListener('change', () => {
+    selectedFrequency = frequencySelect.value;
+    summaryFrequency.textContent = selectedFrequency;
     currentPage = 1;
     render();
   });
@@ -191,10 +222,13 @@
       toast(`Billing periods already exist for ${year}.`);
       return;
     }
-    periods.push(...monthlyPeriods(year));
+    periods.push(...periodsForYear(year, frequency));
     selectedYear = year;
+    selectedFrequency = frequency;
     yearSelect.value = String(year);
+    frequencySelect.value = frequency;
     summaryYear.textContent = String(year).slice(-2);
+    summaryFrequency.textContent = frequency;
     persist();
     closeModal(modal);
     currentPage = 1;
