@@ -30,12 +30,13 @@
     { label: 'Audit Log', icon: 'audit', items: [] },
   ];
   const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const routeFor = (label) => ({
-    'Facility Profile': 'facility',
-    'Billing Period': 'billing-periods',
-    Categories: 'categories-and-groups',
-    'Master Price List': 'master-price-lists',
-  })[label] || slug(label);
+  const routeFor = slug;
+  const legacyRoutes = {
+    'categories-and-groups': 'categories',
+    'master-price-lists': 'master-price-list',
+    facility: 'facility-profile',
+    'billing-periods': 'billing-period',
+  };
   const getSelected = () => decodeURIComponent(location.hash.slice(1));
   const sidebar = document.querySelector('#sidebar-container');
   const topbar = document.querySelector('#topbar-container');
@@ -52,10 +53,12 @@
   topbar.innerHTML = `<header class="topbar"><div class="topbar-left"><button class="icon-button mobile-menu" type="button" data-menu-toggle aria-label="Open settings navigation">${icon('reference', '')}</button><a class="launcher-link" href="${rootPath}facility/home.html">← Facility</a><span class="topbar-divider"></span><span class="context-label">Facility Settings</span></div><div class="topbar-right"><label class="search-box">${icon('search', '')}<input type="search" aria-label="Search settings" placeholder="Search settings…"></label><button class="icon-button" type="button" data-theme-toggle aria-label="Toggle theme"></button></div></header>`;
 
   const updateSelection = () => {
+    const selectedHash = getSelected();
+    if (legacyRoutes[selectedHash]) window.history.replaceState(null, '', `#${legacyRoutes[selectedHash]}`);
     const selected = getSelected() || 'settings';
     const matching = [...document.querySelectorAll('.settings-leaf')].find((item) => (item.dataset.route || slug(item.dataset.label)) === selected);
     const label = matching?.dataset.label || 'Settings';
-    const showFacilityGrid = matching?.dataset.route === 'facility';
+    const showFacilityGrid = matching?.dataset.route === 'facility-profile';
     document.querySelector('[data-facility-grid]')?.toggleAttribute('hidden', !showFacilityGrid);
     document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityGrid);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
