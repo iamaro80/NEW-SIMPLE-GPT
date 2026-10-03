@@ -168,6 +168,10 @@ button { color: inherit; }
 .sidebar.collapsed .sidebar-bottom { padding: 10px; }
 .sidebar.collapsed .sidebar-bottom .nav-link { width: 48px; min-height: 42px; justify-content: center; padding: 0; }
 .sidebar.collapsed .sidebar-bottom .nav-link > span:not(.nav-icon) { display: none; }
+.organization-shell { width: min(1120px, calc(100% - 64px)); margin: 0 auto; }
+.organization-main { min-height: calc(100vh - 68px); }
+.organization-view { padding: 27px 0 40px; }
+.organization-view .workspace { min-height: 310px; }
 @media (max-width: 850px) {
   .sidebar.collapsed { width: 68px; }
   .sidebar.collapsed .sidebar-brand { justify-content: center; }
@@ -345,3 +349,5 @@ button { color: inherit; }
 body.patient-modal-open { overflow: hidden; }
 @media (max-width: 900px) { .patients-page { width: calc(100% - 40px); } .patient-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .patients-page { width: calc(100% - 28px); } .patients-heading { align-items: flex-start; flex-direction: column; } .patient-modal-backdrop { padding: 8px; } .patient-modal { max-height: 96vh; border-radius: 9px; } .patient-modal-header, .patient-modal-body { padding-right: 15px; padding-left: 15px; } .patient-modal-footer { padding: 11px 15px; } .patient-form-grid { grid-template-columns: 1fr; } .patient-form-grid > * { grid-column: auto; } .patient-list-toolbar { align-items: flex-start; flex-direction: column; } .patient-search { width: 100%; box-sizing: border-box; } }
+@media (max-width: 850px) { .organization-shell { width: calc(100% - 40px); } }
+@media (max-width: 580px) { .organization-shell { width: calc(100% - 28px); } }
