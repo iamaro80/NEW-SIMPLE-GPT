@@ -293,7 +293,25 @@ button { color: inherit; }
 .facility-modal .form-field input[readonly] { background: hsl(var(--muted) / .55); color: hsl(var(--muted-foreground)); }
 .facility-modal .form-field input[type="color"] { min-height: 35px; padding: 4px; }
 .facility-modal .form-field textarea { min-height: 70px; }
-.facility-modal .patient-form-section { padding-top: 2px; }
+.facility-modal .patient-form-section {
+  overflow: hidden;
+  margin: 0 0 15px;
+  padding: 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: 9px;
+  background: hsl(var(--card));
+}
+.facility-modal .patient-form-section:last-child { margin-bottom: 0; }
+.facility-modal .patient-form-section legend {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px 15px;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / .38);
+  font-size: 12px;
+  font-weight: 650;
+}
+.facility-modal .patient-form-grid { padding: 15px; }
 @media (max-width: 900px) { .settings-page-container { width: calc(100% - 40px); } .facility-filter-grid, .facility-advanced-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .settings-page-container { width: calc(100% - 28px); } .facility-filter-grid, .facility-advanced-filters { grid-template-columns: 1fr; } .facility-toolbar-primary { align-items: stretch; } .facility-toolbar-primary .button { flex: 1 1 calc(50% - 8px); } .facility-pagination { align-items: flex-start; flex-direction: column; } .facility-page-controls { align-self: flex-end; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
