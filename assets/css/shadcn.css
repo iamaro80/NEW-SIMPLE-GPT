@@ -339,7 +339,7 @@ button { color: inherit; }
 
 /* Patients workspace */
 .patients-page { width: min(1320px, calc(100% - 64px)); }
-.patients-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 22px 0 24px; }
+.patients-heading { display: flex; align-items: flex-start; flex-direction: column; gap: 12px; padding: 22px 0 24px; }
 .patients-heading .page-subtitle { margin-top: 7px; }
 .button { min-height: 37px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 13px; border: 1px solid hsl(var(--border)); border-radius: 7px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s ease, border-color .15s ease, transform .15s ease; }
 .button:active { transform: translateY(1px); }
