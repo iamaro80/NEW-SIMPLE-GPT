@@ -4,13 +4,14 @@
 
   const facilityId = document.body.dataset.currentFacilityId || '1';
   const storageKey = `rcm-facility-departments:v1:${facilityId}`;
+  const branchStorageKey = `rcm-facility-branches:v1:${facilityId}`;
   const seed = [
-    { name: 'Ambulatory Care Clinic', type: 'Clinic', specialty: 'Family Medicine', profile: 'Clinic', category: 'Billing' },
-    { name: 'Emergency Department', type: 'Ward', specialty: 'Emergency Medicine', profile: 'Hospital', category: 'Billing' },
-    { name: 'Internal Medicine Ward', type: 'Ward', specialty: 'Internal Medicine', profile: 'Hospital', category: 'Billing' },
-    { name: 'Outpatient Pharmacy', type: 'OP Pharmacy', specialty: 'Pharmacy', profile: 'Pharmacy', category: 'Billing' },
-    { name: 'Clinical Laboratory', type: 'Laboratory', specialty: 'Laboratory Medicine', profile: 'Laboratory', category: 'Billing' },
-    { name: 'Diagnostic Imaging', type: 'Imaging Location', specialty: 'Radiology', profile: 'Diagnostic Center', category: 'Billing' },
+    { name: 'Ambulatory Care Clinic', parentBranch: '1', type: 'Clinic', specialty: 'Family Medicine', profile: 'Clinic', category: 'Billing' },
+    { name: 'Emergency Department', parentBranch: '2', type: 'Ward', specialty: 'Emergency Medicine', profile: 'Hospital', category: 'Billing' },
+    { name: 'Internal Medicine Ward', parentBranch: '3', type: 'Ward', specialty: 'Internal Medicine', profile: 'Hospital', category: 'Billing' },
+    { name: 'Outpatient Pharmacy', parentBranch: '4', type: 'OP Pharmacy', specialty: 'Pharmacy', profile: 'Pharmacy', category: 'Billing' },
+    { name: 'Clinical Laboratory', parentBranch: '5', type: 'Laboratory', specialty: 'Laboratory Medicine', profile: 'Laboratory', category: 'Billing' },
+    { name: 'Diagnostic Imaging', parentBranch: '6', type: 'Imaging Location', specialty: 'Radiology', profile: 'Diagnostic Center', category: 'Billing' },
   ].map((record, index) => ({ code: `DPT-${String(index + 1).padStart(3, '0')}`, ...record, active: true }));
 
   const rows = grid.querySelector('[data-department-rows]');
@@ -30,6 +31,7 @@
   let returnFocus = null;
   let toastTimer;
   let appliedFilters = {};
+  let branches = loadBranches();
   let departments = load();
   appliedFilters = readFilters();
 
@@ -44,6 +46,34 @@
     return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   }
 
+  function loadBranches() {
+    try {
+      const saved = localStorage.getItem(branchStorageKey);
+      const parsed = saved && JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    } catch { /* Use the standard branch choices if stored data is unavailable. */ }
+    return Array.from({ length: 7 }, (_, index) => ({ code: String(index + 1), englishName: `Branch ${index + 1}` }));
+  }
+
+  function branchName(code) {
+    return branches.find((branch) => String(branch.code) === String(code))?.englishName || '';
+  }
+
+  function refreshBranchOptions() {
+    const formSelect = form.elements.namedItem('parentBranch');
+    const filterSelect = grid.querySelector('[data-department-filter="parentBranch"]');
+    const selectedForm = formSelect.value;
+    const selectedFilter = filterSelect.value;
+    formSelect.innerHTML = '<option value="">Select parent branch</option>' + branches.map((branch) =>
+      `<option value="${escapeHtml(branch.code)}">${escapeHtml(branch.englishName || branch.name || `Branch ${branch.code}`)}</option>`,
+    ).join('');
+    filterSelect.innerHTML = '<option value="">All parent branches</option>' + branches.map((branch) =>
+      `<option value="${escapeHtml(branch.code)}">${escapeHtml(branch.englishName || branch.name || `Branch ${branch.code}`)}</option>`,
+    ).join('');
+    if (branches.some((branch) => String(branch.code) === selectedForm)) formSelect.value = selectedForm;
+    if (branches.some((branch) => String(branch.code) === selectedFilter)) filterSelect.value = selectedFilter;
+  }
+
   function load() {
     try {
       const saved = localStorage.getItem(storageKey);
@@ -51,17 +81,22 @@
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           let migrated = false;
-          const records = parsed.map((department) => {
+          const records = parsed.map((department, index) => {
             const sample = seed.find((item) => item.code === department.code && item.name === department.name);
-            if (!sample || department.category !== 'Medical') return department;
-            migrated = true;
-            return { ...department, category: 'Billing' };
+            const next = { ...department };
+            if (sample && department.category === 'Medical') next.category = 'Billing';
+            if (!next.parentBranch || !branches.some((branch) => String(branch.code) === String(next.parentBranch))) {
+              next.parentBranch = sample?.parentBranch || String(branches[index % branches.length]?.code || '');
+            }
+            if (next.category !== department.category || next.parentBranch !== department.parentBranch) migrated = true;
+            return next;
           });
           if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
           return records;
         }
       } else localStorage.setItem(storageKey, JSON.stringify(seed));
     } catch { /* Keep the prototype usable if browser storage is unavailable. */ }
+    try { localStorage.setItem(storageKey, JSON.stringify(seed)); } catch { /* Keep seeded rows available in memory. */ }
     return seed.map((department) => ({ ...department }));
   }
 
@@ -87,7 +122,7 @@
   function filteredDepartments() {
     return departments.filter((department) => ['code', 'name', 'type', 'specialty', 'category'].every((key) =>
       !appliedFilters[key] || String(department[key] || '').toLocaleLowerCase().includes(appliedFilters[key]),
-    ));
+    ) && (!appliedFilters.parentBranch || String(department.parentBranch || '') === appliedFilters.parentBranch));
   }
 
   function closeMenus(except) {
@@ -107,6 +142,7 @@
     rows.innerHTML = visible.map((department) => `<tr>
       <td class="branch-code">${escapeHtml(department.code)}</td>
       <td><span class="facility-name-en">${escapeHtml(department.name)}</span></td>
+      <td>${escapeHtml(branchName(department.parentBranch) || '—')}</td>
       <td>${escapeHtml(department.type)}</td><td>${escapeHtml(department.specialty)}</td>
       <td>${escapeHtml(department.profile || '—')}</td><td>${escapeHtml(department.category)}</td>
       <td><span class="facility-status ${department.active ? 'is-active' : 'is-inactive'}"><span></span>${department.active ? 'Active' : 'Inactive'}</span></td>
@@ -127,7 +163,7 @@
   }
 
   function setReadOnly(readOnly) {
-    ['name', 'type', 'specialty', 'profile', 'category'].forEach((name) => { form.elements.namedItem(name).disabled = readOnly; });
+    ['name', 'parentBranch', 'type', 'specialty', 'profile', 'category'].forEach((name) => { form.elements.namedItem(name).disabled = readOnly; });
     saveButton.hidden = readOnly;
     modal.querySelector('[data-department-cancel]').textContent = readOnly ? 'Back' : 'Cancel';
   }
@@ -137,13 +173,14 @@
     activeCode = department?.code ?? null;
     returnFocus = trigger;
     form.reset();
+    refreshBranchOptions();
     setReadOnly(false);
     const isNew = nextMode === 'new';
     modalTitle.textContent = isNew ? 'Add Department' : nextMode === 'view' ? 'Department Details' : 'Edit Department';
     modalDescription.textContent = isNew ? 'Enter the department details.' : nextMode === 'view' ? 'Review department details.' : 'Update the department details.';
     saveButton.textContent = isNew ? 'Create' : 'Save changes';
-    const record = isNew ? { code: nextCode() } : department;
-    ['code', 'name', 'type', 'specialty', 'profile', 'category'].forEach((name) => { form.elements.namedItem(name).value = record?.[name] || ''; });
+    const record = isNew ? { code: nextCode(), parentBranch: branches[0]?.code || '' } : department;
+    ['code', 'name', 'parentBranch', 'type', 'specialty', 'profile', 'category'].forEach((name) => { form.elements.namedItem(name).value = record?.[name] || ''; });
     if (nextMode === 'view') setReadOnly(true);
     modal.hidden = false;
     document.body.classList.add('patient-modal-open');
@@ -159,7 +196,7 @@
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
-    const values = Object.fromEntries(['code', 'name', 'type', 'specialty', 'profile', 'category'].map((name) => [name, form.elements.namedItem(name).value.trim()]));
+    const values = Object.fromEntries(['code', 'name', 'parentBranch', 'type', 'specialty', 'profile', 'category'].map((name) => [name, form.elements.namedItem(name).value.trim()]));
     if (mode === 'new') {
       const department = { ...values, active: true };
       departments.push(department);
@@ -245,6 +282,13 @@
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   });
   window.addEventListener('storage', (event) => {
+    if (event.key === branchStorageKey && event.newValue) {
+      try {
+        const updatedBranches = JSON.parse(event.newValue);
+        if (Array.isArray(updatedBranches)) { branches = updatedBranches; refreshBranchOptions(); render(); }
+      } catch { /* Ignore invalid external updates. */ }
+      return;
+    }
     if (event.key !== storageKey || !event.newValue) return;
     try {
       const updated = JSON.parse(event.newValue);
@@ -252,5 +296,13 @@
     } catch { /* Ignore invalid external updates. */ }
   });
 
+  window.addEventListener('rcm:branches-changed', (event) => {
+    if (event.detail?.facilityId !== facilityId || !Array.isArray(event.detail.branches)) return;
+    branches = event.detail.branches;
+    refreshBranchOptions();
+    render();
+  });
+
+  refreshBranchOptions();
   render();
 })();

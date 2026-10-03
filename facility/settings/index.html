@@ -13,7 +13,7 @@
   <script src="../../assets/js/facility-grid.js?v=facility-record-workspace-1" defer></script>
   <script src="../../assets/js/facility-settings-profile.js?v=1" defer></script>
   <script src="../../assets/js/facility-branches.js?v=2" defer></script>
-  <script src="../../assets/js/facility-departments.js?v=2" defer></script>
+  <script src="../../assets/js/facility-departments.js?v=3" defer></script>
   <script src="../../assets/js/facility-structure.js?v=4" defer></script>
 </head>
 <body data-root="../../" data-current-facility-id="1">
@@ -67,13 +67,14 @@
             <div class="branches-filter-grid department-filter-grid" role="search" aria-label="Filter departments">
               <label class="facility-filter"><span>Code</span><input type="search" data-department-filter="code" placeholder="Search code"></label>
               <label class="facility-filter"><span>Department Name</span><input type="search" data-department-filter="name" placeholder="Search department name"></label>
+              <label class="facility-filter"><span>Parent Branch</span><select data-department-filter="parentBranch"><option value="">All parent branches</option></select></label>
               <label class="facility-filter"><span>Type</span><select data-department-filter="type"><option value="">All types</option><option>Clinic</option><option>Ward</option><option>OP Pharmacy</option><option>Laboratory</option><option>IP Pharmacy</option><option>Imaging Location</option><option>Other</option></select></label>
               <label class="facility-filter"><span>Specialty</span><input type="search" data-department-filter="specialty" placeholder="Search specialty"></label>
               <label class="facility-filter"><span>Category</span><select data-department-filter="category"><option value="">All categories</option><option>Medical</option><option selected>Billing</option></select></label>
             </div>
           </div>
           <div class="facility-table-card">
-            <div class="facility-table-scroll"><table class="facility-table departments-table"><thead><tr><th scope="col">Code</th><th scope="col">Department Name</th><th scope="col">Type</th><th scope="col">Specialty</th><th scope="col">Profile</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody data-department-rows></tbody></table></div>
+            <div class="facility-table-scroll"><table class="facility-table departments-table"><thead><tr><th scope="col">Code</th><th scope="col">Department Name</th><th scope="col">Parent Branch</th><th scope="col">Type</th><th scope="col">Specialty</th><th scope="col">Profile</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody data-department-rows></tbody></table></div>
             <div class="facility-empty" data-department-empty hidden>No departments match your filters.</div>
             <footer class="facility-pagination"><span data-department-result-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-department-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-department-page="previous" aria-label="Previous page">‹</button><span data-department-page-label></span><button class="icon-button" type="button" data-department-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-department-page="last" aria-label="Last page">»</button></div></footer>
           </div>
@@ -151,6 +152,7 @@
       <form id="department-form"><div class="patient-modal-body"><fieldset class="patient-form-section"><legend class="sr-only">Department Information</legend><div class="facility-form-section-heading">Department Information</div><div class="patient-form-grid">
         <label class="form-field"><span>Department Code</span><input name="code" readonly aria-describedby="department-code-help"><small id="department-code-help">Generated automatically.</small></label>
         <label class="form-field"><span>Department Name <b>*</b></span><input name="name" required autocomplete="off"></label>
+        <label class="form-field"><span>Parent Branch <b>*</b></span><select name="parentBranch" required><option value="">Select parent branch</option></select></label>
         <label class="form-field"><span>Type <b>*</b></span><select name="type" required><option value="">Select type</option><option>Clinic</option><option>Ward</option><option>OP Pharmacy</option><option>Laboratory</option><option>IP Pharmacy</option><option>Imaging Location</option><option>Other</option></select></label>
         <label class="form-field"><span>Specialty <b>*</b></span><input name="specialty" list="department-specialty-options" required autocomplete="off" placeholder="Search or select specialty"><datalist id="department-specialty-options"><option>Anesthesiology</option><option>Cardiology</option><option>Dermatology</option><option>Emergency Medicine</option><option>Family Medicine</option><option>Internal Medicine</option><option>Laboratory Medicine</option><option>Neurology</option><option>Obstetrics &amp; Gynecology</option><option>Orthopedics</option><option>Pediatrics</option><option>Pharmacy</option><option>Radiology</option><option>General Surgery</option></datalist></label>
         <label class="form-field"><span>Profile</span><select name="profile"><option value="">No profile</option><option>Hospital</option><option>Clinic</option><option>General Medical Complex</option><option>Specialized Medical Complex</option><option>Pharmacy</option><option>Diagnostic Center</option><option>Laboratory</option><option>Physiotherapy Center</option><option>Radiotherapy Center</option></select></label>
