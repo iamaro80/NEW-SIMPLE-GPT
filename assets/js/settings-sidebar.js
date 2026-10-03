@@ -61,10 +61,12 @@
     const showFacilityProfile = matching?.dataset.route === 'facility-profile';
     const showBranches = matching?.dataset.route === 'branches';
     const showDepartments = matching?.dataset.route === 'departments';
+    const showFacilityStructure = ['divisions', 'locations', 'rooms'].includes(matching?.dataset.route);
     document.querySelector('[data-current-facility-profile]')?.toggleAttribute('hidden', !showFacilityProfile);
     document.querySelector('[data-branches-grid]')?.toggleAttribute('hidden', !showBranches);
     document.querySelector('[data-departments-grid]')?.toggleAttribute('hidden', !showDepartments);
-    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments);
+    document.querySelector('[data-structure-workspace]')?.toggleAttribute('hidden', !showFacilityStructure);
+    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
       const active = item === matching;
       item.classList.toggle('active', active);
