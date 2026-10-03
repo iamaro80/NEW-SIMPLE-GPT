@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f8f7f3">
   <title>RCM SMB Organization</title>
-  <link rel="stylesheet" href="../assets/css/shadcn.css?v=facility-modal-sections-1">
+  <link rel="stylesheet" href="../assets/css/shadcn.css?v=facility-modal-sections-2">
   <script src="../assets/js/theme.js" data-theme-view="organization"></script>
   <script src="../assets/js/organization-sidebar.js?v=facility-focus-4" defer></script>
   <script src="../assets/js/sidebar-collapse.js?v=facility-focus-2" defer></script>
@@ -60,7 +60,7 @@
       <header class="patient-modal-header"><div><p class="eyebrow">FACILITY RECORD</p><h2 id="facility-modal-title">Add Facility</h2><p id="facility-modal-description">Enter facility information and configuration details.</p></div><button type="button" class="icon-button" data-facility-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
       <form id="facility-form">
         <div class="patient-modal-body">
-          <fieldset class="patient-form-section"><legend>Facilities Information</legend><div class="patient-form-grid">
+          <fieldset class="patient-form-section"><legend class="sr-only">Facilities Information</legend><div class="facility-form-section-heading" aria-hidden="true">Facilities Information</div><div class="patient-form-grid">
             <label class="form-field"><span>Facility Identifier</span><input name="facilityIdentifier" readonly></label>
             <label class="form-field"><span>HCP <b>*</b></span><input name="hcp" list="facility-hcp-options" required><datalist id="facility-hcp-options"><option value="(10000300091434) Al Ansari Specialist Hospital - Yanbu"></option><option value="King Abdullah Specialized Hospital- Alqassim"></option><option value="King Fahad Hospital"></option><option value="Tabuk Medical Center"></option></datalist></label>
             <label class="form-field"><span>Arabic Name <b>*</b></span><input name="arabicName" dir="rtl" required></label>
@@ -80,7 +80,7 @@
             <label class="form-field"><span>NHIC Number <b>*</b></span><input name="nhicNumber" required></label>
             <label class="form-field"><span>Facility Category <b>*</b></span><select name="category" required><option value="">Select category</option><option>Hospital</option><option>Clinic</option><option>General Medical Complex</option><option>Specialized Medical Complex</option><option>Pharmacy</option><option>Diagnostic Center</option><option>Laboratory</option><option>Physiotherapy Center</option><option>Radiotherapy Center</option></select></label>
           </div></fieldset>
-          <fieldset class="patient-form-section"><legend>Address</legend><div class="patient-form-grid">
+          <fieldset class="patient-form-section"><legend class="sr-only">Address</legend><div class="facility-form-section-heading" aria-hidden="true">Address</div><div class="patient-form-grid">
             <label class="form-field"><span>Country <b>*</b></span><select name="country" required><option>Saudi Arabia</option></select></label>
             <label class="form-field"><span>City <b>*</b></span><select name="city" required><option value="">Select city</option><option>Riyadh</option><option>Tabuk</option><option>Al Khobar</option><option>Dammam</option><option>Jeddah</option><option>Madinah</option></select></label>
             <label class="form-field"><span>District <b>*</b></span><select name="district" required><option value="">Select district</option><option>Al Olaya</option><option>Al Jumuah</option><option>Al Muruj</option><option>Al Aqrabiyah</option><option>Al Shifa</option><option>Al Kandarah</option><option>Al Malaz</option><option>Qurban</option><option>Al Faisaliyah</option><option>Al Thuqbah</option><option>Al Sharafiyah</option></select></label>
@@ -89,7 +89,7 @@
             <label class="form-field"><span>Postal Code</span><input name="postalCode"></label>
             <label class="form-field"><span>Additional Number</span><input name="additionalNumber"></label>
           </div></fieldset>
-          <fieldset class="patient-form-section"><legend>Facility Configurations</legend><div class="patient-form-grid">
+          <fieldset class="patient-form-section"><legend class="sr-only">Facility Configurations</legend><div class="facility-form-section-heading" aria-hidden="true">Facility Configurations</div><div class="patient-form-grid">
             <label class="form-field"><span>Episode Expiry Time</span><select name="episodeExpiry"><option>One Week</option><option selected>Two Weeks</option><option>One Month</option><option>Two Months</option></select></label>
             <label class="form-check"><input name="autoAuthorization" type="checkbox"><span>Is Auto Authorization Process</span></label>
             <label class="form-field"><span>Invoice Configurations English</span><textarea name="invoiceConfigEnglish" rows="3"></textarea></label>
@@ -97,7 +97,7 @@
             <label class="form-field"><span>Background Color</span><input name="backgroundColor" type="color" value="#1e76b5"></label>
             <label class="form-field"><span>Foreground Color</span><input name="foregroundColor" type="color" value="#ffffff"></label>
           </div></fieldset>
-          <fieldset class="patient-form-section"><legend>ZATCA Details</legend><div class="patient-form-grid">
+          <fieldset class="patient-form-section"><legend class="sr-only">ZATCA Details</legend><div class="facility-form-section-heading" aria-hidden="true">ZATCA Details</div><div class="patient-form-grid">
             <label class="form-field"><span>Organization Id</span><input name="zatcaOrganizationId"></label>
             <label class="form-field"><span>Invoice Book</span><input name="zatcaInvoiceBook"></label>
           </div></fieldset>

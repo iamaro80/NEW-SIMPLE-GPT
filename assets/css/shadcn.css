@@ -302,9 +302,20 @@ button { color: inherit; }
   background: hsl(var(--card));
 }
 .facility-modal .patient-form-section:last-child { margin-bottom: 0; }
-.facility-modal .patient-form-section legend {
+.facility-modal .patient-form-section legend.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.facility-form-section-heading {
   box-sizing: border-box;
-  margin: 0;
+  width: 100%;
   padding: 12px 15px;
   border-bottom: 1px solid hsl(var(--border));
   background: hsl(var(--muted) / .38);
