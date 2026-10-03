@@ -9,7 +9,7 @@
     { label: 'Organization Account', icon: 'organization', items: ['Organization Profile', 'Subscription & Plans', 'Modules & Add-Ons', 'Billing'] },
     { label: 'Facilities', icon: 'facilities' },
     { label: 'Cost Centers', icon: 'cost-centers' },
-    { label: 'Staff & Access', icon: 'staff', items: ['Practitioners Roster', 'Users', 'Roles'] },
+    { label: 'Staff & Access', icon: 'staff', items: [{ label: 'Practitioners Roster', route: 'practitioners' }, 'Users', 'Roles'] },
     { label: 'Payers Setup', icon: 'payers', items: ['Payers', 'TPAs'] },
     { label: 'Insurance Setup', icon: 'insurance', items: ['Policies', 'Plans', 'Benefits'] },
     { label: 'Payer Contracts', icon: 'contracts', items: ['Contracts', 'Direct Billing'] },
@@ -56,8 +56,12 @@
   const links = [...navigation.querySelectorAll('[data-org-route]')];
   const updateSelection = () => {
     const hashRoute = window.location.hash.slice(1);
+    if (hashRoute === 'practitioners-roster') {
+      history.replaceState(null, '', '#practitioners');
+    }
+    const canonicalRoute = hashRoute === 'practitioners-roster' ? 'practitioners' : hashRoute;
     const isFacilityFocusRoute = /^facilities\/\d+\/[a-z0-9-]+$/.test(hashRoute);
-    const requestedRoute = isFacilityFocusRoute ? 'facilities' : hashRoute || 'overview';
+    const requestedRoute = isFacilityFocusRoute ? 'facilities' : canonicalRoute || 'overview';
     const activeLink = links.find((item) => item.dataset.orgRoute === requestedRoute) || links.find((item) => item.dataset.orgRoute === 'overview');
     const route = activeLink.dataset.orgRoute;
     if (!window.location.hash) history.replaceState(null, '', '#overview');
