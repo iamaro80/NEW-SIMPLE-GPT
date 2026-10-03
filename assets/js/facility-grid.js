@@ -9,9 +9,17 @@
   const advancedToggle = grid.querySelector('[data-advanced-toggle]');
   const advancedFilters = grid.querySelector('[data-advanced-filters]');
   const toast = document.querySelector('[data-facility-toast]');
+  const modal = document.querySelector('#facility-modal');
+  const form = document.querySelector('#facility-form');
+  const modalTitle = document.querySelector('#facility-modal-title');
+  const modalDescription = document.querySelector('#facility-modal-description');
+  const saveButton = document.querySelector('[data-facility-save]');
   const pageSize = 5;
   let page = 1;
   let toastTimer;
+  let modalMode = 'new';
+  let activeFacilityId = null;
+  let returnFocus = null;
 
   const facilities = [
     { id: 1, arabicName: 'مستشفى الملك عبدالله التخصصي بالقصيم', englishName: 'King Abdullah Specialized Hospital- Alqassim', unifiedId: '7001000001', licenseNumber: 'LIC-2024-001', phone: '+966 13 533 8080', country: 'Saudi Arabia', city: 'Riyadh', district: 'Al Olaya', active: true },
@@ -27,6 +35,43 @@
     { id: 11, arabicName: 'مركز النور الطبي', englishName: 'Al Noor Medical Center', unifiedId: '7001000011', licenseNumber: 'LIC-2024-011', phone: '+966 13 832 2323', country: 'Saudi Arabia', city: 'Dammam', district: 'Al Faisaliyah', active: false },
     { id: 12, arabicName: 'مستشفى السلام', englishName: 'Al Salam Hospital', unifiedId: '7001000012', licenseNumber: 'LIC-2024-012', phone: '+966 12 682 2222', country: 'Saudi Arabia', city: 'Jeddah', district: 'Al Sharafiyah', active: true },
   ];
+
+  const hcpOptions = [
+    '(10000300091434) Al Ansari Specialist Hospital - Yanbu',
+    'King Abdullah Specialized Hospital- Alqassim',
+    'King Fahad Hospital',
+    'Tabuk Medical Center',
+  ];
+  facilities.forEach((facility, index) => Object.assign(facility, {
+    facilityIdentifier: String(47 + index),
+    hcp: hcpOptions[index % hcpOptions.length],
+    contactName: ['Sara Alotaibi', 'Faisal Alharbi', 'Noura Aldosari'][index % 3],
+    email: `contact${index + 1}@example.com`,
+    phoneCountryCode: '+966',
+    phoneLocal: facility.phone.replace(/^\+966\s*/, ''),
+    extension: '',
+    mobileCountryCode: '+966',
+    mobileLocal: `5${String(10000000 + index * 17321).slice(0, 8)}`,
+    licenseStart: '',
+    licenseEnd: '',
+    chiId: ['1000000000', '111', '1060'][index % 3],
+    vatNumber: `310${String(100000000 + index).padStart(9, '0')}03`,
+    crNumber: `1010${String(1000000 + index)}`,
+    nhicNumber: `NHIC-${String(index + 1).padStart(4, '0')}`,
+    category: ['Hospital', 'Clinic', 'General Medical Complex'][index % 3],
+    buildingNumber: '',
+    streetName: '',
+    postalCode: '',
+    additionalNumber: '',
+    episodeExpiry: 'Two Weeks',
+    autoAuthorization: false,
+    invoiceConfigEnglish: '',
+    invoiceConfigArabic: '',
+    backgroundColor: '#1e76b5',
+    foregroundColor: '#ffffff',
+    zatcaOrganizationId: '',
+    zatcaInvoiceBook: '',
+  }));
 
   const icons = {
     more: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>',
@@ -85,7 +130,7 @@
       <td>${escapeHtml(facility.unifiedId)}</td><td>${escapeHtml(facility.phone)}</td><td>${escapeHtml(facility.country)}</td><td>${escapeHtml(facility.city)}</td>
       <td><span class="facility-status ${facility.active ? 'is-active' : 'is-inactive'}"><span></span>${facility.active ? 'Active' : 'Inactive'}</span></td>
       <td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-row-menu aria-label="Actions for ${escapeHtml(facility.englishName)}" aria-haspopup="menu" aria-expanded="false" data-id="${facility.id}">${icons.more}</button>
-        <div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" disabled>${icons.eye}View</button><button type="button" role="menuitem" disabled>${icons.edit}Edit</button><button type="button" role="menuitem" data-action="toggle-status" data-id="${facility.id}">${icons.status}${facility.active ? 'Deactivate' : 'Activate'}</button></div></div></td>
+        <div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-action="view" data-id="${facility.id}">${icons.eye}View</button><button type="button" role="menuitem" data-action="edit" data-id="${facility.id}">${icons.edit}Edit</button><button type="button" role="menuitem" data-action="toggle-status" data-id="${facility.id}">${icons.status}${facility.active ? 'Deactivate' : 'Activate'}</button></div></div></td>
     </tr>`).join('');
 
     empty.hidden = matching.length > 0;
@@ -96,15 +141,122 @@
     });
   }
 
-  function fillOptions(fieldName, firstLabel, values) {
+  function syncFilterOptions(fieldName, firstLabel, values) {
     const select = grid.querySelector(`[data-facility-filter="${fieldName}"]`);
+    const selected = select.value;
+    select.replaceChildren(new Option(firstLabel, ''));
     values.forEach((value) => select.add(new Option(value, value.toLowerCase())));
-    select.options[0].textContent = firstLabel;
+    select.value = selected;
   }
 
-  fillOptions('country', 'All countries', [...new Set(facilities.map((facility) => facility.country))]);
-  fillOptions('city', 'All cities', [...new Set(facilities.map((facility) => facility.city))]);
-  fillOptions('district', 'All districts', [...new Set(facilities.map((facility) => facility.district))]);
+  function syncAllFilterOptions() {
+    syncFilterOptions('country', 'All countries', [...new Set(facilities.map((facility) => facility.country).filter(Boolean))]);
+    syncFilterOptions('city', 'All cities', [...new Set(facilities.map((facility) => facility.city).filter(Boolean))]);
+    syncFilterOptions('district', 'All districts', [...new Set(facilities.map((facility) => facility.district).filter(Boolean))]);
+  }
+
+  function nextFacilityIdentifier() {
+    return String(Math.max(0, ...facilities.map((facility) => Number(facility.facilityIdentifier) || 0)) + 1);
+  }
+
+  function setReadOnly(readOnly) {
+    [...form.elements].forEach((field) => {
+      if (field.name) field.disabled = readOnly;
+    });
+    saveButton.hidden = readOnly;
+    modal.querySelector('[data-facility-cancel]').textContent = readOnly ? 'Back' : 'Cancel';
+  }
+
+  function openFacilityModal(mode, facility = null, trigger = document.activeElement) {
+    modalMode = mode;
+    activeFacilityId = facility?.id ?? null;
+    returnFocus = trigger;
+    form.reset();
+    setReadOnly(false);
+    const isNew = mode === 'new';
+    modalTitle.textContent = isNew ? 'Add Facility' : mode === 'view' ? 'Facility Details' : 'Edit Facility';
+    modalDescription.textContent = isNew
+      ? 'Enter facility information and configuration details.'
+      : mode === 'view' ? 'Review facility information and configuration details.' : 'Update facility information and configuration details.';
+    saveButton.textContent = isNew ? 'Create' : 'Save changes';
+    if (isNew) {
+      form.elements.namedItem('facilityIdentifier').value = nextFacilityIdentifier();
+      form.elements.namedItem('hcp').value = hcpOptions[0];
+    } else {
+      Object.entries(facility).forEach(([name, value]) => {
+        const field = form.elements.namedItem(name);
+        if (!field) return;
+        if (field.type === 'checkbox') field.checked = Boolean(value);
+        else field.value = value ?? '';
+      });
+    }
+    if (mode === 'view') setReadOnly(true);
+    modal.hidden = false;
+    document.body.classList.add('patient-modal-open');
+    modal.querySelector('[data-facility-close]').focus();
+  }
+
+  function closeFacilityModal() {
+    modal.hidden = true;
+    document.body.classList.remove('patient-modal-open');
+    if (returnFocus?.isConnected) returnFocus.focus();
+  }
+
+  function readFacilityForm() {
+    return Object.fromEntries([...form.elements].filter((field) => field.name).map((field) => [
+      field.name,
+      field.type === 'checkbox' ? field.checked : field.value.trim(),
+    ]));
+  }
+
+  function saveFacility(event) {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const values = readFacilityForm();
+    const phone = values.phoneLocal
+      ? `${values.phoneCountryCode} ${values.phoneLocal}`
+      : `${values.mobileCountryCode} ${values.mobileLocal}`;
+    if (modalMode === 'new') {
+      const nextId = Math.max(0, ...facilities.map((facility) => facility.id)) + 1;
+      const facility = { ...values, id: nextId, phone, active: true };
+      facilities.push(facility);
+      grid.querySelectorAll('[data-facility-filter]').forEach((field) => { field.value = ''; });
+      page = Math.ceil(facilities.length / pageSize);
+      syncAllFilterOptions();
+      closeFacilityModal();
+      render();
+      rows.querySelector(`[data-row-menu][data-id="${facility.id}"]`)?.focus();
+      showToast(`${values.englishName} was created successfully.`);
+    } else {
+      const facility = facilities.find((item) => item.id === activeFacilityId);
+      if (!facility) return;
+      Object.assign(facility, values, { phone });
+      closeFacilityModal();
+      syncAllFilterOptions();
+      render();
+      rows.querySelector(`[data-row-menu][data-id="${facility.id}"]`)?.focus();
+      showToast(`${facility.englishName} was updated successfully.`);
+    }
+  }
+
+  syncAllFilterOptions();
+  grid.querySelector('[data-add-facility]').addEventListener('click', (event) => openFacilityModal('new', null, event.currentTarget));
+  form.addEventListener('submit', saveFacility);
+  modal.querySelector('[data-facility-close]').addEventListener('click', closeFacilityModal);
+  modal.querySelector('[data-facility-cancel]').addEventListener('click', closeFacilityModal);
+  modal.addEventListener('click', (event) => { if (event.target === modal) closeFacilityModal(); });
+  document.addEventListener('keydown', (event) => {
+    if (modal.hidden) return;
+    if (event.key === 'Escape') closeFacilityModal();
+    if (event.key === 'Tab') {
+      const focusable = [...modal.querySelectorAll('button:not([hidden]):not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled)')];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  });
 
   advancedToggle.addEventListener('click', () => {
     const expanded = advancedToggle.getAttribute('aria-expanded') === 'true';
@@ -132,6 +284,16 @@
       closeMenus(menu);
       menu.hidden = !opening;
       trigger.setAttribute('aria-expanded', String(opening));
+      return;
+    }
+    const recordAction = event.target.closest('[data-action="view"], [data-action="edit"]');
+    if (recordAction) {
+      const facility = facilities.find((item) => String(item.id) === recordAction.dataset.id);
+      if (facility) {
+        const triggerButton = recordAction.closest('.facility-row-action').querySelector('[data-row-menu]');
+        closeMenus();
+        openFacilityModal(recordAction.dataset.action, facility, triggerButton);
+      }
       return;
     }
     const action = event.target.closest('[data-action="toggle-status"]');

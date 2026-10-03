@@ -37,7 +37,7 @@
         </section>
         <section class="facility-grid" aria-label="Facilities grid" data-facility-grid hidden>
           <div class="facility-toolbar">
-            <div class="facility-toolbar-primary"><button class="button button-primary" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Facility</button><button class="button button-secondary" type="button" disabled>Download Sample</button><button class="button button-secondary" type="button" disabled>Export</button><button class="button button-secondary" type="button" disabled>Upload</button></div>
+            <div class="facility-toolbar-primary"><button class="button button-primary" type="button" data-add-facility><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Facility</button><button class="button button-secondary" type="button" disabled>Download Sample</button><button class="button button-secondary" type="button" disabled>Export</button><button class="button button-secondary" type="button" disabled>Upload</button></div>
             <div class="facility-filter-grid" aria-label="Facility filters">
               <label class="facility-filter"><span>Arabic Name</span><input type="search" data-facility-filter="arabicName" placeholder="Search Arabic name"></label>
               <label class="facility-filter"><span>English Name</span><input type="search" data-facility-filter="englishName" placeholder="Search English name"></label>
@@ -60,6 +60,57 @@
         </section>
       </main>
     </div>
+  </div>
+  <div class="patient-modal-backdrop" id="facility-modal" hidden>
+    <section class="patient-modal facility-modal" role="dialog" aria-modal="true" aria-labelledby="facility-modal-title" aria-describedby="facility-modal-description">
+      <header class="patient-modal-header"><div><p class="eyebrow">FACILITY RECORD</p><h2 id="facility-modal-title">Add Facility</h2><p id="facility-modal-description">Enter facility information and configuration details.</p></div><button type="button" class="icon-button" data-facility-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+      <form id="facility-form">
+        <div class="patient-modal-body">
+          <fieldset class="patient-form-section"><legend>Facilities Information</legend><div class="patient-form-grid">
+            <label class="form-field"><span>Facility Identifier</span><input name="facilityIdentifier" readonly></label>
+            <label class="form-field"><span>HCP <b>*</b></span><input name="hcp" list="facility-hcp-options" required><datalist id="facility-hcp-options"><option value="(10000300091434) Al Ansari Specialist Hospital - Yanbu"></option><option value="King Abdullah Specialized Hospital- Alqassim"></option><option value="King Fahad Hospital"></option><option value="Tabuk Medical Center"></option></datalist></label>
+            <label class="form-field"><span>Arabic Name <b>*</b></span><input name="arabicName" dir="rtl" required></label>
+            <label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required></label>
+            <label class="form-field"><span>Contact Name <b>*</b></span><input name="contactName" required></label>
+            <label class="form-field"><span>Email <b>*</b></span><input name="email" type="email" required></label>
+            <label class="form-field"><span>Phone Number</span><span class="phone-control"><select name="phoneCountryCode" aria-label="Phone country code"><option selected>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="phoneLocal" type="tel"></span></label>
+            <label class="form-field"><span>Ext.</span><input name="extension"></label>
+            <label class="form-field"><span>Mobile Number <b>*</b></span><span class="phone-control"><select name="mobileCountryCode" aria-label="Mobile country code"><option selected>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="mobileLocal" type="tel" required></span></label>
+            <label class="form-field"><span>License Number <b>*</b></span><input name="licenseNumber" required></label>
+            <label class="form-field"><span>License Start</span><input name="licenseStart" placeholder="dd/mm/yyyy" inputmode="numeric"></label>
+            <label class="form-field"><span>License End</span><input name="licenseEnd" placeholder="dd/mm/yyyy" inputmode="numeric"></label>
+            <label class="form-field"><span>CHI ID <b>*</b></span><input name="chiId" required></label>
+            <label class="form-field"><span>Unified ID <b>*</b></span><input name="unifiedId" required></label>
+            <label class="form-field"><span>VAT Number <b>*</b></span><input name="vatNumber" required></label>
+            <label class="form-field"><span>CR Number <b>*</b></span><input name="crNumber" required></label>
+            <label class="form-field"><span>NHIC Number <b>*</b></span><input name="nhicNumber" required></label>
+            <label class="form-field"><span>Facility Category <b>*</b></span><select name="category" required><option value="">Select category</option><option>Hospital</option><option>Clinic</option><option>General Medical Complex</option><option>Specialized Medical Complex</option><option>Pharmacy</option><option>Diagnostic Center</option><option>Laboratory</option><option>Physiotherapy Center</option><option>Radiotherapy Center</option></select></label>
+          </div></fieldset>
+          <fieldset class="patient-form-section"><legend>Address</legend><div class="patient-form-grid">
+            <label class="form-field"><span>Country <b>*</b></span><select name="country" required><option>Saudi Arabia</option></select></label>
+            <label class="form-field"><span>City <b>*</b></span><select name="city" required><option value="">Select city</option><option>Riyadh</option><option>Tabuk</option><option>Al Khobar</option><option>Dammam</option><option>Jeddah</option><option>Madinah</option></select></label>
+            <label class="form-field"><span>District <b>*</b></span><select name="district" required><option value="">Select district</option><option>Al Olaya</option><option>Al Jumuah</option><option>Al Muruj</option><option>Al Aqrabiyah</option><option>Al Shifa</option><option>Al Kandarah</option><option>Al Malaz</option><option>Qurban</option><option>Al Faisaliyah</option><option>Al Thuqbah</option><option>Al Sharafiyah</option></select></label>
+            <label class="form-field"><span>Building Number</span><input name="buildingNumber"></label>
+            <label class="form-field"><span>Street Name</span><input name="streetName"></label>
+            <label class="form-field"><span>Postal Code</span><input name="postalCode"></label>
+            <label class="form-field"><span>Additional Number</span><input name="additionalNumber"></label>
+          </div></fieldset>
+          <fieldset class="patient-form-section"><legend>Facility Configurations</legend><div class="patient-form-grid">
+            <label class="form-field"><span>Episode Expiry Time</span><select name="episodeExpiry"><option>One Week</option><option selected>Two Weeks</option><option>One Month</option><option>Two Months</option></select></label>
+            <label class="form-check"><input name="autoAuthorization" type="checkbox"><span>Is Auto Authorization Process</span></label>
+            <label class="form-field"><span>Invoice Configurations English</span><textarea name="invoiceConfigEnglish" rows="3"></textarea></label>
+            <label class="form-field"><span>Invoice Configurations Arabic</span><textarea name="invoiceConfigArabic" rows="3" dir="rtl"></textarea></label>
+            <label class="form-field"><span>Background Color</span><input name="backgroundColor" type="color" value="#1e76b5"></label>
+            <label class="form-field"><span>Foreground Color</span><input name="foregroundColor" type="color" value="#ffffff"></label>
+          </div></fieldset>
+          <fieldset class="patient-form-section"><legend>ZATCA Details</legend><div class="patient-form-grid">
+            <label class="form-field"><span>Organization Id</span><input name="zatcaOrganizationId"></label>
+            <label class="form-field"><span>Invoice Book</span><input name="zatcaInvoiceBook"></label>
+          </div></fieldset>
+        </div>
+        <footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-facility-cancel>Cancel</button><button type="submit" class="button button-primary" data-facility-save>Create</button></div></footer>
+      </form>
+    </section>
   </div>
   <div class="facility-toast" data-facility-toast role="status" aria-live="polite"></div>
 </body>
