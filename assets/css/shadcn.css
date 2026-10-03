@@ -446,6 +446,24 @@ button { color: inherit; }
 .form-field input::placeholder, .form-field textarea::placeholder { color: hsl(var(--muted-foreground)); opacity: .8; }
 .form-field.form-field-checkbox { min-height: 35px; display: flex; flex-direction: row; align-items: center; align-self: end; gap: 8px; cursor: pointer; }
 .form-field.form-field-checkbox input[type="checkbox"] { flex: 0 0 15px; width: 15px; min-width: 15px; max-width: 15px; height: 15px; min-height: 15px; margin: 0; padding: 0; accent-color: hsl(var(--primary)); }
+.practitioner-filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.practitioners-table { min-width: 1280px; }
+.practitioner-modal { width: min(980px, 100%); }
+.practitioner-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.practitioner-section { overflow: hidden; margin: 0 0 15px; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.practitioner-section:last-child { margin-bottom: 0; }
+.practitioner-section .patient-form-grid { padding: 15px; }
+.practitioner-department-field { align-self: stretch; grid-row: span 2; }
+.practitioner-department-field > span:first-child { font-size: 10px; }
+.practitioner-department-field > input { flex: 0 0 35px; }
+.practitioner-department-options { min-height: 72px; max-height: 145px; overflow: auto; padding: 5px 8px; border: 1px solid hsl(var(--input)); border-radius: 6px; background: hsl(var(--background)); }
+.practitioner-department-options .form-check { min-height: 27px; font-size: 10px; }
+.practitioner-department-field small, .practitioner-arabic-name { color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 400; }
+.practitioner-arabic-name { display: block; margin-top: 3px; text-align: left; }
+.practitioner-department-chip { display: inline-flex; margin: 2px 2px 2px 0; padding: 3px 6px; border-radius: 999px; background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); font-size: 9px; white-space: nowrap; }
+.practitioner-no-departments { display: block; padding: 8px 2px; color: hsl(var(--muted-foreground)); font-size: 10px; }
+@media (max-width: 900px) { .practitioner-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .practitioner-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .practitioner-filter-grid, .practitioner-form-grid { grid-template-columns: 1fr; } .practitioner-department-field { grid-row: auto; } }
 .phone-control { display: flex; align-items: center; gap: 7px; padding: 0 7px; }
 .phone-control select { flex: 0 0 55px; width: 55px; min-height: 29px; padding: 0 2px; border: 0; border-right: 1px solid hsl(var(--border)); border-radius: 0; background: transparent; color: hsl(var(--foreground)); font: inherit; font-size: 10px; }
 .phone-control input { min-height: 29px; padding: 0; border: 0; box-shadow: none !important; }
