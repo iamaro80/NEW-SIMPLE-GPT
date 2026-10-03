@@ -1,13 +1,11 @@
 (() => {
   const grid = document.querySelector('[data-facility-grid]');
-  if (!grid) return;
-
-  const rows = grid.querySelector('[data-facility-rows]');
-  const empty = grid.querySelector('[data-facility-empty]');
-  const resultCount = grid.querySelector('[data-facility-result-count]');
-  const pageLabel = grid.querySelector('[data-facility-page-label]');
-  const advancedToggle = grid.querySelector('[data-advanced-toggle]');
-  const advancedFilters = grid.querySelector('[data-advanced-filters]');
+  const rows = grid?.querySelector('[data-facility-rows]');
+  const empty = grid?.querySelector('[data-facility-empty]');
+  const resultCount = grid?.querySelector('[data-facility-result-count]');
+  const pageLabel = grid?.querySelector('[data-facility-page-label]');
+  const advancedToggle = grid?.querySelector('[data-advanced-toggle]');
+  const advancedFilters = grid?.querySelector('[data-advanced-filters]');
   const toast = document.querySelector('[data-facility-toast]');
   const modal = document.querySelector('#facility-modal');
   const form = document.querySelector('#facility-form');
@@ -43,6 +41,7 @@
   }
 
   function filterValues() {
+    if (!grid) return {};
     return Object.fromEntries([...grid.querySelectorAll('[data-facility-filter]')].map((field) => [field.dataset.facilityFilter, field.value.trim().toLowerCase()]));
   }
 
@@ -95,6 +94,7 @@
   }
 
   function syncFilterOptions(fieldName, firstLabel, values) {
+    if (!grid) return;
     const select = grid.querySelector(`[data-facility-filter="${fieldName}"]`);
     const selected = select.value;
     select.replaceChildren(new Option(firstLabel, ''));
@@ -174,12 +174,14 @@
       const facility = { ...values, id: nextId, phone, active: true };
       facilities.push(facility);
       window.RcmFacilityStore.save(facilities);
-      grid.querySelectorAll('[data-facility-filter]').forEach((field) => { field.value = ''; });
-      page = Math.ceil(facilities.length / pageSize);
-      syncAllFilterOptions();
       closeFacilityModal();
-      render();
-      rows.querySelector(`[data-row-menu][data-id="${facility.id}"]`)?.focus();
+      if (grid) {
+        grid.querySelectorAll('[data-facility-filter]').forEach((field) => { field.value = ''; });
+        page = Math.ceil(facilities.length / pageSize);
+        syncAllFilterOptions();
+        render();
+        rows.querySelector(`[data-row-menu][data-id="${facility.id}"]`)?.focus();
+      }
       showToast(`${values.englishName} was created successfully.`);
     } else {
       const facility = facilities.find((item) => item.id === activeFacilityId);
@@ -187,15 +189,15 @@
       Object.assign(facility, values, { phone });
       window.RcmFacilityStore.save(facilities);
       closeFacilityModal();
-      syncAllFilterOptions();
-      render();
-      rows.querySelector(`[data-row-menu][data-id="${facility.id}"]`)?.focus();
+      if (grid) {
+        syncAllFilterOptions();
+        render();
+        rows.querySelector(`[data-row-menu][data-id="${facility.id}"]`)?.focus();
+      }
       showToast(`${facility.englishName} was updated successfully.`);
     }
   }
 
-  syncAllFilterOptions();
-  grid.querySelector('[data-add-facility]').addEventListener('click', (event) => openFacilityModal('new', null, event.currentTarget));
   form.addEventListener('submit', saveFacility);
   modal.querySelector('[data-facility-close]').addEventListener('click', closeFacilityModal);
   modal.querySelector('[data-facility-cancel]').addEventListener('click', closeFacilityModal);
@@ -213,6 +215,22 @@
     }
   });
 
+  document.addEventListener('rcm:facility-edit', (event) => {
+    const facility = facilities.find((item) => String(item.id) === String(event.detail?.id));
+    if (facility) openFacilityModal('edit', facility, event.detail?.trigger || document.activeElement);
+  });
+  window.addEventListener('rcm:facilities-changed', (event) => {
+    if (Array.isArray(event.detail?.facilities)) facilities = event.detail.facilities;
+    if (grid) {
+      syncAllFilterOptions();
+      render();
+    }
+  });
+
+  if (!grid) return;
+
+  syncAllFilterOptions();
+  grid.querySelector('[data-add-facility]').addEventListener('click', (event) => openFacilityModal('new', null, event.currentTarget));
   advancedToggle.addEventListener('click', () => {
     const expanded = advancedToggle.getAttribute('aria-expanded') === 'true';
     advancedToggle.setAttribute('aria-expanded', String(!expanded));
@@ -278,16 +296,6 @@
     if (!event.target.closest('.facility-row-action')) closeMenus();
   });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMenus(); });
-
-  document.addEventListener('rcm:facility-edit', (event) => {
-    const facility = facilities.find((item) => String(item.id) === String(event.detail?.id));
-    if (facility) openFacilityModal('edit', facility, event.detail?.trigger || document.activeElement);
-  });
-  window.addEventListener('rcm:facilities-changed', (event) => {
-    if (Array.isArray(event.detail?.facilities)) facilities = event.detail.facilities;
-    syncAllFilterOptions();
-    render();
-  });
 
   render();
 })();
