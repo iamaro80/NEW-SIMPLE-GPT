@@ -5,12 +5,12 @@
   const facilityId = document.body.dataset.currentFacilityId || '1';
   const storageKey = `rcm-facility-departments:v1:${facilityId}`;
   const seed = [
-    { name: 'Ambulatory Care Clinic', type: 'Clinic', specialty: 'Family Medicine', profile: 'Clinic', category: 'Medical' },
-    { name: 'Emergency Department', type: 'Ward', specialty: 'Emergency Medicine', profile: 'Hospital', category: 'Medical' },
-    { name: 'Internal Medicine Ward', type: 'Ward', specialty: 'Internal Medicine', profile: 'Hospital', category: 'Medical' },
-    { name: 'Outpatient Pharmacy', type: 'OP Pharmacy', specialty: 'Pharmacy', profile: 'Pharmacy', category: 'Medical' },
-    { name: 'Clinical Laboratory', type: 'Laboratory', specialty: 'Laboratory Medicine', profile: 'Laboratory', category: 'Medical' },
-    { name: 'Diagnostic Imaging', type: 'Imaging Location', specialty: 'Radiology', profile: 'Diagnostic Center', category: 'Medical' },
+    { name: 'Ambulatory Care Clinic', type: 'Clinic', specialty: 'Family Medicine', profile: 'Clinic', category: 'Billing' },
+    { name: 'Emergency Department', type: 'Ward', specialty: 'Emergency Medicine', profile: 'Hospital', category: 'Billing' },
+    { name: 'Internal Medicine Ward', type: 'Ward', specialty: 'Internal Medicine', profile: 'Hospital', category: 'Billing' },
+    { name: 'Outpatient Pharmacy', type: 'OP Pharmacy', specialty: 'Pharmacy', profile: 'Pharmacy', category: 'Billing' },
+    { name: 'Clinical Laboratory', type: 'Laboratory', specialty: 'Laboratory Medicine', profile: 'Laboratory', category: 'Billing' },
+    { name: 'Diagnostic Imaging', type: 'Imaging Location', specialty: 'Radiology', profile: 'Diagnostic Center', category: 'Billing' },
   ].map((record, index) => ({ code: `DPT-${String(index + 1).padStart(3, '0')}`, ...record, active: true }));
 
   const rows = grid.querySelector('[data-department-rows]');
@@ -31,6 +31,7 @@
   let toastTimer;
   let appliedFilters = {};
   let departments = load();
+  appliedFilters = readFilters();
 
   const icons = {
     more: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>',
@@ -48,7 +49,17 @@
       const saved = localStorage.getItem(storageKey);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          let migrated = false;
+          const records = parsed.map((department) => {
+            const sample = seed.find((item) => item.code === department.code && item.name === department.name);
+            if (!sample || department.category !== 'Medical') return department;
+            migrated = true;
+            return { ...department, category: 'Billing' };
+          });
+          if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
+          return records;
+        }
       } else localStorage.setItem(storageKey, JSON.stringify(seed));
     } catch { /* Keep the prototype usable if browser storage is unavailable. */ }
     return seed.map((department) => ({ ...department }));
