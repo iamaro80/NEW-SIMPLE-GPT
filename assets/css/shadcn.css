@@ -349,7 +349,7 @@ button { color: inherit; }
 .button-secondary { background: hsl(var(--card)); color: hsl(var(--foreground)); }
 .button-secondary:hover { background: hsl(var(--muted)); }
 .patient-list-card { overflow: visible; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
-.patient-list-toolbar { min-height: 61px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 15px; border-bottom: 1px solid hsl(var(--border)); }
+.patient-grid-filters { min-height: 36px; display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 0 0 12px; }
 .patient-search { display: flex; align-items: center; gap: 9px; width: min(390px, 100%); height: 36px; padding: 0 10px; border: 1px solid hsl(var(--input)); border-radius: 7px; color: hsl(var(--muted-foreground)); }
 .patient-search:focus-within { outline: 2px solid hsl(var(--ring) / .25); border-color: hsl(var(--ring)); }
 .patient-search svg { flex: 0 0 16px; width: 16px; height: 16px; }
@@ -422,6 +422,6 @@ button { color: inherit; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 body.patient-modal-open { overflow: hidden; }
 @media (max-width: 900px) { .patients-page { width: calc(100% - 40px); } .patient-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 580px) { .patients-page { width: calc(100% - 28px); } .patients-heading { align-items: flex-start; flex-direction: column; } .patient-modal-backdrop { padding: 8px; } .patient-modal { max-height: 96vh; border-radius: 9px; } .patient-modal-header, .patient-modal-body { padding-right: 15px; padding-left: 15px; } .patient-modal-footer { padding: 11px 15px; } .patient-form-grid { grid-template-columns: 1fr; } .patient-form-grid > * { grid-column: auto; } .patient-list-toolbar { align-items: flex-start; flex-direction: column; } .patient-search { width: 100%; box-sizing: border-box; } }
+@media (max-width: 580px) { .patients-page { width: calc(100% - 28px); } .patients-heading { align-items: flex-start; flex-direction: column; } .patient-modal-backdrop { padding: 8px; } .patient-modal { max-height: 96vh; border-radius: 9px; } .patient-modal-header, .patient-modal-body { padding-right: 15px; padding-left: 15px; } .patient-modal-footer { padding: 11px 15px; } .patient-form-grid { grid-template-columns: 1fr; } .patient-form-grid > * { grid-column: auto; } .patient-grid-filters { align-items: flex-start; flex-direction: column; } .patient-search { width: 100%; box-sizing: border-box; } }
 @media (max-width: 850px) { .organization-shell { width: calc(100% - 40px); } }
 @media (max-width: 580px) { .organization-shell { width: calc(100% - 28px); } }
