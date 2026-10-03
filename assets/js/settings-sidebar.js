@@ -18,7 +18,8 @@
     return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.reference}</svg>`;
   };
   const sections = [
-    { label: 'Organization and Access', icon: 'building', items: ['Facility', 'Branches', 'Departments', 'Cost Centers', 'Practitioners', 'Users', 'Roles', 'Billing Periods'] },
+    { label: 'Facility Setup', icon: 'building', items: ['Facility Profile', 'Branches', 'Departments', 'Divisions', 'Locations', 'Rooms', 'Billing Period', 'Cost Centers'] },
+    { label: 'Staff & Access', icon: 'users', items: ['Practitioners', 'Users', 'Roles'] },
     { label: 'Payers Setup', icon: 'payer', items: ['Payers', 'TPAs'] },
     { label: 'Insurance Setup', icon: 'shield', items: ['Policies', 'Plans', 'Benefits'] },
     { label: 'Payer Contracts', icon: 'contract', items: ['Contracts', 'Direct Billing Toggle'] },
@@ -29,15 +30,16 @@
     { label: 'Audit Log', icon: 'audit', items: [] },
   ];
   const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const routeFor = (label) => ({ 'Facility Profile': 'facility', 'Billing Period': 'billing-periods' })[label] || slug(label);
   const getSelected = () => decodeURIComponent(location.hash.slice(1));
   const sidebar = document.querySelector('#sidebar-container');
   const topbar = document.querySelector('#topbar-container');
   const rootPath = document.body.dataset.root || '../../';
   const groupMarkup = sections.map((section, index) => {
     if (!section.items.length) {
-      return `<a class="nav-link settings-leaf" href="#${slug(section.label)}" data-label="${section.label}">${icon(section.icon)}<span>${section.label}</span></a>`;
+      return `<a class="nav-link settings-leaf" href="#${routeFor(section.label)}" data-label="${section.label}" data-route="${routeFor(section.label)}">${icon(section.icon)}<span>${section.label}</span></a>`;
     }
-    const children = section.items.map((item) => `<a class="nav-link settings-leaf" href="#${slug(item)}" data-label="${item}"><span class="nav-icon" aria-hidden="true"></span><span>${item}</span></a>`).join('');
+    const children = section.items.map((item) => `<a class="nav-link settings-leaf" href="#${routeFor(item)}" data-label="${item}" data-route="${routeFor(item)}"><span class="nav-icon" aria-hidden="true"></span><span>${item}</span></a>`).join('');
     return `<section class="nav-group"><button class="nav-group-button" type="button" aria-expanded="${index === 0}" aria-controls="settings-group-${index}">${icon(section.icon)}<span>${section.label}</span>${icon('chevron', 'chevron')}</button><div id="settings-group-${index}" class="nav-children"${index === 0 ? '' : ' hidden'}>${children}</div></section>`;
   }).join('');
 
@@ -46,9 +48,9 @@
 
   const updateSelection = () => {
     const selected = getSelected() || 'settings';
-    const matching = [...document.querySelectorAll('.settings-leaf')].find((item) => slug(item.dataset.label) === selected);
+    const matching = [...document.querySelectorAll('.settings-leaf')].find((item) => (item.dataset.route || slug(item.dataset.label)) === selected);
     const label = matching?.dataset.label || 'Settings';
-    const showFacilityGrid = label === 'Facility';
+    const showFacilityGrid = matching?.dataset.route === 'facility';
     document.querySelector('[data-facility-grid]')?.toggleAttribute('hidden', !showFacilityGrid);
     document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityGrid);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
