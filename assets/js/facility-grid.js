@@ -21,57 +21,8 @@
   let activeFacilityId = null;
   let returnFocus = null;
 
-  const facilities = [
-    { id: 1, arabicName: 'مستشفى الملك عبدالله التخصصي بالقصيم', englishName: 'King Abdullah Specialized Hospital- Alqassim', unifiedId: '7001000001', licenseNumber: 'LIC-2024-001', phone: '+966 13 533 8080', country: 'Saudi Arabia', city: 'Riyadh', district: 'Al Olaya', active: true },
-    { id: 2, arabicName: 'مستشفى الملك فهد', englishName: 'King Fahad Hospital', unifiedId: '7001000002', licenseNumber: 'LIC-2024-002', phone: '+966 14 844 4444', country: 'Saudi Arabia', city: 'Madinah', district: 'Al Jumuah', active: true },
-    { id: 3, arabicName: 'مركز تبوك الطبي', englishName: 'Tabuk Medical Center', unifiedId: '7001000003', licenseNumber: 'LIC-2024-003', phone: '+966 14 422 1100', country: 'Saudi Arabia', city: 'Tabuk', district: 'Al Muruj', active: false },
-    { id: 4, arabicName: 'مجمع الخبر الطبي', englishName: 'Al Khobar Medical Complex', unifiedId: '7001000004', licenseNumber: 'LIC-2024-004', phone: '+966 13 895 7000', country: 'Saudi Arabia', city: 'Al Khobar', district: 'Al Aqrabiyah', active: true },
-    { id: 5, arabicName: 'مستشفى الدمام المركزي', englishName: 'Dammam Central Hospital', unifiedId: '7001000005', licenseNumber: 'LIC-2024-005', phone: '+966 13 815 5777', country: 'Saudi Arabia', city: 'Dammam', district: 'Al Shifa', active: true },
-    { id: 6, arabicName: 'مستشفى جدة العام', englishName: 'Jeddah General Hospital', unifiedId: '7001000006', licenseNumber: 'LIC-2024-006', phone: '+966 12 647 5555', country: 'Saudi Arabia', city: 'Jeddah', district: 'Al Kandarah', active: false },
-    { id: 7, arabicName: 'مركز الرياض التخصصي', englishName: 'Riyadh Specialty Center', unifiedId: '7001000007', licenseNumber: 'LIC-2024-007', phone: '+966 11 465 0000', country: 'Saudi Arabia', city: 'Riyadh', district: 'Al Malaz', active: true },
-    { id: 8, arabicName: 'عيادات المدينة الطبية', englishName: 'Madinah Medical Clinics', unifiedId: '7001000008', licenseNumber: 'LIC-2024-008', phone: '+966 14 820 4000', country: 'Saudi Arabia', city: 'Madinah', district: 'Qurban', active: true },
-    { id: 9, arabicName: 'مجمع تبوك الصحي', englishName: 'Tabuk Health Complex', unifiedId: '7001000009', licenseNumber: 'LIC-2024-009', phone: '+966 14 422 9090', country: 'Saudi Arabia', city: 'Tabuk', district: 'Al Faisaliyah', active: true },
-    { id: 10, arabicName: 'مستشفى الخليج', englishName: 'Gulf Hospital', unifiedId: '7001000010', licenseNumber: 'LIC-2024-010', phone: '+966 13 859 9999', country: 'Saudi Arabia', city: 'Al Khobar', district: 'Al Thuqbah', active: true },
-    { id: 11, arabicName: 'مركز النور الطبي', englishName: 'Al Noor Medical Center', unifiedId: '7001000011', licenseNumber: 'LIC-2024-011', phone: '+966 13 832 2323', country: 'Saudi Arabia', city: 'Dammam', district: 'Al Faisaliyah', active: false },
-    { id: 12, arabicName: 'مستشفى السلام', englishName: 'Al Salam Hospital', unifiedId: '7001000012', licenseNumber: 'LIC-2024-012', phone: '+966 12 682 2222', country: 'Saudi Arabia', city: 'Jeddah', district: 'Al Sharafiyah', active: true },
-  ];
-
-  const hcpOptions = [
-    '(10000300091434) Al Ansari Specialist Hospital - Yanbu',
-    'King Abdullah Specialized Hospital- Alqassim',
-    'King Fahad Hospital',
-    'Tabuk Medical Center',
-  ];
-  facilities.forEach((facility, index) => Object.assign(facility, {
-    facilityIdentifier: String(47 + index),
-    hcp: hcpOptions[index % hcpOptions.length],
-    contactName: ['Sara Alotaibi', 'Faisal Alharbi', 'Noura Aldosari'][index % 3],
-    email: `contact${index + 1}@example.com`,
-    phoneCountryCode: '+966',
-    phoneLocal: facility.phone.replace(/^\+966\s*/, ''),
-    extension: '',
-    mobileCountryCode: '+966',
-    mobileLocal: `5${String(10000000 + index * 17321).slice(0, 8)}`,
-    licenseStart: '',
-    licenseEnd: '',
-    chiId: ['1000000000', '111', '1060'][index % 3],
-    vatNumber: `310${String(100000000 + index).padStart(9, '0')}03`,
-    crNumber: `1010${String(1000000 + index)}`,
-    nhicNumber: `NHIC-${String(index + 1).padStart(4, '0')}`,
-    category: ['Hospital', 'Clinic', 'General Medical Complex'][index % 3],
-    buildingNumber: '',
-    streetName: '',
-    postalCode: '',
-    additionalNumber: '',
-    episodeExpiry: 'Two Weeks',
-    autoAuthorization: false,
-    invoiceConfigEnglish: '',
-    invoiceConfigArabic: '',
-    backgroundColor: '#1e76b5',
-    foregroundColor: '#ffffff',
-    zatcaOrganizationId: '',
-    zatcaInvoiceBook: '',
-  }));
+  let facilities = window.RcmFacilityStore.list();
+  const hcpOptions = window.RcmFacilityStore.hcpOptions;
 
   const icons = {
     more: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>',
@@ -126,7 +77,9 @@
     const visible = matching.slice(start, start + pageSize);
 
     rows.innerHTML = visible.map((facility) => `<tr>
-      <td><span class="facility-name-en">${escapeHtml(facility.englishName)}</span><span class="facility-name-ar" lang="ar" dir="rtl">${escapeHtml(facility.arabicName)}</span></td>
+      <td>${document.body.dataset.facilityContext === 'organization'
+        ? `<a class="facility-name-en facility-focus-link" data-facility-open href="#facilities/${facility.id}/facility-profile">${escapeHtml(facility.englishName)}</a>`
+        : `<span class="facility-name-en">${escapeHtml(facility.englishName)}</span>`}<span class="facility-name-ar" lang="ar" dir="rtl">${escapeHtml(facility.arabicName)}</span></td>
       <td>${escapeHtml(facility.unifiedId)}</td><td>${escapeHtml(facility.phone)}</td><td>${escapeHtml(facility.country)}</td><td>${escapeHtml(facility.city)}</td>
       <td><span class="facility-status ${facility.active ? 'is-active' : 'is-inactive'}"><span></span>${facility.active ? 'Active' : 'Inactive'}</span></td>
       <td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-row-menu aria-label="Actions for ${escapeHtml(facility.englishName)}" aria-haspopup="menu" aria-expanded="false" data-id="${facility.id}">${icons.more}</button>
@@ -220,6 +173,7 @@
       const nextId = Math.max(0, ...facilities.map((facility) => facility.id)) + 1;
       const facility = { ...values, id: nextId, phone, active: true };
       facilities.push(facility);
+      window.RcmFacilityStore.save(facilities);
       grid.querySelectorAll('[data-facility-filter]').forEach((field) => { field.value = ''; });
       page = Math.ceil(facilities.length / pageSize);
       syncAllFilterOptions();
@@ -231,6 +185,7 @@
       const facility = facilities.find((item) => item.id === activeFacilityId);
       if (!facility) return;
       Object.assign(facility, values, { phone });
+      window.RcmFacilityStore.save(facilities);
       closeFacilityModal();
       syncAllFilterOptions();
       render();
@@ -277,6 +232,12 @@
   }));
 
   rows.addEventListener('click', (event) => {
+    const openFacility = event.target.closest('[data-facility-open]');
+    if (openFacility) {
+      event.preventDefault();
+      window.location.hash = openFacility.getAttribute('href').slice(1);
+      return;
+    }
     const trigger = event.target.closest('[data-row-menu]');
     if (trigger) {
       const menu = trigger.parentElement.querySelector('.facility-row-menu');
@@ -292,7 +253,11 @@
       if (facility) {
         const triggerButton = recordAction.closest('.facility-row-action').querySelector('[data-row-menu]');
         closeMenus();
-        openFacilityModal(recordAction.dataset.action, facility, triggerButton);
+        if (recordAction.dataset.action === 'view' && document.body.dataset.facilityContext === 'organization') {
+          window.location.hash = `facilities/${facility.id}/facility-profile`;
+        } else {
+          openFacilityModal(recordAction.dataset.action, facility, triggerButton);
+        }
       }
       return;
     }
@@ -301,6 +266,7 @@
       const facility = facilities.find((item) => String(item.id) === action.dataset.id);
       if (!facility) return;
       facility.active = !facility.active;
+      window.RcmFacilityStore.save(facilities);
       render();
       showToast(`${facility.englishName} is now ${facility.active ? 'active' : 'inactive'}.`);
       return;
@@ -312,6 +278,16 @@
     if (!event.target.closest('.facility-row-action')) closeMenus();
   });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMenus(); });
+
+  document.addEventListener('rcm:facility-edit', (event) => {
+    const facility = facilities.find((item) => String(item.id) === String(event.detail?.id));
+    if (facility) openFacilityModal('edit', facility, event.detail?.trigger || document.activeElement);
+  });
+  window.addEventListener('rcm:facilities-changed', (event) => {
+    if (Array.isArray(event.detail?.facilities)) facilities = event.detail.facilities;
+    syncAllFilterOptions();
+    render();
+  });
 
   render();
 })();

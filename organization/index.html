@@ -3,26 +3,109 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f8f7f3">
   <title>RCM SMB Organization</title>
-  <link rel="stylesheet" href="../assets/css/shadcn.css">
+  <link rel="stylesheet" href="../assets/css/shadcn.css?v=facility-focus-2">
   <script src="../assets/js/theme.js" data-theme-view="organization"></script>
-  <script src="../assets/js/organization-sidebar.js" defer></script>
-  <script src="../assets/js/sidebar-collapse.js" defer></script>
+  <script src="../assets/js/organization-sidebar.js?v=facility-focus-2" defer></script>
+  <script src="../assets/js/sidebar-collapse.js?v=facility-focus-2" defer></script>
+  <script src="../assets/js/facility-store.js?v=facility-focus-2" defer></script>
+  <script src="../assets/js/facility-grid.js?v=facility-focus-2" defer></script>
+  <script src="../assets/js/organization-facilities.js?v=facility-focus-2" defer></script>
 </head>
-<body>
+<body data-facility-context="organization">
   <div class="app-shell">
     <aside class="sidebar" aria-label="Organization navigation" data-collapsible-sidebar data-sidebar-view="organization">
       <div class="sidebar-brand"><a class="brand" href="../index.html"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 20V8h8v12M3 10h18"/></svg></span><span class="brand-name">RCM Organization<small>Multi-clinic administration</small></span></a><button class="icon-button sidebar-collapse-toggle" type="button" data-sidebar-toggle aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar"></button></div>
       <nav class="side-scroll" id="organization-navigation" aria-label="Organization menu"></nav>
       <div class="sidebar-bottom"><a class="nav-link" href="../index.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-2 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6"/></svg><span>Back to Launcher</span></a></div>
-    </aside><div class="scrim" data-scrim></div>
+    </aside><aside class="facility-context-sidebar" id="facility-context-sidebar" aria-label="Facility navigation" hidden></aside><div class="scrim" data-scrim></div>
     <div class="main-wrapper"><div class="organization-shell">
-      <header class="minimal-topbar"><div class="topbar-left"><button class="icon-button mobile-menu" type="button" data-menu-toggle aria-label="Open navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><a class="brand" href="../index.html"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></span><span>Xocialive</span></a></div><div style="display:flex;align-items:center;gap:13px"><span class="badge">Multi-Clinic</span><button class="icon-button" type="button" data-theme-toggle aria-label="Toggle theme"></button></div></header>
+      <header class="minimal-topbar"><div class="topbar-left"><button class="icon-button mobile-menu" type="button" data-menu-toggle aria-label="Open navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><a class="brand" href="../index.html"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></span><span>Xocialive</span></a><a class="organization-context-back" data-organization-context-back href="#facilities" hidden>← Organization · Facilities</a></div><div style="display:flex;align-items:center;gap:13px"><span class="badge">Multi-Clinic</span><button class="icon-button" type="button" data-theme-toggle aria-label="Toggle theme"></button></div></header>
       <main class="minimal-main organization-main"><div class="organization-view">
-        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html">Launcher</a><svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span>Organization</span><svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span data-org-breadcrumb aria-current="page">Overview</span></nav>
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html">Launcher</a><svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span>Organization</span><svg class="breadcrumb-sep facility-context-crumb-separator" data-facility-context-crumb-separator hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span data-facility-context-crumb hidden></span><svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span data-org-breadcrumb aria-current="page">Overview</span></nav>
         <header class="page-header"><h1 class="page-title" data-org-title>Overview</h1><p class="page-subtitle" data-org-subtitle>Overview for your organization.</p></header>
-        <section class="workspace" aria-label="Organization workspace"><div class="workspace-inner"><span class="workspace-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 20V8h8v12M3 10h18M10 12h1m2 0h1m-4 3h1m2 0h1"/></svg></span><h2 data-org-workspace-title>Overview workspace</h2><p>This organization workspace is ready for page buildout.</p></div></section>
+        <section class="workspace" aria-label="Organization workspace" data-org-overview><div class="workspace-inner"><span class="workspace-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 20V8h8v12M3 10h18M10 12h1m2 0h1m-4 3h1m2 0h1"/></svg></span><h2 data-org-workspace-title>Overview workspace</h2><p>This organization workspace is ready for page buildout.</p></div></section>
+        <section class="facility-profile-page" data-organization-facility-detail hidden>
+          <div class="facility-profile-heading"><div><p class="eyebrow">FACILITY PROFILE</p><h2 data-facility-profile-name></h2><p data-facility-profile-id></p></div><button class="button button-secondary" type="button" data-facility-profile-edit>Edit facility</button></div>
+          <div class="facility-profile-sections" data-facility-profile-content></div>
+        </section>
+        <section class="workspace facility-context-placeholder" aria-label="Facility setup workspace" data-facility-section-placeholder hidden><div class="workspace-inner"><span class="workspace-icon">⚙</span><h2 data-facility-placeholder-title></h2><p data-facility-placeholder-description></p></div></section>
+                <section class="facility-grid" aria-label="Facilities grid" data-facility-grid hidden>
+          <div class="facility-toolbar">
+            <div class="facility-toolbar-primary"><button class="button button-primary" type="button" data-add-facility><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Facility</button><button class="button button-secondary" type="button" disabled>Download Sample</button><button class="button button-secondary" type="button" disabled>Export</button><button class="button button-secondary" type="button" disabled>Upload</button></div>
+            <div class="facility-filter-grid" aria-label="Facility filters">
+              <label class="facility-filter"><span>Arabic Name</span><input type="search" data-facility-filter="arabicName" placeholder="Search Arabic name"></label>
+              <label class="facility-filter"><span>English Name</span><input type="search" data-facility-filter="englishName" placeholder="Search English name"></label>
+              <label class="facility-filter"><span>Unified ID</span><input type="search" data-facility-filter="unifiedId" placeholder="Search Unified ID"></label>
+              <label class="facility-filter"><span>License Number</span><input type="search" data-facility-filter="licenseNumber" placeholder="Search license number"></label>
+              <button class="button button-secondary facility-advanced-toggle" type="button" aria-expanded="false" aria-controls="facility-advanced-filters" data-advanced-toggle><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6h16M7 12h10m-7 6h4"/><circle cx="18" cy="6" r="1.5"/><circle cx="7" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>Advanced filters</button>
+            </div>
+            <div class="facility-advanced-filters" id="facility-advanced-filters" data-advanced-filters hidden>
+              <label class="facility-filter"><span>Country</span><select data-facility-filter="country"><option value="">All countries</option></select></label>
+              <label class="facility-filter"><span>City</span><select data-facility-filter="city"><option value="">All cities</option></select></label>
+              <label class="facility-filter"><span>District</span><select data-facility-filter="district"><option value="">All districts</option></select></label>
+              <label class="facility-filter"><span>Phone Number</span><input type="search" data-facility-filter="phone" placeholder="Search phone number"></label>
+              <label class="facility-filter"><span>Status</span><select data-facility-filter="status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+            </div>
+          </div>
+          <div class="facility-table-card">
+            <div class="facility-table-scroll"><table class="facility-table"><thead><tr><th scope="col">Name</th><th scope="col">Unified ID</th><th scope="col">Phone Number</th><th scope="col">Country</th><th scope="col">City</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody data-facility-rows></tbody></table><div class="facility-empty" data-facility-empty hidden>No facilities match these filters.</div></div>
+            <footer class="facility-pagination"><span data-facility-result-count aria-live="polite"></span><div class="facility-page-controls"><span data-facility-page-label></span><button class="icon-button" type="button" data-page="first" aria-label="First page" title="First page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></svg></button><button class="icon-button" type="button" data-page="previous" aria-label="Previous page" title="Previous page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="icon-button" type="button" data-page="next" aria-label="Next page" title="Next page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="icon-button" type="button" data-page="last" aria-label="Last page" title="Last page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m13 17 5-5-5-5M6 17l5-5-5-5"/></svg></button></div></footer>
+          </div>
+        </section>
       </div><footer class="launcher-footer"><a class="launcher-link" href="../index.html">← Back to launcher</a><span>RCM SMB Prototype</span></footer></main>
     </div></div>
   </div>
+  <div class="patient-modal-backdrop" id="facility-modal" hidden>
+    <section class="patient-modal facility-modal" role="dialog" aria-modal="true" aria-labelledby="facility-modal-title" aria-describedby="facility-modal-description">
+      <header class="patient-modal-header"><div><p class="eyebrow">FACILITY RECORD</p><h2 id="facility-modal-title">Add Facility</h2><p id="facility-modal-description">Enter facility information and configuration details.</p></div><button type="button" class="icon-button" data-facility-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+      <form id="facility-form">
+        <div class="patient-modal-body">
+          <fieldset class="patient-form-section"><legend>Facilities Information</legend><div class="patient-form-grid">
+            <label class="form-field"><span>Facility Identifier</span><input name="facilityIdentifier" readonly></label>
+            <label class="form-field"><span>HCP <b>*</b></span><input name="hcp" list="facility-hcp-options" required><datalist id="facility-hcp-options"><option value="(10000300091434) Al Ansari Specialist Hospital - Yanbu"></option><option value="King Abdullah Specialized Hospital- Alqassim"></option><option value="King Fahad Hospital"></option><option value="Tabuk Medical Center"></option></datalist></label>
+            <label class="form-field"><span>Arabic Name <b>*</b></span><input name="arabicName" dir="rtl" required></label>
+            <label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required></label>
+            <label class="form-field"><span>Contact Name <b>*</b></span><input name="contactName" required></label>
+            <label class="form-field"><span>Email <b>*</b></span><input name="email" type="email" required></label>
+            <label class="form-field"><span>Phone Number</span><span class="phone-control"><select name="phoneCountryCode" aria-label="Phone country code"><option selected>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="phoneLocal" type="tel"></span></label>
+            <label class="form-field"><span>Ext.</span><input name="extension"></label>
+            <label class="form-field"><span>Mobile Number <b>*</b></span><span class="phone-control"><select name="mobileCountryCode" aria-label="Mobile country code"><option selected>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="mobileLocal" type="tel" required></span></label>
+            <label class="form-field"><span>License Number <b>*</b></span><input name="licenseNumber" required></label>
+            <label class="form-field"><span>License Start</span><input name="licenseStart" placeholder="dd/mm/yyyy" inputmode="numeric"></label>
+            <label class="form-field"><span>License End</span><input name="licenseEnd" placeholder="dd/mm/yyyy" inputmode="numeric"></label>
+            <label class="form-field"><span>CHI ID <b>*</b></span><input name="chiId" required></label>
+            <label class="form-field"><span>Unified ID <b>*</b></span><input name="unifiedId" required></label>
+            <label class="form-field"><span>VAT Number <b>*</b></span><input name="vatNumber" required></label>
+            <label class="form-field"><span>CR Number <b>*</b></span><input name="crNumber" required></label>
+            <label class="form-field"><span>NHIC Number <b>*</b></span><input name="nhicNumber" required></label>
+            <label class="form-field"><span>Facility Category <b>*</b></span><select name="category" required><option value="">Select category</option><option>Hospital</option><option>Clinic</option><option>General Medical Complex</option><option>Specialized Medical Complex</option><option>Pharmacy</option><option>Diagnostic Center</option><option>Laboratory</option><option>Physiotherapy Center</option><option>Radiotherapy Center</option></select></label>
+          </div></fieldset>
+          <fieldset class="patient-form-section"><legend>Address</legend><div class="patient-form-grid">
+            <label class="form-field"><span>Country <b>*</b></span><select name="country" required><option>Saudi Arabia</option></select></label>
+            <label class="form-field"><span>City <b>*</b></span><select name="city" required><option value="">Select city</option><option>Riyadh</option><option>Tabuk</option><option>Al Khobar</option><option>Dammam</option><option>Jeddah</option><option>Madinah</option></select></label>
+            <label class="form-field"><span>District <b>*</b></span><select name="district" required><option value="">Select district</option><option>Al Olaya</option><option>Al Jumuah</option><option>Al Muruj</option><option>Al Aqrabiyah</option><option>Al Shifa</option><option>Al Kandarah</option><option>Al Malaz</option><option>Qurban</option><option>Al Faisaliyah</option><option>Al Thuqbah</option><option>Al Sharafiyah</option></select></label>
+            <label class="form-field"><span>Building Number</span><input name="buildingNumber"></label>
+            <label class="form-field"><span>Street Name</span><input name="streetName"></label>
+            <label class="form-field"><span>Postal Code</span><input name="postalCode"></label>
+            <label class="form-field"><span>Additional Number</span><input name="additionalNumber"></label>
+          </div></fieldset>
+          <fieldset class="patient-form-section"><legend>Facility Configurations</legend><div class="patient-form-grid">
+            <label class="form-field"><span>Episode Expiry Time</span><select name="episodeExpiry"><option>One Week</option><option selected>Two Weeks</option><option>One Month</option><option>Two Months</option></select></label>
+            <label class="form-check"><input name="autoAuthorization" type="checkbox"><span>Is Auto Authorization Process</span></label>
+            <label class="form-field"><span>Invoice Configurations English</span><textarea name="invoiceConfigEnglish" rows="3"></textarea></label>
+            <label class="form-field"><span>Invoice Configurations Arabic</span><textarea name="invoiceConfigArabic" rows="3" dir="rtl"></textarea></label>
+            <label class="form-field"><span>Background Color</span><input name="backgroundColor" type="color" value="#1e76b5"></label>
+            <label class="form-field"><span>Foreground Color</span><input name="foregroundColor" type="color" value="#ffffff"></label>
+          </div></fieldset>
+          <fieldset class="patient-form-section"><legend>ZATCA Details</legend><div class="patient-form-grid">
+            <label class="form-field"><span>Organization Id</span><input name="zatcaOrganizationId"></label>
+            <label class="form-field"><span>Invoice Book</span><input name="zatcaInvoiceBook"></label>
+          </div></fieldset>
+        </div>
+        <footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-facility-cancel>Cancel</button><button type="submit" class="button button-primary" data-facility-save>Create</button></div></footer>
+      </form>
+    </section>
+  </div>
+  <div class="facility-toast" data-facility-toast role="status" aria-live="polite"></div>
 </body>
 </html>

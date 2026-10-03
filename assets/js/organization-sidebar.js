@@ -55,10 +55,13 @@
 
   const links = [...navigation.querySelectorAll('[data-org-route]')];
   const updateSelection = () => {
-    const requestedRoute = window.location.hash.slice(1) || 'overview';
+    const hashRoute = window.location.hash.slice(1);
+    const isFacilityFocusRoute = /^facilities\/\d+\/[a-z0-9-]+$/.test(hashRoute);
+    const requestedRoute = isFacilityFocusRoute ? 'facilities' : hashRoute || 'overview';
     const activeLink = links.find((item) => item.dataset.orgRoute === requestedRoute) || links.find((item) => item.dataset.orgRoute === 'overview');
     const route = activeLink.dataset.orgRoute;
-    if (!window.location.hash || route !== requestedRoute) history.replaceState(null, '', '#overview');
+    if (!window.location.hash) history.replaceState(null, '', '#overview');
+    else if (!isFacilityFocusRoute && route !== requestedRoute) history.replaceState(null, '', '#overview');
 
     links.forEach((item) => {
       const active = item === activeLink;
@@ -74,11 +77,19 @@
       children.hidden = !containsActive;
     });
 
+    document.querySelector('[data-org-overview]')?.toggleAttribute('hidden', route === 'facilities');
+    document.querySelector('[data-facility-grid]')?.toggleAttribute('hidden', route !== 'facilities' || isFacilityFocusRoute);
+
     const label = activeLink.dataset.orgLabel;
-    document.querySelector('[data-org-title]').textContent = label;
-    document.querySelector('[data-org-breadcrumb]').textContent = label;
-    document.querySelector('[data-org-subtitle]').textContent = `${label} for your organization.`;
-    document.querySelector('[data-org-workspace-title]').textContent = `${label} workspace`;
+    if (!isFacilityFocusRoute) {
+      document.querySelector('[data-org-title]').textContent = label;
+      document.querySelector('[data-org-breadcrumb]').textContent = label;
+      document.querySelector('[data-org-subtitle]').textContent = route === 'facilities'
+        ? 'Manage organization facilities and their profile details.'
+        : `${label} for your organization.`;
+      const workspaceTitle = document.querySelector('[data-org-workspace-title]');
+      if (workspaceTitle) workspaceTitle.textContent = `${label} workspace`;
+    }
   };
 
   navigation.addEventListener('click', (event) => {

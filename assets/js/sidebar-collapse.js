@@ -34,6 +34,12 @@
     }
   };
 
+  window.rcmSidebarControls = window.rcmSidebarControls || {};
+  window.rcmSidebarControls[view] = {
+    setCollapsed: (collapsed) => setCollapsed(Boolean(collapsed)),
+    isCollapsed: () => sidebar.classList.contains('collapsed'),
+  };
+
   let initiallyCollapsed = false;
   try { initiallyCollapsed = localStorage.getItem(storageKey) === 'true'; } catch { /* Storage is optional. */ }
   setCollapsed(initiallyCollapsed, false);
