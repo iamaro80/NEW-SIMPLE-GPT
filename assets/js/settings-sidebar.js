@@ -24,13 +24,18 @@
     { label: 'Insurance Setup', icon: 'shield', items: ['Policies', 'Plans', 'Benefits'] },
     { label: 'Payer Contracts', icon: 'contract', items: ['Contracts', 'Direct Billing Toggle'] },
     { label: 'Billing Rules', icon: 'rules', items: ['TAT Management', 'Consultation Rules'] },
-    { label: 'Services and Pricing', icon: 'services', items: ['Service Items', 'Categories and Groups', 'Service Catalog', 'Master Price Lists', 'Price Lists', 'Premium Pricing', 'Discounts'] },
+    { label: 'Services and Pricing', icon: 'services', items: ['Service Items', 'Categories', 'Groups', 'Service Catalog', 'Master Price List', 'Price Lists', 'Premium Pricing', 'Discounts'] },
     { label: 'HIS Management', icon: 'his', items: [] },
     { label: 'Reference Data', icon: 'reference', items: ['Global Dictionary'] },
     { label: 'Audit Log', icon: 'audit', items: [] },
   ];
   const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const routeFor = (label) => ({ 'Facility Profile': 'facility', 'Billing Period': 'billing-periods' })[label] || slug(label);
+  const routeFor = (label) => ({
+    'Facility Profile': 'facility',
+    'Billing Period': 'billing-periods',
+    Categories: 'categories-and-groups',
+    'Master Price List': 'master-price-lists',
+  })[label] || slug(label);
   const getSelected = () => decodeURIComponent(location.hash.slice(1));
   const sidebar = document.querySelector('#sidebar-container');
   const topbar = document.querySelector('#topbar-container');
