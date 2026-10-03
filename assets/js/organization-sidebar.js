@@ -9,7 +9,7 @@
     { label: 'Organization Account', icon: 'organization', items: ['Organization Profile', 'Subscription & Plans', 'Modules & Add-Ons', 'Billing'] },
     { label: 'Facilities', icon: 'facilities' },
     { label: 'Cost Centers', icon: 'cost-centers' },
-    { label: 'Staff & Access', icon: 'staff', items: [{ label: 'Practitioners Roster', route: 'practitioners' }, 'Users', 'Roles'] },
+    { label: 'Staff & Access', icon: 'staff', items: [{ label: 'Practitioners', route: 'practitioners' }, 'Users', 'Roles'] },
     { label: 'Payers Setup', icon: 'payers', items: ['Payers', 'TPAs'] },
     { label: 'Insurance Setup', icon: 'insurance', items: ['Policies', 'Plans', 'Benefits'] },
     { label: 'Payer Contracts', icon: 'contracts', items: ['Contracts', 'Direct Billing'] },
