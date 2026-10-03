@@ -444,6 +444,8 @@ button { color: inherit; }
 .form-field textarea { min-height: 75px; padding: 9px; resize: vertical; }
 .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / .18); }
 .form-field input::placeholder, .form-field textarea::placeholder { color: hsl(var(--muted-foreground)); opacity: .8; }
+.form-field.form-field-checkbox { min-height: 35px; display: flex; flex-direction: row; align-items: center; align-self: end; gap: 8px; cursor: pointer; }
+.form-field.form-field-checkbox input[type="checkbox"] { flex: 0 0 15px; width: 15px; min-width: 15px; max-width: 15px; height: 15px; min-height: 15px; margin: 0; padding: 0; accent-color: hsl(var(--primary)); }
 .phone-control { display: flex; align-items: center; gap: 7px; padding: 0 7px; }
 .phone-control select { flex: 0 0 55px; width: 55px; min-height: 29px; padding: 0 2px; border: 0; border-right: 1px solid hsl(var(--border)); border-radius: 0; background: transparent; color: hsl(var(--foreground)); font: inherit; font-size: 10px; }
 .phone-control input { min-height: 29px; padding: 0; border: 0; box-shadow: none !important; }
