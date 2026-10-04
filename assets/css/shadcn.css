@@ -718,5 +718,42 @@ body.patient-modal-open { overflow: hidden; }
 .direct-billing-switch input:checked + .direct-billing-switch-track > span { transform: translateX(17px); }
 .direct-billing-switch input:focus-visible + .direct-billing-switch-track { outline: 3px solid hsl(var(--ring) / .28); outline-offset: 2px; }
 .direct-billing-switch-label { min-width: 56px; color: hsl(var(--foreground)); font-size: 11px; font-weight: 650; }
+.groups-page, .groups-page > * { min-width: 0; max-width: 100%; }
+.groups-page .facility-table-card, .groups-page .facility-table-scroll { width: 100%; min-width: 0; max-width: 100%; }
+.groups-table { min-width: 800px; }
+.groups-table th:nth-child(4) { min-width: 160px; }
+.groups-table td:nth-child(4) { max-width: 250px; }
+.group-child-row { background: hsl(var(--muted) / .2); }
+.group-child-row td:first-child { padding-left: 25px; }
+.group-child-marker { margin-right: 7px; color: hsl(var(--muted-foreground)); font-size: 14px; }
+.group-kind-label { display: block; margin-top: 3px; color: hsl(var(--muted-foreground)); font-size: 9px; font-weight: 500; }
+.group-context-row { background: hsl(var(--muted) / .18); }
+.group-tags-cell { display: flex; flex-wrap: wrap; gap: 4px; }
+.group-tag-pill, .group-tag-chip { display: inline-flex; align-items: center; max-width: 140px; padding: 3px 7px; overflow: hidden; border: 1px solid hsl(var(--border)); border-radius: 999px; background: hsl(var(--muted) / .45); color: hsl(var(--muted-foreground)); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.group-item-count { display: inline-grid; min-width: 22px; height: 22px; place-items: center; border-radius: 999px; background: hsl(var(--muted)); color: hsl(var(--foreground)); font-size: 10px; font-weight: 650; }
+.group-modal { width: min(900px, 100%); }
+.group-modal .patient-modal-body { display: grid; align-content: start; gap: 14px; }
+.group-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.group-tag-field { grid-column: 1 / -1; }
+.group-tag-editor { display: flex; min-height: 38px; align-items: center; flex-wrap: wrap; gap: 5px; padding: 4px 8px; border: 1px solid hsl(var(--input)); border-radius: var(--radius); background: hsl(var(--background)); }
+.group-tag-editor:focus-within { outline: 2px solid hsl(var(--ring) / .25); border-color: hsl(var(--ring)); }
+.group-tag-editor.is-readonly { background: hsl(var(--muted) / .35); }
+.group-tag-list { display: contents; }
+.group-tag-chip { max-width: none; padding: 4px 7px 4px 9px; background: hsl(var(--primary) / .08); color: hsl(var(--foreground)); }
+.group-tag-chip button { margin-left: 5px; padding: 0; border: 0; background: transparent; color: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
+.group-tag-editor input { min-width: 150px; min-height: 26px; flex: 1; padding: 2px 3px; border: 0; outline: 0; background: transparent; color: hsl(var(--foreground)); font: inherit; font-size: 11px; }
+.group-tag-editor input:focus-visible { outline: 0; }
+.group-tag-field small { color: hsl(var(--muted-foreground)); font-size: 9px; }
+.group-items-section { overflow: hidden; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.group-items-section > .facility-form-section-heading { border-bottom: 1px solid hsl(var(--border)); }
+.group-items-search { padding: 12px 14px 8px; }
+.group-items-picker { display: grid; max-height: 245px; overflow: auto; padding: 0 14px 12px; }
+.group-item-option { display: grid; grid-template-columns: 16px minmax(80px, 130px) minmax(0, 1fr) auto; align-items: center; gap: 9px; min-height: 36px; border-bottom: 1px solid hsl(var(--border) / .6); color: hsl(var(--foreground)); font-size: 10px; cursor: pointer; }
+.group-item-option input[type="checkbox"] { width: 14px; height: 14px; margin: 0; accent-color: hsl(var(--primary)); }
+.group-item-code { color: hsl(var(--muted-foreground)); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; }
+.group-item-option small { color: hsl(var(--muted-foreground)); font-size: 9px; }
+.group-items-empty { padding: 12px 14px; color: hsl(var(--muted-foreground)); font-size: 10px; }
+.group-view-status { display: flex; justify-content: flex-end; padding: 10px 14px; }
+@media (max-width: 580px) { .group-form-grid { grid-template-columns: 1fr; } .group-item-option { grid-template-columns: 16px 78px minmax(0, 1fr); } .group-item-option small { display: none; } }
 @media (max-width: 580px) { .direct-billing-setting-card { align-items: flex-start; flex-direction: column; gap: 17px; padding: 18px; } }
 [hidden] { display: none !important; }
