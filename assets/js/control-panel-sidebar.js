@@ -29,13 +29,18 @@
   }).join('');
 
   const links = [...navigation.querySelectorAll('[data-control-route]')];
-  const organizations = [
+  const seedOrganizations = [
     { id: 'org-1', en: 'Al Noor Healthcare Group', ar: 'مجموعة النور للرعاية الصحية', plan: 'Enterprise', status: 'Active' },
     { id: 'org-2', en: 'Riyadh Medical Network', ar: 'شبكة الرياض الطبية', plan: 'Growth', status: 'Active' },
     { id: 'org-3', en: 'Al Shifa Clinics', ar: 'عيادات الشفاء', plan: 'Standard', status: 'Onboarding' },
     { id: 'org-4', en: 'GulfCare Hospitals', ar: 'مستشفيات جلف كير', plan: 'Enterprise', status: 'Suspended' },
     { id: 'org-5', en: 'Amana Health Services', ar: 'خدمات أمانة الصحية', plan: 'Growth', status: 'Deleted' },
   ];
+  let organizations = seedOrganizations;
+  try {
+    const savedOrganizations = JSON.parse(localStorage.getItem('xocialive-control-panel-organizations') || 'null');
+    if (Array.isArray(savedOrganizations)) organizations = savedOrganizations;
+  } catch { /* Keep the seeded organizations if browser storage is unavailable. */ }
   const organizationSections = [
     { label: 'Profile', route: 'profile' },
     { label: 'Subscription & Billing', route: 'subscription-billing' },
@@ -55,10 +60,71 @@
   let wasCollapsedBeforeFocus = false;
   let inOrganizationFocus = false;
   const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+  const persistOrganizations = () => {
+    try { localStorage.setItem('xocialive-control-panel-organizations', JSON.stringify(organizations)); } catch { /* Keep the current session usable without browser storage. */ }
+  };
   const organizationsGrid = document.querySelector('[data-control-organizations-grid]');
+  let organizationRows;
+  let organizationCount;
+  const renderOrganizationRows = () => {
+    const values = Object.fromEntries([...organizationsGrid.querySelectorAll('[data-control-org-filter]')].map((field) => [field.dataset.controlOrgFilter, field.value.trim().toLocaleLowerCase()]));
+    const filtered = organizations.filter((organization) => {
+      return (!values.en || organization.en.toLocaleLowerCase().includes(values.en))
+        && (!values.ar || organization.ar.toLocaleLowerCase().includes(values.ar))
+        && (!values.plan || organization.plan.toLocaleLowerCase() === values.plan)
+        && (!values.status || organization.status.toLocaleLowerCase() === values.status);
+    });
+    organizationRows.innerHTML = filtered.map((organization) => `<tr><td class="organization-name-en"><a class="organization-focus-link" href="#organizations/${encodeURIComponent(organization.id)}/profile">${escapeHtml(organization.en)}</a></td><td class="organization-name-ar" lang="ar" dir="rtl">${escapeHtml(organization.ar || '—')}</td><td>${escapeHtml(organization.plan || '—')}</td><td><span class="organization-status status-${escapeHtml(organization.status.toLowerCase())}"><span aria-hidden="true"></span>${escapeHtml(organization.status)}</span></td></tr>`).join('');
+    organizationsGrid.querySelector('[data-control-org-empty]').hidden = filtered.length > 0;
+    organizationCount.textContent = `${filtered.length} of ${organizations.length} organizations`;
+  };
   if (organizationsGrid) {
-    organizationsGrid.innerHTML = `<div class="organization-grid-heading"><div><h2>Customer Organizations</h2><p>${organizations.length} organizations</p></div></div><div class="organization-grid-scroll"><table class="organization-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Status</th></tr></thead><tbody>${organizations.map((organization) => `<tr><td class="organization-name-en"><a class="organization-focus-link" href="#organizations/${organization.id}/profile">${escapeHtml(organization.en)}</a></td><td class="organization-name-ar" lang="ar" dir="rtl">${escapeHtml(organization.ar)}</td><td>${escapeHtml(organization.plan)}</td><td><span class="organization-status status-${organization.status.toLowerCase()}"><span aria-hidden="true"></span>${organization.status}</span></td></tr>`).join('')}</tbody></table></div>`;
+    organizationsGrid.innerHTML = `<div class="organization-toolbar"><button class="button button-primary" type="button" data-control-add-organization><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Organization</button></div><div class="facility-filter-grid organization-filter-grid" aria-label="Organization filters"><label class="facility-filter"><span>Organization Name (en)</span><input type="search" data-control-org-filter="en" placeholder="Search English name"></label><label class="facility-filter"><span>Organization Name (ar)</span><input type="search" data-control-org-filter="ar" placeholder="Search Arabic name"></label><label class="facility-filter"><span>Subscription Plan</span><select data-control-org-filter="plan"><option value="">All plans</option>${[...new Set(organizations.map((item) => item.plan).filter(Boolean))].map((plan) => `<option value="${escapeHtml(plan.toLowerCase())}">${escapeHtml(plan)}</option>`).join('')}</select></label><label class="facility-filter"><span>Status</span><select data-control-org-filter="status"><option value="">All statuses</option><option>Active</option><option>Onboarding</option><option>Suspended</option><option>Deleted</option></select></label></div><div class="organization-grid-card"><div class="organization-grid-heading"><p data-control-org-count></p></div><div class="organization-grid-scroll"><table class="organization-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Status</th></tr></thead><tbody data-control-org-rows></tbody></table><div class="organization-grid-empty" data-control-org-empty hidden>No organizations match these filters.</div></div></div>`;
+    organizationRows = organizationsGrid.querySelector('[data-control-org-rows]');
+    organizationCount = organizationsGrid.querySelector('[data-control-org-count]');
+    organizationsGrid.addEventListener('input', (event) => { if (event.target.matches('[data-control-org-filter]')) renderOrganizationRows(); });
+    organizationsGrid.addEventListener('change', (event) => { if (event.target.matches('[data-control-org-filter]')) renderOrganizationRows(); });
+    organizationsGrid.addEventListener('click', (event) => {
+      if (!event.target.closest('[data-control-add-organization]')) return;
+      organizationModal.hidden = false;
+      document.body.classList.add('organization-modal-open');
+      organizationForm.reset();
+      organizationForm.elements.status.value = 'Onboarding';
+      organizationForm.elements.en.focus();
+    });
+    renderOrganizationRows();
   }
+
+  const organizationModal = document.querySelector('[data-control-organization-modal]');
+  const organizationForm = document.querySelector('[data-control-organization-form]');
+  const organizationToast = document.querySelector('[data-control-organization-toast]');
+  let toastTimer;
+  const closeOrganizationModal = () => {
+    organizationModal.hidden = true;
+    document.body.classList.remove('organization-modal-open');
+    organizationsGrid.querySelector('[data-control-add-organization]')?.focus();
+  };
+  const showOrganizationToast = (message) => {
+    organizationToast.textContent = message;
+    organizationToast.classList.add('is-visible');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => organizationToast.classList.remove('is-visible'), 2600);
+  };
+  organizationModal.querySelector('[data-control-organization-close]').addEventListener('click', closeOrganizationModal);
+  organizationModal.querySelector('[data-control-organization-cancel]').addEventListener('click', closeOrganizationModal);
+  organizationModal.addEventListener('click', (event) => { if (event.target === organizationModal) closeOrganizationModal(); });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !organizationModal.hidden) closeOrganizationModal(); });
+  organizationForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const data = new FormData(organizationForm);
+    const sequence = organizations.reduce((max, item) => Math.max(max, Number(item.id.match(/\d+$/)?.[0]) || 0), 0) + 1;
+    organizations.push({ id: `org-${sequence}`, en: String(data.get('en') || '').trim(), ar: String(data.get('ar') || '').trim(), plan: String(data.get('plan') || ''), status: String(data.get('status') || 'Onboarding') });
+    persistOrganizations();
+    for (const filter of organizationsGrid.querySelectorAll('[data-control-org-filter]')) filter.value = '';
+    renderOrganizationRows();
+    closeOrganizationModal();
+    showOrganizationToast('Organization added successfully.');
+  });
 
   function renderOrganizationSidebar(organization, activeRoute) {
     const organizationIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths.customers}</svg>`;

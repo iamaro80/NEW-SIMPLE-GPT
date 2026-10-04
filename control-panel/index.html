@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f8f7f3">
   <title>Xocialive Control Panel</title>
   <link rel="stylesheet" href="../assets/css/shadcn.css?v=control-panel-navigation-1">
-  <link rel="stylesheet" href="../assets/css/control-panel.css?v=5">
+  <link rel="stylesheet" href="../assets/css/control-panel.css?v=7">
   <script src="../assets/js/theme.js" data-theme-view="control-panel"></script>
   <script src="../assets/js/sidebar-collapse.js" defer></script>
-  <script src="../assets/js/control-panel-sidebar.js?v=5" defer></script>
+  <script src="../assets/js/control-panel-sidebar.js?v=7" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -39,5 +39,20 @@
       </div>
     </div>
   </div>
+  <div class="patient-modal-backdrop" data-control-organization-modal hidden>
+    <section class="patient-modal organization-modal" role="dialog" aria-modal="true" aria-labelledby="control-organization-modal-title">
+      <header class="patient-modal-header"><div><p class="eyebrow">CUSTOMER ORGANIZATION</p><h2 id="control-organization-modal-title">Add Organization</h2><p>Enter the organization’s basic account details.</p></div><button type="button" class="icon-button" data-control-organization-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+      <form data-control-organization-form>
+        <div class="patient-modal-body"><div class="organization-form-grid">
+          <label class="form-field"><span>Organization Name (en) <b>*</b></span><input name="en" required maxlength="120" autocomplete="organization"></label>
+          <label class="form-field"><span>Organization Name (ar)</span><input name="ar" dir="rtl" maxlength="120" autocomplete="organization"></label>
+          <label class="form-field"><span>Subscription Plan</span><select name="plan"><option value="">Select plan</option><option>Standard</option><option>Growth</option><option>Enterprise</option></select></label>
+          <label class="form-field"><span>Status</span><select name="status"><option>Onboarding</option><option>Active</option><option>Suspended</option><option>Deleted</option></select></label>
+        </div></div>
+        <footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-control-organization-cancel>Cancel</button><button type="submit" class="button button-primary">Save Organization</button></div></footer>
+      </form>
+    </section>
+  </div>
+  <div class="patient-toast" data-control-organization-toast role="status" aria-live="polite"></div>
 </body>
 </html>
