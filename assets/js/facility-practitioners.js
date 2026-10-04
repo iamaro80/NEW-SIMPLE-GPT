@@ -84,13 +84,13 @@
         <label class="form-field"><span>License Start</span><input name="licenseStart" type="date"></label>
         <label class="form-field"><span>License End</span><input name="licenseEnd" type="date"></label>
         <label class="form-field"><span>User</span><select name="user">${selectOptions(users, 'Select user')}</select></label>
-        <label class="form-field"><span>Consultation Item</span><input name="consultationItem" list="practitioner-consultation-options" autocomplete="off" placeholder="Search consultation item"><datalist id="practitioner-consultation-options">${consultationItems.map((item) => `<option value="${escapeHtml(item)}"></option>`).join('')}</datalist></label>
-        <label class="form-field"><span>Follow Up</span><select name="followUp"><option value="">Not specified</option></select></label>
+        <label class="form-field"><span>Consultation Item</span><select name="consultationItem">${selectOptions(consultationItems, 'Search or select consultation item')}</select></label>
+        <label class="form-field"><span>Follow Up</span><select name="followUp">${selectOptions(consultationItems.slice(0, 6), 'Select follow up item')}</select></label>
         <label class="form-field"><span>Last Designation Update On</span><input name="lastDesignationUpdate" readonly value="—"></label>
       </div></fieldset>
       <fieldset class="patient-form-section practitioner-section"><legend class="sr-only">Practitioner Role Details</legend><div class="facility-form-section-heading">Practitioner Role Details</div><div class="patient-form-grid practitioner-form-grid">
-        <label class="form-field"><span>Practitioner Specialty <b>*</b></span><input name="specialty" list="practitioner-specialty-options" required autocomplete="off" placeholder="Search or select specialty"><datalist id="practitioner-specialty-options">${specialties.map((item) => `<option value="${escapeHtml(item)}"></option>`).join('')}</datalist></label>
-        <label class="form-field"><span>Designation <b>*</b></span><input name="designation" list="practitioner-designation-options" required autocomplete="off" placeholder="Search or select designation"><datalist id="practitioner-designation-options">${designations.map((item) => `<option value="${escapeHtml(item)}"></option>`).join('')}</datalist></label>
+        <label class="form-field"><span>Practitioner Specialty <b>*</b></span><select name="specialty" required>${selectOptions(specialties, 'Select specialty')}</select></label>
+        <label class="form-field"><span>Designation <b>*</b></span><select name="designation" required>${selectOptions(designations, 'Select designation')}</select></label>
       </div></fieldset>
       <fieldset class="patient-form-section practitioner-section"><legend class="sr-only">SCFHS Details</legend><div class="facility-form-section-heading">SCFHS Details</div><div class="patient-form-grid practitioner-form-grid">
         ${[['scfhsCategoryCode','Category Code'],['scfhsCategoryNameEn','Category Name En'],['scfhsSpecialityCode','Speciality Code'],['scfhsSpecialityNameEn','Speciality Name En'],['scfhsCategoryNameAr','Category Name Ar'],['scfhsSpecialityNameAr','Speciality Name Ar']].map(([name,label]) => `<label class="form-field"><span>${label}</span><input name="${name}" readonly value="—"></label>`).join('')}
@@ -154,7 +154,18 @@
     modal.querySelector('#practitioner-modal-title').textContent = isNew ? 'Add Practitioner' : nextMode === 'view' ? 'Practitioner Details' : 'Edit Practitioner';
     modal.querySelector('#practitioner-modal-description').textContent = isNew ? 'Enter practitioner information.' : nextMode === 'view' ? 'Review practitioner information.' : 'Update practitioner information.';
     modal.querySelector('[data-practitioner-save]').textContent = isNew ? 'Create' : 'Save changes';
-    allFields.forEach((name) => { const field = form.elements.namedItem(name); const fallback = ['mobileCode', 'phoneCode'].includes(name) ? '+966' : ['lastDesignationUpdate', ...scfhsFields].includes(name) ? '—' : ''; field.value = isNew ? fallback : (record?.[name] || fallback); });
+    form.querySelectorAll('option[data-existing-value]').forEach((option) => option.remove());
+    allFields.forEach((name) => {
+      const field = form.elements.namedItem(name);
+      const fallback = ['mobileCode', 'phoneCode'].includes(name) ? '+966' : ['lastDesignationUpdate', ...scfhsFields].includes(name) ? '—' : '';
+      const value = isNew ? fallback : (record?.[name] || fallback);
+      if (field instanceof HTMLSelectElement && value && ![...field.options].some((option) => option.value === value)) {
+        const existingOption = new Option(`${value} (saved value)`, value);
+        existingOption.dataset.existingValue = 'true';
+        field.add(existingOption);
+      }
+      field.value = value;
+    });
     drawDepartmentChoices(isNew ? [] : record.departmentCodes || []);
     if (nextMode === 'view') setReadOnly(true);
     modal.hidden = false; document.body.classList.add('patient-modal-open'); modal.querySelector('[data-practitioner-close]').focus();
