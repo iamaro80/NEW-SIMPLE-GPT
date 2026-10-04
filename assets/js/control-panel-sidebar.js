@@ -29,6 +29,18 @@
   }).join('');
 
   const links = [...navigation.querySelectorAll('[data-control-route]')];
+  const organizations = [
+    { en: 'Al Noor Healthcare Group', ar: 'مجموعة النور للرعاية الصحية', plan: 'Enterprise', status: 'Active' },
+    { en: 'Riyadh Medical Network', ar: 'شبكة الرياض الطبية', plan: 'Growth', status: 'Active' },
+    { en: 'Al Shifa Clinics', ar: 'عيادات الشفاء', plan: 'Standard', status: 'Onboarding' },
+    { en: 'GulfCare Hospitals', ar: 'مستشفيات جلف كير', plan: 'Enterprise', status: 'Suspended' },
+    { en: 'Amana Health Services', ar: 'خدمات أمانة الصحية', plan: 'Growth', status: 'Deleted' },
+  ];
+  const organizationsGrid = document.querySelector('[data-control-organizations-grid]');
+  if (organizationsGrid) {
+    organizationsGrid.innerHTML = `<div class="organization-grid-heading"><div><h2>Customer Organizations</h2><p>${organizations.length} organizations</p></div></div><div class="organization-grid-scroll"><table class="organization-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Status</th></tr></thead><tbody>${organizations.map((organization) => `<tr><td class="organization-name-en">${organization.en}</td><td class="organization-name-ar" lang="ar" dir="rtl">${organization.ar}</td><td>${organization.plan}</td><td><span class="organization-status status-${organization.status.toLowerCase()}"><span aria-hidden="true"></span>${organization.status}</span></td></tr>`).join('')}</tbody></table></div>`;
+  }
+
   const updateSelection = () => {
     const requested = window.location.hash.slice(1) || 'overview';
     const activeLink = links.find((item) => item.dataset.controlRoute === requested) || links.find((item) => item.dataset.controlRoute === 'overview');
@@ -55,6 +67,10 @@
     document.querySelector('[data-control-breadcrumb]').hidden = label === 'Overview';
     document.querySelector('[data-control-subtitle]').textContent = `${label} in the Xocialive Control Panel.`;
     document.querySelector('[data-control-workspace-title]').textContent = `${label} workspace`;
+    const showOrganizations = route === 'organizations';
+    document.querySelector('[data-control-placeholder]').hidden = showOrganizations;
+    organizationsGrid.hidden = !showOrganizations;
+    document.querySelector('.workspace').classList.toggle('workspace-organizations', showOrganizations);
   };
 
   navigation.addEventListener('click', (event) => {
