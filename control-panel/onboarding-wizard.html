@@ -583,7 +583,7 @@
         sections: [{
           name: "Add Department",
           fields: [
-            ["departmentCode", "Department Code", "text", true],
+            ["departmentCode", "Department Code", "text", true, null, false, false, true],
             ["departmentName", "Department Name", "text", true],
             ["departmentType", "Type", "select", true, ["Clinical", "Administrative", "Support"]],
             ["specialty", "Specialty", "select", true, ["Cardiology", "Dental", "General Practice", "Laboratory"]],
@@ -612,7 +612,7 @@
           {
             name: "Practitioner Data",
             fields: [
-              ["practitionerDepartment", "Departments", "select", true, ["Cardiology", "General Practice", "Laboratory"]],
+              ["practitionerDepartment", "Departments", "select", true, []],
               ["practitionerArabicName", "Arabic Name", "text", true],
               ["practitionerEnglishName", "English Name", "text", true],
               ["practitionerEmail", "Email", "email", true],
@@ -621,13 +621,12 @@
               ["practitionerRole", "Practitioner Role", "select", true, ["Physician", "Nurse", "Technician", "Pharmacist"]],
               ["documentId", "Document ID", "text", true],
               ["documentType", "Document Type", "select", true, ["National ID", "Iqama", "Passport"]],
-              ["badgeId", "Badge ID", "text", false],
               ["prefix", "Prefix", "text", false],
               ["degree", "Degree", "text", false],
               ["practitionerLicense", "License Number", "text", true],
               ["practitionerLicenseStart", "License Start", "date", true],
               ["practitionerLicenseEnd", "License End", "date", false, null, true],
-              ["linkedUser", "User", "select", false, ["Not linked", "user@example.com"]],
+              ["createUser", "Create User", "checkbox", false],
               ["consultationItem", "Consultation Item", "select", false, ["General consultation", "Specialist consultation"]],
               ["followUpItem", "Follow Up", "select", false, ["Standard follow-up", "No-charge follow-up"]]
             ]
@@ -705,7 +704,7 @@
             name: "TPA Information",
             fields: [
               ["hasTpa", "Has TPA", "checkbox", false],
-              ["tpa", "TPA", "select", false, ["Select TPA", "NextCare", "MedNet", "GlobeMed"], true],
+              ["tpa", "TPA", "select", false, ["GlobeMed Saudi", "Nextcare", "Mednet", "Totalcare", "GFGq"]],
               ["tpaStart", "Start Date", "date", false],
               ["tpaEnd", "End Date", "date", false],
               ["comparisonType", "Date Comparison Type", "select", false, ["Service date", "Submission date", "Approval date"]]
@@ -727,8 +726,6 @@
               ["longDescription", "Long Description", "text", true],
               ["shortDescription", "Short Description", "text", true],
               ["alias", "Alias", "text", false],
-              ["hospitalCode", "Hospital Code", "text", true],
-              ["hospitalDescription", "Hospital Description", "text", false],
               ["costCenter", "Cost Center", "select", true, ["Clinical", "Laboratory", "Radiology"]],
               ["subCostCenter", "Sub Cost Center", "select", false, ["Main"], true],
               ["itemDepartment", "Department Name", "select", true, ["Cardiology", "General Practice", "Laboratory"]],
@@ -755,12 +752,10 @@
         short: "Pricing",
         description: "Configure catalog price, discount, VAT and approval status.",
         sections: [{
-          name: "Service Catalog / Search List",
+          name: "Pricing Information",
           fields: [
-            ["catalogSearch", "Search", "text", false],
             ["categoryFilter", "Category Filter", "select", false, ["All", "Consultations", "Laboratory", "Radiology"]],
-            ["pricingCode", "Code", "text", true],
-            ["pricingHospitalCode", "Hospital Code", "text", true],
+            ["pricingCode", "Code", "text", true, null, false, false, true],
             ["pricingDescription", "Description", "text", true],
             ["pricingDiscount", "Discount", "number", false],
             ["price", "Price", "number", true],
@@ -780,7 +775,7 @@
               ["contractPayer", "Payers", "select", true, ["Bupa Arabia", "Tawuniya", "MedGulf"]],
               ["contractType", "Contract Type", "select", false, ["Standard"], true],
               ["contractName", "Name", "text", true],
-              ["contractCode", "Code", "text", true],
+              ["contractCode", "Code", "text", true, null, false, false, true],
               ["contractStart", "Start Date", "date", true],
               ["contractEnd", "End Date", "date", false, null, true],
               ["policies", "Policies", "select", false, ["Available after payer selection"], true],
@@ -873,6 +868,74 @@
     const savedIdentifier = numericFacilityIdentifier(state.saved[0]?.facilityIdentifier);
     if (savedIdentifier === null) state.saved[0] = { ...(state.saved[0] || {}), facilityIdentifier: ensureFacilityIdentifier() };
 
+    const generatedWizardCodeFields = [
+      { step: 1, key: "departmentCode", prefix: "DPT" },
+      { step: 6, key: "pricingCode", prefix: "PRC" },
+      { step: 7, key: "contractCode", prefix: "CTR" }
+    ];
+    const generatedWizardFieldKeys = new Set(["facilityIdentifier", ...generatedWizardCodeFields.map(field => field.key)]);
+    const defaultWizardFieldValues = {
+      country: "Saudi Arabia",
+      payerCountry: "Saudi Arabia",
+      backgroundColor: "#000000",
+      foregroundColor: "#000000",
+      totalCost: "0.00"
+    };
+    const countsAsUserValue = (key, value) => !generatedWizardFieldKeys.has(key)
+      && defaultWizardFieldValues[key] !== value
+      && value !== ""
+      && value !== false
+      && value !== null
+      && value !== undefined;
+
+    function ensureWizardCode(stepIndex, fieldKey, prefix) {
+      const sequenceKey = `xocialive-control-panel-onboarding-code-sequence:${prefix}`;
+      const pattern = new RegExp(`^${prefix}-(\\d+)$`);
+      const usedCodes = new Set();
+      let highest = 0;
+
+      organizations.forEach(item => {
+        if (item.id === organizationId) return;
+        const savedCode = item.onboardingWizard?.saved?.[stepIndex]?.[fieldKey];
+        const match = String(savedCode || "").match(pattern);
+        if (!match) return;
+        const number = Number(match[1]);
+        usedCodes.add(`${prefix}-${String(number).padStart(3, "0")}`);
+        highest = Math.max(highest, number);
+      });
+
+      const currentCode = String(state.saved[stepIndex]?.[fieldKey] || "");
+      const currentMatch = currentCode.match(pattern);
+      const storedSequence = Number(localStorage.getItem(sequenceKey)) || 1;
+      let sequence = Math.max(storedSequence, highest + 1);
+
+      if (currentMatch) {
+        const currentNumber = Number(currentMatch[1]);
+        const normalizedCode = `${prefix}-${String(currentNumber).padStart(3, "0")}`;
+        if (!usedCodes.has(normalizedCode)) {
+          localStorage.setItem(sequenceKey, String(Math.max(sequence, currentNumber + 1)));
+          return normalizedCode;
+        }
+      }
+
+      let nextCode = `${prefix}-${String(sequence).padStart(3, "0")}`;
+      while (usedCodes.has(nextCode)) {
+        sequence += 1;
+        nextCode = `${prefix}-${String(sequence).padStart(3, "0")}`;
+      }
+      localStorage.setItem(sequenceKey, String(sequence + 1));
+      return nextCode;
+    }
+
+    const removeLegacySavedFields = (stepIndex, keys) => {
+      if (!state.saved[stepIndex]) return;
+      state.saved[stepIndex] = { ...state.saved[stepIndex] };
+      keys.forEach(key => delete state.saved[stepIndex][key]);
+    };
+    removeLegacySavedFields(3, ["badgeId", "linkedUser"]);
+    removeLegacySavedFields(5, ["hospitalCode", "hospitalDescription"]);
+    removeLegacySavedFields(6, ["catalogSearch", "pricingHospitalCode"]);
+
     const stepper = document.getElementById("stepper");
     const formArea = document.getElementById("formArea");
     const message = document.getElementById("message");
@@ -914,7 +977,10 @@
         placeholder.textContent = "Select";
         input.appendChild(placeholder);
 
-        (options || []).forEach(option => {
+        const fieldOptions = id === "practitionerDepartment"
+          ? [String(state.saved[1]?.departmentName || "").trim()].filter(Boolean)
+          : (options || []);
+        fieldOptions.forEach(option => {
           const optionEl = document.createElement("option");
           optionEl.value = option;
           optionEl.textContent = option;
@@ -974,13 +1040,22 @@
     function renderForm() {
       const step = steps[state.current];
 
+      const generatedCodeField = generatedWizardCodeFields.find(field => field.step === state.current);
+      if (generatedCodeField) {
+        const generatedCode = ensureWizardCode(generatedCodeField.step, generatedCodeField.key, generatedCodeField.prefix);
+        if (state.saved[state.current]?.[generatedCodeField.key] !== generatedCode) {
+          state.saved[state.current] = { ...(state.saved[state.current] || {}), [generatedCodeField.key]: generatedCode };
+          persistProgress();
+        }
+      }
+
       document.getElementById("stepEyebrow").textContent = `Step ${state.current + 1} of ${steps.length}`;
       document.getElementById("stepTitle").textContent = step.title;
       document.getElementById("stepDescription").textContent = step.description;
 
       if (state.completed.has(state.current)) {
         document.getElementById("stepStatus").textContent = "Completed";
-      } else if (Object.entries(state.saved[state.current] || {}).some(([key, value]) => key !== "facilityIdentifier" && value !== "" && value !== false && value !== null && value !== undefined)) {
+      } else if (Object.entries(state.saved[state.current] || {}).some(([key, value]) => countsAsUserValue(key, value))) {
         document.getElementById("stepStatus").textContent = "Draft saved";
       } else {
         document.getElementById("stepStatus").textContent = "Not saved";
@@ -1009,8 +1084,8 @@
 
       formArea.querySelectorAll("[data-field]").forEach(control => {
         const value = saved[control.dataset.field];
-        if (value === undefined || (control.dataset.field === "country" && value === "")) {
-          if (control.dataset.field === "country") control.value = "Saudi Arabia";
+        if (value === undefined || (["country", "payerCountry"].includes(control.dataset.field) && value === "")) {
+          if (["country", "payerCountry"].includes(control.dataset.field) && [...control.options].some(option => option.value === "Saudi Arabia")) control.value = "Saudi Arabia";
           return;
         }
         if (control.type === "file") return;
@@ -1033,6 +1108,18 @@
         material.addEventListener("input", calculate);
         department.addEventListener("input", calculate);
         calculate();
+      }
+
+      const hasTpa = formArea.querySelector('[data-field="hasTpa"]');
+      const tpa = formArea.querySelector('[data-field="tpa"]');
+      if (hasTpa && tpa) {
+        const syncTpa = () => {
+          tpa.disabled = !hasTpa.checked;
+          tpa.required = hasTpa.checked;
+          if (!hasTpa.checked) tpa.value = "";
+        };
+        hasTpa.addEventListener("change", syncTpa);
+        syncTpa();
       }
 
       previousButton.disabled = state.current === 0;
@@ -1091,9 +1178,7 @@
 
     function onboardingStatus() {
       if (state.completed.size === steps.length) return "Ready for Review";
-      const hasSavedValues = Object.entries(state.saved).some(([stepIndex, values]) => Object.entries(values || {}).some(([key, value]) => {
-        return !(Number(stepIndex) === 0 && key === "facilityIdentifier") && value !== "" && value !== false && value !== null && value !== undefined;
-      }));
+      const hasSavedValues = Object.values(state.saved).some(values => Object.entries(values || {}).some(([key, value]) => countsAsUserValue(key, value)));
       return hasSavedValues || state.completed.size ? "In Progress" : (organization?.onboardingStatus || "Not Started");
     }
 
@@ -1116,7 +1201,7 @@
 
     function updateMetrics() {
       const savedFields = Object.values(state.saved).reduce((total, values) => {
-        return total + Object.entries(values || {}).filter(([key, value]) => key !== "facilityIdentifier" && value !== "" && value !== false).length;
+        return total + Object.entries(values || {}).filter(([key, value]) => countsAsUserValue(key, value)).length;
       }, 0);
 
       document.getElementById("currentMetric").textContent = state.current + 1;
