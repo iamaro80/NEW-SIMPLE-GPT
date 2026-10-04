@@ -72,6 +72,7 @@
     const showPolicies = matching?.dataset.route === 'policies';
     const showContracts = matching?.dataset.route === 'contracts';
     const showTat = matching?.dataset.route === 'tat-management';
+    const showConsultationRules = matching?.dataset.route === 'consultation-rules';
     const showDirectBilling = matching?.dataset.route === 'direct-billing';
     const showFacilityStructure = ['divisions', 'locations', 'rooms', 'billing-period', 'cost-centers'].includes(matching?.dataset.route);
     document.querySelector('[data-current-facility-profile]')?.toggleAttribute('hidden', !showFacilityProfile);
@@ -89,9 +90,10 @@
     document.querySelector('[data-contracts-grid]')?.toggleAttribute('hidden', !showContracts);
     document.querySelector('[data-contract-details]')?.toggleAttribute('hidden', true);
     document.querySelector('[data-tat-grid]')?.toggleAttribute('hidden', !showTat);
+    document.querySelector('[data-consultation-rules-grid]')?.toggleAttribute('hidden', !showConsultationRules);
     document.querySelector('[data-direct-billing-settings]')?.toggleAttribute('hidden', !showDirectBilling);
     document.querySelector('[data-structure-workspace]')?.toggleAttribute('hidden', !showFacilityStructure);
-    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts || showDirectBilling || showTat);
+    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts || showDirectBilling || showTat || showConsultationRules);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
       const active = item === matching;
       item.classList.toggle('active', active);

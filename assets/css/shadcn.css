@@ -378,10 +378,23 @@ button { color: inherit; }
 .tat-confirm-modal { width: min(480px, 100%); }
 .button-destructive { border: 1px solid hsl(0 72% 47%); background: hsl(0 72% 47%); color: white; }
 .button-destructive:hover { background: hsl(0 72% 40%); }
+.consultation-filter-grid { grid-template-columns: repeat(3, minmax(170px, 1fr)); }
+.consultation-table { min-width: 1680px; }
+.consultation-pair-value { display: block; min-width: 90px; padding: 2px 0; }
+.consultation-modal { width: min(1020px, 100%); }
+.consultation-modal-body { display: grid; gap: 14px; }
+.consultation-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.consultation-pair-editor { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto; align-items: end; gap: 12px; padding: 15px; }
+.consultation-pair-editor .button { height: 37px; }
+.consultation-pairs-table { min-width: 650px; }
+.consultation-row-menu { width: 132px; }
+.consultation-confirm-modal { width: min(480px, 100%); }
 @media (max-width: 900px) { .settings-page-container { width: calc(100% - 40px); } .facility-filter-grid, .facility-advanced-filters, .branches-filter-grid, .department-filter-grid, .structure-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .billing-summary-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .settings-page-container { width: calc(100% - 28px); } .facility-filter-grid, .facility-advanced-filters, .branches-filter-grid, .department-filter-grid, .structure-filter-grid, .billing-summary-row { grid-template-columns: 1fr; } .facility-toolbar-primary { align-items: stretch; } .facility-toolbar-primary .button { flex: 1 1 calc(50% - 8px); } .facility-pagination { align-items: flex-start; flex-direction: column; } .facility-page-controls { align-self: flex-end; } }
 @media (max-width: 900px) { .tat-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .tat-filter-grid, .tat-form-grid { grid-template-columns: 1fr; } .tat-confirm-modal { width: 100%; } }
+@media (max-width: 900px) { .consultation-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .consultation-filter-grid, .consultation-form-grid, .consultation-pair-editor { grid-template-columns: 1fr; } .consultation-confirm-modal { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 
 /* Patients workspace */
