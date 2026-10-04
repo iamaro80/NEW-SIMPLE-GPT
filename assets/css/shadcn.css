@@ -644,3 +644,16 @@ body.patient-modal-open { overflow: hidden; }
 .contract-detail-empty { padding: 14px; }
 @media (max-width: 900px) { .contract-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .contract-section .contract-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .contract-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .contract-filter-grid, .contract-section .contract-form-grid, .contract-meta-grid { grid-template-columns: 1fr; } .contract-association-editor { grid-template-columns: 1fr; align-items: stretch; } .contract-detail-heading, .contract-detail-toolbar { align-items: flex-start; flex-direction: column; } }
+.direct-billing-settings-page { display: grid; gap: 14px; }
+.direct-billing-setting-card { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 23px 25px; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
+.direct-billing-setting-card h2 { margin: 4px 0 7px; font-size: 17px; }
+.direct-billing-setting-card p:not(.eyebrow) { margin: 0; color: hsl(var(--muted-foreground)); font-size: 12px; }
+.direct-billing-switch { position: relative; display: inline-flex; flex: 0 0 auto; align-items: center; gap: 11px; cursor: pointer; }
+.direct-billing-switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.direct-billing-switch-track { display: inline-flex; width: 39px; height: 22px; align-items: center; padding: 2px; border: 1px solid hsl(var(--border)); border-radius: 999px; background: hsl(var(--muted)); transition: background .16s ease, border-color .16s ease; }
+.direct-billing-switch-track > span { display: block; width: 16px; height: 16px; border-radius: 50%; background: hsl(var(--background)); box-shadow: 0 1px 2px hsl(0 0% 0% / .18); transition: transform .16s ease; }
+.direct-billing-switch input:checked + .direct-billing-switch-track { border-color: hsl(var(--primary)); background: hsl(var(--primary)); }
+.direct-billing-switch input:checked + .direct-billing-switch-track > span { transform: translateX(17px); }
+.direct-billing-switch input:focus-visible + .direct-billing-switch-track { outline: 3px solid hsl(var(--ring) / .28); outline-offset: 2px; }
+.direct-billing-switch-label { min-width: 56px; color: hsl(var(--foreground)); font-size: 11px; font-weight: 650; }
+@media (max-width: 580px) { .direct-billing-setting-card { align-items: flex-start; flex-direction: column; gap: 17px; padding: 18px; } }

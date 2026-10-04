@@ -38,6 +38,13 @@
   const currentFolder = document.body.dataset.folder || '';
   const facilityBase = document.body.dataset.facilityBase || './';
   const url = (folder, filename) => `${facilityBase}${folder ? `${folder}/` : ''}${filename}`;
+  const directBillingKey = `rcm-facility-direct-billing:v1:${document.body.dataset.currentFacilityId || '1'}`;
+  const isDirectBillingEnabled = () => {
+    try { const saved = localStorage.getItem(directBillingKey); return saved === null ? true : saved === 'true'; }
+    catch { return true; }
+  };
+  let directBillingEnabled = isDirectBillingEnabled();
+  if (!directBillingEnabled && current === 'patient-access/direct-billing.html') window.location.replace(url('', 'home.html'));
   const topLink = (name, folder, filename, ico) => ({ label: name, icon: ico, path: url(folder, filename) });
   const home = topLink('Home', '', 'home.html', 'home');
   const dashboard = topLink('Dashboard', '', 'dashboard.html', 'grid');
@@ -47,11 +54,23 @@
   const topbar = document.querySelector('#topbar-container');
   const childrenHtml = (group) => {
     const folder = group.folder || 'patient-access';
-    const items = group.items.map(([label, file, ico]) => link({ label, icon: ico, path: url(folder, file) })).join('');
+    const items = group.items.filter(([label]) => label !== 'Direct Billing Enrollment' || directBillingEnabled).map(([label, file, ico]) => link({ label, icon: ico, path: url(folder, file) })).join('');
     const open = folder === currentFolder || group.items.some(([, file]) => `${folder}/${file}` === current);
     return `<section class="nav-group"><button class="nav-group-button" type="button" aria-expanded="${open}" aria-controls="group-${folder}">${icon(group.icon)}<span>${group.label}</span>${icon('chevron', 'chevron')}</button><div id="group-${folder}" class="nav-children"${open ? '' : ' hidden'}>${items}</div></section>`;
   };
-  sidebar.innerHTML = `<aside class="sidebar" id="facility-sidebar" aria-label="Facility navigation" data-collapsible-sidebar data-sidebar-view="facility"><div class="sidebar-brand"><a class="brand" href="${rootPath}index.html"><span class="brand-mark">${icon('heart', '')}</span><span class="brand-name">RCM SMB Facility<small>Healthcare operations</small></span></a><button class="icon-button sidebar-collapse-toggle" type="button" data-sidebar-toggle aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar"></button></div><nav class="side-scroll"><div class="nav-caption">Workspace</div>${link(home)}${link(dashboard)}<div class="nav-caption">Operations</div>${groups.map(childrenHtml).join('')}</nav><div class="sidebar-bottom">${link(setting)}</div></aside><div class="scrim" data-scrim></div>`;
+  const renderSidebar = () => {
+    const oldSidebar = sidebar.querySelector('.sidebar');
+    const wasCollapsed = oldSidebar?.classList.contains('collapsed') || false;
+    sidebar.innerHTML = `<aside class="sidebar${wasCollapsed ? ' collapsed' : ''}" id="facility-sidebar" aria-label="Facility navigation" data-collapsible-sidebar data-sidebar-view="facility"><div class="sidebar-brand"><a class="brand" href="${rootPath}index.html"><span class="brand-mark">${icon('heart', '')}</span><span class="brand-name">RCM SMB Facility<small>Healthcare operations</small></span></a><button class="icon-button sidebar-collapse-toggle" type="button" data-sidebar-toggle aria-expanded="${wasCollapsed ? 'false' : 'true'}" aria-label="${wasCollapsed ? 'Expand' : 'Collapse'} sidebar" title="${wasCollapsed ? 'Expand' : 'Collapse'} sidebar"></button></div><nav class="side-scroll"><div class="nav-caption">Workspace</div>${link(home)}${link(dashboard)}<div class="nav-caption">Operations</div>${groups.map(childrenHtml).join('')}</nav><div class="sidebar-bottom">${link(setting)}</div></aside><div class="scrim" data-scrim></div>`;
+    document.querySelector('.app-shell')?.classList.toggle('sidebar-collapsed', wasCollapsed);
+  };
+  renderSidebar();
+  window.addEventListener('storage', (event) => {
+    if (event.key !== directBillingKey) return;
+    directBillingEnabled = isDirectBillingEnabled();
+    if (!directBillingEnabled && current === 'patient-access/direct-billing.html') { window.location.replace(url('', 'home.html')); return; }
+    renderSidebar();
+  });
   topbar.innerHTML = `<header class="topbar"><div class="topbar-left"><button class="icon-button mobile-menu" type="button" data-menu-toggle aria-label="Open navigation">${icon('grid', '')}</button><a class="launcher-link" href="${rootPath}index.html">← Launcher</a><span class="topbar-divider"></span><span class="context-label">Health Facility View</span></div><div class="topbar-right"><label class="search-box">${icon('search', '')}<input type="search" aria-label="Search navigation" placeholder="Search navigation…"></label><button class="icon-button" type="button" data-theme-toggle aria-label="Toggle theme"></button></div></header>`;
   document.querySelector('[data-breadcrumb-current]').textContent = title;
   const folderLabel = groups.find((group) => group.folder === currentFolder)?.label || (currentFolder === 'patient-access' ? 'Patient Access' : 'Workspace');

@@ -71,6 +71,7 @@
     const showPlans = matching?.dataset.route === 'plans';
     const showPolicies = matching?.dataset.route === 'policies';
     const showContracts = matching?.dataset.route === 'contracts';
+    const showDirectBilling = matching?.dataset.route === 'direct-billing';
     const showFacilityStructure = ['divisions', 'locations', 'rooms', 'billing-period', 'cost-centers'].includes(matching?.dataset.route);
     document.querySelector('[data-current-facility-profile]')?.toggleAttribute('hidden', !showFacilityProfile);
     document.querySelector('[data-branches-grid]')?.toggleAttribute('hidden', !showBranches);
@@ -86,8 +87,9 @@
     document.querySelector('[data-policy-details]')?.toggleAttribute('hidden', true);
     document.querySelector('[data-contracts-grid]')?.toggleAttribute('hidden', !showContracts);
     document.querySelector('[data-contract-details]')?.toggleAttribute('hidden', true);
+    document.querySelector('[data-direct-billing-settings]')?.toggleAttribute('hidden', !showDirectBilling);
     document.querySelector('[data-structure-workspace]')?.toggleAttribute('hidden', !showFacilityStructure);
-    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts);
+    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts || showDirectBilling);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
       const active = item === matching;
       item.classList.toggle('active', active);

@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8f7f3">
   <title>Facility Settings · RCM SMB</title>
-  <link rel="stylesheet" href="../../assets/css/shadcn.css?v=facility-contracts-1">
+  <link rel="stylesheet" href="../../assets/css/shadcn.css?v=facility-direct-billing-1">
   <script src="../../assets/js/theme.js" data-theme-view="facility"></script>
-  <script src="../../assets/js/settings-sidebar.js?v=facility-contracts-1" defer></script>
+  <script src="../../assets/js/settings-sidebar.js?v=facility-direct-billing-1" defer></script>
   <script src="../../assets/js/sidebar-collapse.js?v=facility-focus-2" defer></script>
   <script src="../../assets/js/facility-store.js?v=facility-focus-2" defer></script>
   <script src="../../assets/js/facility-grid.js?v=facility-record-workspace-1" defer></script>
@@ -23,6 +23,7 @@
   <script src="../../assets/js/facility-plans.js?v=1" defer></script>
   <script src="../../assets/js/facility-policies.js?v=1" defer></script>
   <script src="../../assets/js/facility-contracts.js?v=3" defer></script>
+  <script src="../../assets/js/facility-direct-billing-setting.js?v=1" defer></script>
   <script src="../../assets/js/facility-practitioners.js?v=6" defer></script>
   <script src="../../assets/js/facility-roles.js?v=2" defer></script>
   <script src="../../assets/js/facility-users.js?v=4" defer></script>
@@ -49,6 +50,12 @@
             <span class="workspace-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/><circle cx="8" cy="5" r="1"/><circle cx="16" cy="12" r="1"/><circle cx="10" cy="19" r="1"/></svg></span>
             <h2 data-workspace-title>Settings workspace</h2>
             <p>Administrative configuration workspace ready for incremental buildout.</p>
+          </div>
+        </section>
+        <section class="direct-billing-settings-page" aria-label="Direct Billing settings" data-direct-billing-settings hidden>
+          <div class="direct-billing-setting-card">
+            <div><p class="eyebrow">PAYER CONTRACTS</p><h2>Direct Billing Enrollment</h2><p>Control whether Direct Billing Enrollment is available in the Facility workspace.</p></div>
+            <label class="direct-billing-switch"><input type="checkbox" role="switch" aria-label="Enable Direct Billing Enrollment" data-direct-billing-toggle><span class="direct-billing-switch-track" aria-hidden="true"><span></span></span><span class="direct-billing-switch-label" data-direct-billing-status></span></label>
           </div>
         </section>
         <section class="facility-profile-page" aria-label="Current facility profile" data-current-facility-profile hidden>
