@@ -657,3 +657,4 @@ body.patient-modal-open { overflow: hidden; }
 .direct-billing-switch input:focus-visible + .direct-billing-switch-track { outline: 3px solid hsl(var(--ring) / .28); outline-offset: 2px; }
 .direct-billing-switch-label { min-width: 56px; color: hsl(var(--foreground)); font-size: 11px; font-weight: 650; }
 @media (max-width: 580px) { .direct-billing-setting-card { align-items: flex-start; flex-direction: column; gap: 17px; padding: 18px; } }
+[hidden] { display: none !important; }
