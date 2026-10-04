@@ -189,6 +189,7 @@
     const hisEnabled = organizationForm.elements.hisIntegration.checked;
     organizationForm.querySelector('[data-his-field]').hidden = !hisEnabled;
     organizationForm.elements.consultationRules.disabled = !hisEnabled;
+    organizationForm.querySelector('[data-encounter-items-note]').hidden = organizationForm.elements.encounterItemHandling.value !== 'Hybrid (Service Catalog and Global Dictionary)';
     if (!hisEnabled) {
       organizationForm.elements.hisSystem.value = '';
       organizationForm.elements.consultationRules.value = 'No';
@@ -196,6 +197,7 @@
   };
   organizationForm.elements.paymentMethod.addEventListener('change', syncOrganizationConditionalFields);
   organizationForm.elements.hisIntegration.addEventListener('change', syncOrganizationConditionalFields);
+  organizationForm.elements.encounterItemHandling.addEventListener('change', syncOrganizationConditionalFields);
   let toastTimer;
   const closeOrganizationModal = () => {
     organizationModal.hidden = true;
@@ -227,6 +229,7 @@
       plan: String(data.plan || 'Basic'),
       status: String(data.status || 'Pending Approval'),
       onboardingStatus: String(data.status || 'Pending Approval') === 'Pending Approval' ? 'Not Started' : '',
+      encounterItemHandling: data.encounterItemHandling || 'Service Catalog only',
       hisIntegration: organizationForm.elements.hisIntegration.checked,
       consultationRules: organizationForm.elements.consultationRules.value,
       hisSystem: organizationForm.elements.hisIntegration.checked ? organizationForm.elements.hisSystem.value : '',

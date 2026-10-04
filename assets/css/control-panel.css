@@ -49,6 +49,7 @@
 .organization-address-grid { margin-top: 13px; padding-top: 13px; border-top: 1px solid hsl(var(--border)); }
 .organization-addon-grid { display: flex; flex-wrap: wrap; gap: 10px 28px; }
 .organization-field-note { margin: 10px 0 0; color: hsl(var(--muted-foreground)); font-size: 10px; }
+.organization-field-note-wide { grid-column: 1 / -1; margin-top: -7px; }
 .organization-status.status-pending-approval { background: hsl(44 100% 92%); color: hsl(31 83% 33%); }
 [data-theme="dark"] .organization-status.status-pending-approval { background: hsl(35 50% 22%); color: hsl(40 90% 76%); }
 .organization-modal .form-field[hidden] { display: none; }

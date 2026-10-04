@@ -79,6 +79,8 @@
 
           <fieldset class="patient-form-section organization-form-section"><legend>Organization Settings</legend><div class="organization-form-grid">
             <label class="form-field"><span>Facility Structure</span><select name="facilityStructure"><option>Single Facility</option><option>Multiple Facilities</option></select></label>
+            <label class="form-field"><span>Encounter Items Handling</span><select name="encounterItemHandling" data-encounter-items-handling><option>Service Catalog only</option><option>Hybrid (Service Catalog and Global Dictionary)</option></select></label>
+            <p class="organization-field-note organization-field-note-wide" data-encounter-items-note hidden>Only items included in the Service Catalog will be claimed. Items outside the Service Catalog will be sent to NPHIES as referrals.</p>
             <label class="form-field form-field-checkbox"><input name="hisIntegration" type="checkbox" data-his-integration><span>HIS Integration</span></label>
             <label class="form-field" data-his-field hidden><span>Target System</span><select name="hisSystem"><option value="">Select target system</option><option>Bestcare</option><option>Other</option></select></label>
             <label class="form-field"><span>Consultation Rules Engine</span><select name="consultationRules" data-consultation-rules disabled><option>No</option><option>Yes</option></select></label>
