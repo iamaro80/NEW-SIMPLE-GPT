@@ -845,4 +845,55 @@ body.patient-modal-open { overflow: hidden; }
 @media (max-width: 1050px) { .master-price-metadata { grid-template-columns: repeat(3, minmax(0, 1fr)); } .master-price-header-actions { align-items: flex-start; flex-direction: column; } .master-action-buttons { justify-content: flex-start; } }
 @media (max-width: 700px) { .master-price-header-title { align-items: flex-start; flex-direction: column; } .master-version-picker { width: 100%; } .master-price-metadata { grid-template-columns: repeat(2, minmax(0, 1fr)); } .master-price-toolbar { align-items: stretch; flex-direction: column; } .master-live-filters { grid-template-columns: minmax(0, 1fr) minmax(115px, .6fr); } }
 @media (max-width: 520px) { .master-price-header-card, .master-price-panel { padding: 12px; } .master-price-metadata, .master-live-filters { grid-template-columns: 1fr; } .master-action-buttons { width: 100%; } .master-action-buttons .button { flex: 1 1 calc(50% - 8px); } .master-price-footer-save { order: 2; width: 100%; justify-content: space-between; margin-left: 0; } .master-price-footer .facility-page-controls { order: 3; } }
+/* Facility Price Lists screen prototype */
+.price-lists-page, .price-lists-page > * { min-width: 0; max-width: 100%; }
+.price-list-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.price-list-primary-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.price-list-primary-actions .button svg, .price-list-detail-actions .button svg, .price-list-items-toolbar .button svg { width: 15px; height: 15px; }
+.price-list-filters { margin-bottom: 14px; }
+.price-list-grid { min-width: 780px; }
+.price-list-grid th:last-child, .price-list-grid td:last-child { width: 76px; text-align: center; }
+.price-list-description { display: block; max-width: 580px; overflow: hidden; color: hsl(var(--muted-foreground)); text-overflow: ellipsis; white-space: nowrap; }
+.price-list-row-menu { width: 186px; }
+.price-list-detail-screen { display: grid; gap: 14px; min-width: 0; }
+.price-list-detail-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.price-list-detail-heading .eyebrow { margin: 8px 0 5px; color: hsl(var(--primary)); font-size: 9px; font-weight: 700; letter-spacing: .12em; }
+.price-list-detail-heading h2 { margin: 0; font-size: 20px; }
+.price-list-detail-heading p:last-child { margin: 5px 0 0; color: hsl(var(--muted-foreground)); font-size: 11px; }
+.price-list-back { padding: 0; border: 0; background: none; color: hsl(var(--primary)); font: inherit; font-size: 11px; font-weight: 650; cursor: pointer; }
+.price-list-detail-actions { display: flex; gap: 8px; }
+.price-list-form-card, .price-list-items-card { min-width: 0; padding: 16px; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
+.price-list-form-heading, .price-list-items-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 15px; }
+.price-list-form-heading h3, .price-list-items-toolbar h3 { margin: 0; font-size: 14px; }
+.price-list-form-heading p, .price-list-items-toolbar p { margin: 4px 0 0; color: hsl(var(--muted-foreground)); font-size: 10px; }
+.price-list-form-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 11px; }
+.price-list-form-grid .form-field, .price-list-form-grid input { min-width: 0; }
+.price-list-form-utilities { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 11px; border-top: 1px solid hsl(var(--border)); }
+.price-list-inline-tools { display: flex; gap: 4px; }
+.price-list-inline-tools .icon-button { width: 29px; height: 29px; font-size: 17px; }
+.price-list-items-toolbar { align-items: flex-end; }
+.price-list-version-control { display: flex; align-items: flex-end; gap: 9px; }
+.price-list-version-control .facility-filter { min-width: 300px; }
+.price-list-item-filters, .price-picker-filters { display: grid; grid-template-columns: minmax(230px, 1fr) minmax(200px, 280px); gap: 10px; margin-bottom: 12px; }
+.price-list-items-table { min-width: 1450px; }
+.price-list-items-table th { white-space: nowrap; }
+.price-list-items-table td { height: 48px; }
+.price-list-items-table td:first-child { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; font-weight: 650; }
+.price-list-cell-input, .price-list-cell-select { box-sizing: border-box; width: 90px; min-width: 74px; height: 30px; padding: 0 7px; border: 1px solid hsl(var(--input)); border-radius: 5px; background: hsl(var(--background)); color: hsl(var(--foreground)); font: inherit; font-size: 10px; }
+.price-list-cell-select { width: 120px; }
+.price-list-cell-input:disabled, .price-list-cell-select:disabled { border-color: transparent; background: transparent; color: hsl(var(--muted-foreground)); opacity: 1; appearance: none; }
+.price-list-row-undo { width: 30px; height: 30px; font-size: 16px; }
+.price-list-no-items { padding: 25px !important; color: hsl(var(--muted-foreground)); text-align: center !important; }
+.price-list-modal-backdrop { z-index: 56; }
+.price-list-history-modal { width: min(590px, 100%); }
+.price-list-picker-modal { width: min(1050px, 100%); }
+.price-list-picker-modal .patient-modal-body { display: grid; gap: 12px; }
+.price-picker-filters { margin-bottom: 0; }
+.price-picker-table { min-height: 250px; }
+.price-picker-table .facility-table { min-width: 980px; }
+.price-picker-table td { height: 46px; }
+.price-list-check { width: 40px; text-align: center !important; }
+.price-list-check input { width: 15px; height: 15px; margin: 0; accent-color: hsl(var(--primary)); }
+@media (max-width: 900px) { .price-list-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .price-list-items-toolbar { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 620px) { .price-list-toolbar { justify-content: flex-start; } .price-list-primary-actions { width: 100%; } .price-list-primary-actions .button { flex: 1 1 calc(50% - 8px); } .price-list-filters, .price-list-item-filters, .price-picker-filters { grid-template-columns: 1fr; } .price-list-detail-heading { align-items: flex-start; flex-direction: column; } .price-list-detail-actions { width: 100%; } .price-list-detail-actions .button { flex: 1; } .price-list-form-grid { grid-template-columns: 1fr; } .price-list-version-control { width: 100%; align-items: stretch; flex-direction: column; } .price-list-version-control .facility-filter { min-width: 0; } .price-list-form-heading { align-items: flex-start; } }
 [hidden] { display: none !important; }
