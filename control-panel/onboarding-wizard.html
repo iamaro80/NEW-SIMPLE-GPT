@@ -457,7 +457,7 @@
   <script>
     const steps = [
       {
-        title: "Preliminary info",
+        title: "Create Facility",
         short: "Facility",
         description: "Define facility details, address, configuration and ZATCA information.",
         sections: [
@@ -496,7 +496,7 @@
             ]
           },
           {
-            name: "Facility Configurations",
+            name: "Facility Configuration",
             fields: [
               ["episodeExpiry", "Episode Expiry Time", "select", true, ["24 hours", "48 hours", "72 hours", "7 days"]],
               ["autoAuthorization", "Is Auto Authorization Process", "checkbox", false],
@@ -948,7 +948,11 @@
 
       formArea.querySelectorAll("[data-field]").forEach(control => {
         const value = saved[control.dataset.field];
-        if (value === undefined || control.type === "file") return;
+        if (value === undefined || (control.dataset.field === "country" && value === "")) {
+          if (control.dataset.field === "country") control.value = "Saudi Arabia";
+          return;
+        }
+        if (control.type === "file") return;
 
         if (control.type === "checkbox") {
           control.checked = Boolean(value);
