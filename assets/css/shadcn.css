@@ -447,7 +447,7 @@ button { color: inherit; }
 .form-field.form-field-checkbox { min-height: 35px; display: flex; flex-direction: row; align-items: center; align-self: end; gap: 8px; cursor: pointer; }
 .form-field.form-field-checkbox input[type="checkbox"] { flex: 0 0 15px; width: 15px; min-width: 15px; max-width: 15px; height: 15px; min-height: 15px; margin: 0; padding: 0; accent-color: hsl(var(--primary)); }
 .practitioner-filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.practitioners-table { min-width: 1280px; }
+.practitioners-table { min-width: 1460px; }
 .practitioner-modal { width: min(980px, 100%); }
 .practitioner-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .practitioner-section { overflow: hidden; margin: 0 0 15px; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }

@@ -4,7 +4,7 @@
 
   const facilityId = document.body.dataset.currentFacilityId || '1';
   const storageKey = `rcm-facility-practitioners:v1:${facilityId}`;
-  const departmentKey = `rcm-facility-departments:v1:${facilityId}`;
+  const departmentStorageKey = (id) => `rcm-facility-departments:v1:${id}`;
   const pageSize = 5;
   const roles = ['Doctor', 'Nurse', 'Pharmacist', 'Researcher', 'Teacher/educator', 'Dentist', 'Physiotherapist', 'Speechtherapist', 'ICT professional'];
   const documentTypes = ['National ID', 'Permanent Resident Card Number', 'Passport number', 'Visitor Permit', 'Medical record number', 'Border Number', 'Displaced person'];
@@ -19,7 +19,7 @@
     { documentId: '1069382714', englishName: 'Yousef Almutairi', arabicName: 'يوسف المطيري', departmentCodes: ['DPT-004'], role: 'Pharmacist', documentType: 'National ID', mobileCode: '+966', mobile: '553456890', phoneCode: '+966', phone: '', prefix: 'Mr.', degree: 'PharmD', licenseNumber: 'SCFHS-62045', licenseStart: '2024-06-01', licenseEnd: '2027-05-31', specialty: 'Community Medicine Specialty', designation: 'Associate Consultant', user: '', followUp: '', lastDesignationUpdate: '2024-11-08', active: true },
     { documentId: '1058273649', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', departmentCodes: ['DPT-005', 'DPT-006'], role: 'Doctor', documentType: 'National ID', mobileCode: '+966', mobile: '554567901', phoneCode: '+966', phone: '', prefix: 'Dr.', degree: 'MBBS', licenseNumber: 'SCFHS-74413', licenseStart: '2022-11-01', licenseEnd: '2025-10-31', specialty: 'Adult Emergency Medicine', designation: 'Assistant Consultant', user: '', followUp: '', lastDesignationUpdate: '2024-02-14', active: false },
     { documentId: '1047162538', englishName: 'Khalid Alzahrani', arabicName: 'خالد الزهراني', departmentCodes: ['DPT-001', 'DPT-003'], role: 'Physiotherapist', documentType: 'National ID', mobileCode: '+966', mobile: '555678012', phoneCode: '+966', phone: '', prefix: 'Mr.', degree: 'DPT', licenseNumber: 'SCFHS-83620', licenseStart: '2025-04-01', licenseEnd: '2028-03-31', specialty: 'Community Medicine Specialty', designation: 'Clinical Scientist', user: '', followUp: '', lastDesignationUpdate: '2025-04-07', active: true },
-  ];
+  ].map((record) => ({ ...record, facilityId: String(facilityId) }));
   const icons = {
     add: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
     more: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>',
@@ -29,8 +29,22 @@
   };
   const selectOptions = (items, placeholder) => `<option value="">${placeholder}</option>${items.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('')}`;
   function escapeHtml(value = '') { return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]); }
-  function departmentsLoad() {
-    try { const data = JSON.parse(localStorage.getItem(departmentKey) || 'null'); if (Array.isArray(data)) return data; } catch { /* Use fallback department records. */ }
+  const facilityStore = window.RcmFacilityStore;
+  function loadFacilities() {
+    const storedFacilities = facilityStore?.list?.() || [];
+    return storedFacilities.length ? storedFacilities : [{ id: Number(facilityId), englishName: 'Current Facility', active: true }];
+  }
+  let facilities = loadFacilities();
+  const facilityCache = new Map(facilities.map((facility) => [String(facility.id), facility]));
+  const departmentCache = new Map();
+  function departmentRecordsFor(targetFacilityId) {
+    const id = String(targetFacilityId || '');
+    if (departmentCache.has(id)) return departmentCache.get(id);
+    try {
+      const data = JSON.parse(localStorage.getItem(departmentStorageKey(id)) || 'null');
+      if (Array.isArray(data)) { departmentCache.set(id, data); return data; }
+    } catch { /* Keep this facility's department list empty until configured. */ }
+    if (id !== String(facilityId)) { departmentCache.set(id, []); return []; }
     return [
       { code: 'DPT-001', name: 'Ambulatory Care Clinic' }, { code: 'DPT-002', name: 'Emergency Department' },
       { code: 'DPT-003', name: 'Internal Medicine Ward' }, { code: 'DPT-004', name: 'Outpatient Pharmacy' },
@@ -38,11 +52,19 @@
     ];
   }
   function loadRecords() {
-    try { const data = JSON.parse(localStorage.getItem(storageKey) || 'null'); if (Array.isArray(data)) return data.map((record) => ({ ...record, departmentCodes: Array.isArray(record.departmentCodes) ? record.departmentCodes : [] })); } catch { /* Seed below. */ }
+    try {
+      const data = JSON.parse(localStorage.getItem(storageKey) || 'null');
+      if (Array.isArray(data)) {
+        const migrated = data.map((record) => ({ ...record, facilityId: String(record.facilityId || facilityId), departmentCodes: Array.isArray(record.departmentCodes) ? record.departmentCodes : [] }));
+        if (migrated.some((record, index) => record.facilityId !== String(data[index].facilityId || ''))) localStorage.setItem(storageKey, JSON.stringify(migrated));
+        return migrated;
+      }
+    } catch { /* Seed below. */ }
     try { localStorage.setItem(storageKey, JSON.stringify(seed)); } catch { /* Keep seed in memory. */ }
     return seed.map((record) => ({ ...record, departmentCodes: [...record.departmentCodes] }));
   }
-  let departments = departmentsLoad();
+  let departments = departmentRecordsFor(facilityId);
+  let selectedFormFacilityId = String(facilityId);
   let records = loadRecords();
   let currentPage = 1;
   let mode = 'new';
@@ -56,19 +78,23 @@
     <div class="branches-filter-grid practitioner-filter-grid" role="search" aria-label="Filter practitioners">
       <label class="facility-filter"><span>Document ID</span><input type="search" data-practitioner-filter="documentId" placeholder="Search document ID"></label>
       <label class="facility-filter"><span>English Name</span><input type="search" data-practitioner-filter="englishName" placeholder="Search name"></label>
+      <label class="facility-filter"><span>Facility</span><select data-practitioner-filter="facilityId"><option value="">All facilities</option>${facilities.map((facility) => `<option value="${escapeHtml(facility.id)}">${escapeHtml(facility.englishName || `Facility ${facility.id}`)}</option>`).join('')}</select></label>
       <label class="facility-filter"><span>Department</span><select data-practitioner-filter="department"><option value="">All departments</option></select></label>
       <label class="facility-filter"><span>Practitioner Role</span><select data-practitioner-filter="role">${selectOptions(roles, 'All roles')}</select></label>
       <label class="facility-filter"><span>Specialty</span><input type="search" data-practitioner-filter="specialty" placeholder="Search specialty"></label>
       <label class="facility-filter"><span>Designation</span><input type="search" data-practitioner-filter="designation" placeholder="Search designation"></label>
       <label class="facility-filter"><span>Status</span><select data-practitioner-filter="status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
     </div></div>
-    <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table practitioners-table"><thead><tr><th>Document ID</th><th>English Name</th><th>Department(s)</th><th>Practitioner Role</th><th>Specialty</th><th>Designation</th><th>Status</th><th>Actions</th></tr></thead><tbody data-practitioner-rows></tbody></table></div><div class="facility-empty" data-practitioner-empty hidden>No practitioners match your filters.</div><footer class="facility-pagination"><span data-practitioner-result-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-practitioner-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-practitioner-page="previous" aria-label="Previous page">‹</button><span data-practitioner-page-label></span><button class="icon-button" type="button" data-practitioner-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-practitioner-page="last" aria-label="Last page">»</button></div></footer></div>`;
+    <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table practitioners-table"><thead><tr><th>Document ID</th><th>English Name</th><th>Facility</th><th>Department(s)</th><th>Practitioner Role</th><th>Specialty</th><th>Designation</th><th>Status</th><th>Actions</th></tr></thead><tbody data-practitioner-rows></tbody></table></div><div class="facility-empty" data-practitioner-empty hidden>No practitioners match your filters.</div><footer class="facility-pagination"><span data-practitioner-result-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-practitioner-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-practitioner-page="previous" aria-label="Previous page">‹</button><span data-practitioner-page-label></span><button class="icon-button" type="button" data-practitioner-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-practitioner-page="last" aria-label="Last page">»</button></div></footer></div>`;
   const modal = document.createElement('div');
   modal.className = 'patient-modal-backdrop'; modal.id = 'practitioner-modal'; modal.hidden = true;
   modal.innerHTML = `<section class="patient-modal practitioner-modal" role="dialog" aria-modal="true" aria-labelledby="practitioner-modal-title" aria-describedby="practitioner-modal-description"><header class="patient-modal-header"><div><p class="eyebrow">PRACTITIONER RECORD</p><h2 id="practitioner-modal-title">Add Practitioner</h2><p id="practitioner-modal-description">Enter practitioner information.</p></div><button class="icon-button" type="button" data-practitioner-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
     <form data-practitioner-form><div class="patient-modal-body">
+      <fieldset class="patient-form-section practitioner-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="patient-form-grid practitioner-form-grid">
+        <label class="form-field"><span>Facility <b>*</b></span><select name="facilityId" required><option value="">Select facility</option>${facilities.map((facility) => `<option value="${escapeHtml(facility.id)}">${escapeHtml(facility.englishName || `Facility ${facility.id}`)}</option>`).join('')}</select></label>
+        <div class="form-field practitioner-department-field"><span>Departments <b>*</b></span><input type="search" data-department-search placeholder="Search departments" aria-label="Search departments"><div class="practitioner-department-options" data-department-options role="group" aria-label="Select departments"></div><small>Select one or more departments from the chosen facility.</small></div>
+      </div></fieldset>
       <fieldset class="patient-form-section practitioner-section"><legend class="sr-only">Practitioner Data</legend><div class="facility-form-section-heading">Practitioner Data</div><div class="patient-form-grid practitioner-form-grid">
-        <div class="form-field practitioner-department-field"><span>Departments <b>*</b></span><input type="search" data-department-search placeholder="Search departments" aria-label="Search departments"><div class="practitioner-department-options" data-department-options role="group" aria-label="Select departments"></div><small>Select one or more departments.</small></div>
         <label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required autocomplete="off"></label>
         <label class="form-field"><span>Arabic Name</span><input name="arabicName" dir="rtl" autocomplete="off"></label>
         <label class="form-field"><span>Email</span><input name="email" type="email" autocomplete="off"></label>
@@ -101,18 +127,22 @@
   const rows = grid.querySelector('[data-practitioner-rows]');
   const searchDepartment = form.querySelector('[data-department-search]');
   const departmentOptions = form.querySelector('[data-department-options]');
-  const valuesToSave = ['documentId','englishName','arabicName','email','mobileCode','mobile','phoneCode','phone','extension','role','documentType','prefix','degree','licenseNumber','licenseStart','licenseEnd','user','consultationItem','followUp','lastDesignationUpdate','specialty','designation'];
+  const valuesToSave = ['facilityId','documentId','englishName','arabicName','email','mobileCode','mobile','phoneCode','phone','extension','role','documentType','prefix','degree','licenseNumber','licenseStart','licenseEnd','user','consultationItem','followUp','lastDesignationUpdate','specialty','designation'];
   const scfhsFields = ['scfhsCategoryCode','scfhsCategoryNameEn','scfhsSpecialityCode','scfhsSpecialityNameEn','scfhsCategoryNameAr','scfhsSpecialityNameAr'];
   const allFields = [...valuesToSave, ...scfhsFields];
 
   function persist() { try { localStorage.setItem(storageKey, JSON.stringify(records)); } catch { /* Keep changes in memory if storage is unavailable. */ } }
   function showToast(message) { if (!toast) return; toast.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2300); }
-  function departmentName(code) { return departments.find((item) => String(item.code) === String(code))?.name || departments.find((item) => String(item.code) === String(code))?.englishName || `Department ${code}`; }
+  function facilityName(id) { return facilityCache.get(String(id))?.englishName || `Facility ${id}`; }
+  function departmentName(code, targetFacilityId = selectedFormFacilityId) {
+    const source = departmentRecordsFor(targetFacilityId);
+    return source.find((item) => String(item.code) === String(code))?.name || source.find((item) => String(item.code) === String(code))?.englishName || `Department ${code}`;
+  }
   function selectedDepartments() { return [...departmentOptions.querySelectorAll('input:checked')].map((input) => input.value); }
   function drawDepartmentChoices(selected = selectedDepartments()) {
     const query = searchDepartment.value.trim().toLocaleLowerCase();
-    const filtered = departments.filter((department) => departmentName(department.code).toLocaleLowerCase().includes(query));
-    departmentOptions.innerHTML = filtered.length ? filtered.map((department) => `<label class="form-check"><input type="checkbox" value="${escapeHtml(department.code)}" ${selected.includes(String(department.code)) ? 'checked' : ''}><span>${escapeHtml(departmentName(department.code))}</span></label>`).join('') : '<span class="practitioner-no-departments">No departments found.</span>';
+    const filtered = departments.filter((department) => departmentName(department.code, selectedFormFacilityId).toLocaleLowerCase().includes(query));
+    departmentOptions.innerHTML = filtered.length ? filtered.map((department) => `<label class="form-check"><input type="checkbox" value="${escapeHtml(department.code)}" ${selected.includes(String(department.code)) ? 'checked' : ''}><span>${escapeHtml(departmentName(department.code, selectedFormFacilityId))}</span></label>`).join('') : `<span class="practitioner-no-departments">${facilityRecordsFor(selectedFormFacilityId).length ? 'No departments are configured for this facility.' : 'No departments found.'}</span>`;
     departmentOptions.querySelectorAll('input').forEach((input) => input.addEventListener('change', validateDepartmentSelection));
     validateDepartmentSelection();
   }
@@ -121,9 +151,11 @@
   function filteredRecords() {
     return records.filter((record) => {
       const textMatch = ['documentId','englishName','role','specialty','designation'].every((key) => !appliedFilters[key] || String(record[key] || '').toLocaleLowerCase().includes(appliedFilters[key]));
-      const deptMatch = !appliedFilters.department || record.departmentCodes.some((code) => String(code) === appliedFilters.department);
+      const facilityMatch = !appliedFilters.facilityId || String(record.facilityId) === appliedFilters.facilityId;
+      const [departmentFacilityId, departmentCode] = (appliedFilters.department || '').split('::');
+      const deptMatch = !departmentCode || (String(record.facilityId) === departmentFacilityId && record.departmentCodes.some((code) => String(code).toLocaleLowerCase() === departmentCode));
       const statusMatch = !appliedFilters.status || String(Boolean(record.active)) === String(appliedFilters.status === 'active');
-      return textMatch && deptMatch && statusMatch;
+      return textMatch && facilityMatch && deptMatch && statusMatch;
     });
   }
   function closeMenus(except) { rows.querySelectorAll('.facility-row-menu').forEach((menu) => { if (menu !== except) { menu.hidden = true; menu.parentElement.querySelector('[data-practitioner-row-menu]').setAttribute('aria-expanded','false'); } }); }
@@ -131,7 +163,7 @@
     const matches = filteredRecords();
     const pages = Math.max(1, Math.ceil(matches.length / pageSize)); currentPage = Math.min(currentPage, pages);
     const visible = matches.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-    rows.innerHTML = visible.map((record) => `<tr><td class="branch-code">${escapeHtml(record.documentId)}</td><td><span class="facility-name-en">${escapeHtml(record.englishName)}</span><small class="practitioner-arabic-name" dir="rtl">${escapeHtml(record.arabicName || '')}</small></td><td>${record.departmentCodes.map((code) => `<span class="practitioner-department-chip">${escapeHtml(departmentName(code))}</span>`).join(' ') || '—'}</td><td>${escapeHtml(record.role)}</td><td>${escapeHtml(record.specialty)}</td><td>${escapeHtml(record.designation)}</td><td><span class="facility-status ${record.active ? 'is-active' : 'is-inactive'}"><span></span>${record.active ? 'Active' : 'Inactive'}</span></td><td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-practitioner-row-menu aria-label="Actions for ${escapeHtml(record.englishName)}" aria-haspopup="menu" aria-expanded="false" data-document-id="${escapeHtml(record.documentId)}">${icons.more}</button><div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-practitioner-action="view" data-document-id="${escapeHtml(record.documentId)}">${icons.eye}View</button><button type="button" role="menuitem" data-practitioner-action="edit" data-document-id="${escapeHtml(record.documentId)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-practitioner-action="status" data-document-id="${escapeHtml(record.documentId)}">${icons.status}${record.active ? 'Deactivate' : 'Activate'}</button></div></div></td></tr>`).join('');
+    rows.innerHTML = visible.map((record) => `<tr><td class="branch-code">${escapeHtml(record.documentId)}</td><td><span class="facility-name-en">${escapeHtml(record.englishName)}</span><small class="practitioner-arabic-name" dir="rtl">${escapeHtml(record.arabicName || '')}</small></td><td>${escapeHtml(facilityName(record.facilityId))}</td><td>${record.departmentCodes.map((code) => `<span class="practitioner-department-chip">${escapeHtml(departmentName(code, record.facilityId))}</span>`).join(' ') || '—'}</td><td>${escapeHtml(record.role)}</td><td>${escapeHtml(record.specialty)}</td><td>${escapeHtml(record.designation)}</td><td><span class="facility-status ${record.active ? 'is-active' : 'is-inactive'}"><span></span>${record.active ? 'Active' : 'Inactive'}</span></td><td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-practitioner-row-menu aria-label="Actions for ${escapeHtml(record.englishName)}" aria-haspopup="menu" aria-expanded="false" data-document-id="${escapeHtml(record.documentId)}">${icons.more}</button><div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-practitioner-action="view" data-document-id="${escapeHtml(record.documentId)}">${icons.eye}View</button><button type="button" role="menuitem" data-practitioner-action="edit" data-document-id="${escapeHtml(record.documentId)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-practitioner-action="status" data-document-id="${escapeHtml(record.documentId)}">${icons.status}${record.active ? 'Deactivate' : 'Activate'}</button></div></div></td></tr>`).join('');
     grid.querySelector('[data-practitioner-empty]').hidden = matches.length > 0;
     grid.querySelector('[data-practitioner-result-count]').textContent = `Total Results: ${matches.length}`;
     grid.querySelector('[data-practitioner-page-label]').textContent = `Page ${matches.length ? currentPage : 0} of ${matches.length ? pages : 0}`;
@@ -139,8 +171,35 @@
   }
   function updateFilterDepartments() {
     const field = grid.querySelector('[data-practitioner-filter="department"]'); const previous = field.value;
-    field.innerHTML = `<option value="">All departments</option>${departments.map((item) => `<option value="${escapeHtml(item.code)}">${escapeHtml(departmentName(item.code))}</option>`).join('')}`;
-    if (departments.some((item) => String(item.code) === previous)) field.value = previous;
+    const selectedFacility = grid.querySelector('[data-practitioner-filter="facilityId"]').value;
+    const choices = selectedFacility ? [{ facilityId: selectedFacility, records: departmentRecordsFor(selectedFacility) }] : facilities.map((facility) => ({ facilityId: String(facility.id), records: departmentRecordsFor(facility.id) }));
+    const options = choices.flatMap(({ facilityId: id, records: items }) => items.map((item) => ({ value: `${id}::${item.code}`, label: selectedFacility ? departmentName(item.code, id) : `${facilityName(id)} — ${departmentName(item.code, id)}` })));
+    field.innerHTML = `<option value="">All departments</option>${options.map((item) => `<option value="${escapeHtml(item.value)}">${escapeHtml(item.label)}</option>`).join('')}`;
+    if (options.some((item) => item.value.toLocaleLowerCase() === previous)) field.value = previous;
+    else field.value = '';
+  }
+  function facilityRecordsFor(id) { return facilities.filter((facility) => String(facility.id) === String(id)); }
+  function setFormFacility(id, selected = []) {
+    selectedFormFacilityId = String(id || '');
+    form.elements.namedItem('facilityId').value = selectedFormFacilityId;
+    departments = departmentRecordsFor(selectedFormFacilityId);
+    searchDepartment.value = '';
+    drawDepartmentChoices(selected);
+  }
+  function refreshFacilityOptions() {
+    const previousFormFacility = form.elements.namedItem('facilityId').value;
+    const previousFilterFacility = grid.querySelector('[data-practitioner-filter="facilityId"]').value;
+    facilities = loadFacilities();
+    facilityCache.clear(); facilities.forEach((facility) => facilityCache.set(String(facility.id), facility));
+    const options = facilities.map((facility) => `<option value="${escapeHtml(facility.id)}">${escapeHtml(facility.englishName || `Facility ${facility.id}`)}</option>`).join('');
+    form.elements.namedItem('facilityId').innerHTML = `<option value="">Select facility</option>${options}`;
+    grid.querySelector('[data-practitioner-filter="facilityId"]').innerHTML = `<option value="">All facilities</option>${options}`;
+    if (facilityRecordsFor(previousFormFacility).length) form.elements.namedItem('facilityId').value = previousFormFacility;
+    else form.elements.namedItem('facilityId').value = String(facilityId);
+    if (facilityRecordsFor(previousFilterFacility).length) grid.querySelector('[data-practitioner-filter="facilityId"]').value = previousFilterFacility;
+    departments = departmentRecordsFor(form.elements.namedItem('facilityId').value);
+    selectedFormFacilityId = form.elements.namedItem('facilityId').value;
+    updateFilterDepartments();
   }
   function setReadOnly(readonly) {
     form.querySelectorAll('input,select').forEach((field) => { if (!field.readOnly) field.disabled = readonly; });
@@ -149,7 +208,7 @@
   }
   function openModal(nextMode, record = null, trigger = document.activeElement) {
     mode = nextMode; activeDocumentId = record?.documentId || null; returnFocus = trigger;
-    form.reset(); searchDepartment.value = ''; drawDepartmentChoices([]); setReadOnly(false);
+    form.reset(); setReadOnly(false);
     const isNew = nextMode === 'new';
     modal.querySelector('#practitioner-modal-title').textContent = isNew ? 'Add Practitioner' : nextMode === 'view' ? 'Practitioner Details' : 'Edit Practitioner';
     modal.querySelector('#practitioner-modal-description').textContent = isNew ? 'Enter practitioner information.' : nextMode === 'view' ? 'Review practitioner information.' : 'Update practitioner information.';
@@ -166,13 +225,18 @@
       }
       field.value = value;
     });
-    drawDepartmentChoices(isNew ? [] : record.departmentCodes || []);
+    setFormFacility(isNew ? String(facilityId) : record.facilityId || facilityId, isNew ? [] : record.departmentCodes || []);
     if (nextMode === 'view') setReadOnly(true);
     modal.hidden = false; document.body.classList.add('patient-modal-open'); modal.querySelector('[data-practitioner-close]').focus();
   }
   function closeModal() { modal.hidden = true; document.body.classList.remove('patient-modal-open'); if (returnFocus?.isConnected) returnFocus.focus(); }
 
-  grid.querySelectorAll('[data-practitioner-filter]').forEach((field) => field.addEventListener(field.matches('select') ? 'change' : 'input', () => { appliedFilters = readFilters(); currentPage = 1; closeMenus(); render(); }));
+  grid.querySelectorAll('[data-practitioner-filter]').forEach((field) => field.addEventListener(field.matches('select') ? 'change' : 'input', () => {
+    if (field.dataset.practitionerFilter === 'facilityId') { updateFilterDepartments(); appliedFilters = readFilters(); }
+    else appliedFilters = readFilters();
+    currentPage = 1; closeMenus(); render();
+  }));
+  form.elements.namedItem('facilityId').addEventListener('change', () => setFormFacility(form.elements.namedItem('facilityId').value, []));
   grid.querySelector('[data-practitioner-add]').addEventListener('click', (event) => openModal('new', null, event.currentTarget));
   grid.querySelectorAll('[data-practitioner-page]').forEach((button) => button.addEventListener('click', () => { const pages = Math.max(1, Math.ceil(filteredRecords().length / pageSize)); if (button.dataset.practitionerPage === 'first') currentPage = 1; if (button.dataset.practitionerPage === 'previous') currentPage = Math.max(1, currentPage - 1); if (button.dataset.practitionerPage === 'next') currentPage = Math.min(pages, currentPage + 1); if (button.dataset.practitionerPage === 'last') currentPage = pages; closeMenus(); render(); }));
   searchDepartment.addEventListener('input', () => drawDepartmentChoices());
@@ -200,8 +264,19 @@
   modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
   document.addEventListener('click', (event) => { if (!event.target.closest('.facility-row-action')) closeMenus(); });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { if (!modal.hidden) closeModal(); else closeMenus(); } if (modal.hidden || event.key !== 'Tab') return; const focusable = [...modal.querySelectorAll('button:not([hidden]):not(:disabled),input:not(:disabled),select:not(:disabled)')]; if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1).focus(); } else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); } });
-  function updateDepartments(nextDepartments) { if (!Array.isArray(nextDepartments)) return; departments = nextDepartments; updateFilterDepartments(); drawDepartmentChoices(); render(); }
-  window.addEventListener('storage', (event) => { if (event.key === departmentKey && event.newValue) { try { updateDepartments(JSON.parse(event.newValue)); } catch { /* Ignore invalid updates. */ } } if (event.key === storageKey && event.newValue) { try { const updated = JSON.parse(event.newValue); if (Array.isArray(updated)) { records = updated; render(); } } catch { /* Ignore invalid updates. */ } } });
-  window.addEventListener('rcm:departments-changed', (event) => { if (event.detail?.facilityId === facilityId) updateDepartments(event.detail.departments); });
+  function updateDepartments(targetFacilityId, nextDepartments) {
+    if (!Array.isArray(nextDepartments)) return;
+    departmentCache.set(String(targetFacilityId), nextDepartments);
+    if (String(targetFacilityId) === selectedFormFacilityId) { departments = nextDepartments; drawDepartmentChoices(); }
+    updateFilterDepartments(); render();
+  }
+  window.addEventListener('storage', (event) => {
+    if (event.key?.startsWith('rcm-facility-departments:v1:') && event.newValue) {
+      try { updateDepartments(event.key.slice('rcm-facility-departments:v1:'.length), JSON.parse(event.newValue)); } catch { /* Ignore invalid updates. */ }
+    }
+    if (event.key === storageKey && event.newValue) { try { const updated = JSON.parse(event.newValue); if (Array.isArray(updated)) { records = updated; render(); } } catch { /* Ignore invalid updates. */ } }
+  });
+  window.addEventListener('rcm:departments-changed', (event) => { if (Array.isArray(event.detail?.departments)) updateDepartments(event.detail.facilityId, event.detail.departments); });
+  window.addEventListener('rcm:facilities-changed', () => refreshFacilityOptions());
   updateFilterDepartments(); appliedFilters = readFilters(); render();
 })();
