@@ -7,18 +7,12 @@
   const facility = (window.RcmFacilityStore?.list?.() || []).find((item) => String(item.id) === facilityId) || { id: facilityId, englishName: 'Current Facility' };
   const branchKey = `rcm-facility-branches:v1:${facilityId}`;
   const usersSeed = [
-    { username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', branchCode: '1', notes: '', active: true, permissionIds: [] },
-    { username: 'k.alharbi', englishName: 'Khalid Alharbi', arabicName: 'خالد الحربي', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', branchCode: '2', notes: '', active: true, permissionIds: [] },
-    { username: 'n.aldosari', englishName: 'Noura Aldosari', arabicName: 'نورة الدوسري', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', branchCode: '1', notes: '', active: true, permissionIds: [1, 2] },
-    { username: 'f.alqahtani', englishName: 'Faisal Alqahtani', arabicName: 'فيصل القحطاني', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', branchCode: '3', notes: '', active: false, permissionIds: [] },
-    { username: 's.alshammari', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', branchCode: '4', notes: '', active: true, permissionIds: [] },
+    { username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', branchCode: '1', notes: '', active: true, roleIds: [] },
+    { username: 'k.alharbi', englishName: 'Khalid Alharbi', arabicName: 'خالد الحربي', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', branchCode: '2', notes: '', active: true, roleIds: [] },
+    { username: 'n.aldosari', englishName: 'Noura Aldosari', arabicName: 'نورة الدوسري', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', branchCode: '1', notes: '', active: true, roleIds: [] },
+    { username: 'f.alqahtani', englishName: 'Faisal Alqahtani', arabicName: 'فيصل القحطاني', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', branchCode: '3', notes: '', active: false, roleIds: [] },
+    { username: 's.alshammari', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', branchCode: '4', notes: '', active: true, roleIds: [] },
   ].map((record) => ({ ...record, facilityId }));
-  const permissions = [
-    [1, 'Sync medical records permission'], [2, 'Test reports permission'], [3, 'Employee Permissions'],
-    [4, 'bulk uncharge user'], [5, 'export patient invoice'], [6, 'testsync_employee_single_order_action'],
-    [7, 'Invoice Claims settlement'], [8, 'Send payment notice'], [9, 'payment reconciliation view'],
-    [10, 'PractitionerContract permissions'],
-  ];
   const userTypes = ['Business Center', 'Overtimer', 'System Administrator', 'Employee'];
   const icons = {
     add: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -91,7 +85,7 @@
   function createPermissionsModal() {
     const backdrop = document.createElement('div');
     backdrop.className = 'patient-modal-backdrop'; backdrop.id = 'user-permissions-modal'; backdrop.hidden = true;
-    backdrop.innerHTML = `<section class="patient-modal user-simple-modal" role="dialog" aria-modal="true" aria-labelledby="user-permissions-title"><header class="patient-modal-header"><div><p class="eyebrow">USER ACCESS</p><h2 id="user-permissions-title">Assign Roles</h2><p>Select permissions for this user.</p></div><button class="icon-button" type="button" data-simple-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><form><div class="patient-modal-body user-permission-body"><label class="facility-filter"><span>Search Roles</span><input type="search" data-permission-search placeholder="Search permissions"></label><div class="user-permission-list" data-permission-list role="group" aria-label="Available permissions"></div></div><footer class="patient-modal-footer"><span></span><div><button type="button" class="button button-secondary" data-simple-cancel>Cancel</button><button type="submit" class="button button-primary">Save assignments</button></div></footer></form></section>`;
+  backdrop.innerHTML = `<section class="patient-modal user-simple-modal" role="dialog" aria-modal="true" aria-labelledby="user-permissions-title"><header class="patient-modal-header"><div><p class="eyebrow">USER ACCESS</p><h2 id="user-permissions-title">Assign Roles</h2><p>Select one or more roles for this user.</p></div><button class="icon-button" type="button" data-simple-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><form><div class="patient-modal-body user-permission-body"><label class="facility-filter"><span>Search Roles</span><input type="search" data-permission-search placeholder="Search roles"></label><div class="user-permission-list" data-permission-list role="group" aria-label="Available roles"></div></div><footer class="patient-modal-footer"><span></span><div><button type="button" class="button button-secondary" data-simple-cancel>Cancel</button><button type="submit" class="button button-primary">Save assignments</button></div></footer></form></section>`;
     document.body.append(backdrop);
     return backdrop;
   }
@@ -112,9 +106,9 @@
         if (Array.isArray(parsed)) {
           let migrated = false;
           const records = parsed.map((record) => {
-            const { badgeNumber, ...cleanRecord } = record;
-            if (badgeNumber !== undefined) migrated = true;
-            return { ...cleanRecord, facilityId, permissionIds: Array.isArray(record.permissionIds) ? record.permissionIds : [] };
+            const { badgeNumber, permissionIds, ...cleanRecord } = record;
+            if (badgeNumber !== undefined || permissionIds !== undefined || !Array.isArray(record.roleIds)) migrated = true;
+            return { ...cleanRecord, facilityId, roleIds: Array.isArray(record.roleIds) ? record.roleIds : [] };
           });
           if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
           return records;
@@ -122,7 +116,7 @@
       }
       localStorage.setItem(storageKey, JSON.stringify(usersSeed));
     } catch { /* Keep mock state usable if browser storage is unavailable. */ }
-    return usersSeed.map((record) => ({ ...record, permissionIds: [...record.permissionIds] }));
+    return usersSeed.map((record) => ({ ...record, roleIds: [...record.roleIds] }));
   }
 
   function save() {
@@ -199,14 +193,15 @@
     const form = passwordModal.querySelector('form'); form.reset();
     passwordModal.hidden = false; document.body.classList.add('patient-modal-open'); passwordModal.querySelector('[name="password"]').focus();
   }
-  function renderPermissions(user) {
+  function renderRoleChoices(user) {
     const list = permissionsModal.querySelector('[data-permission-list]');
-    list.innerHTML = permissions.map(([id, label]) => `<label class="form-check"><input type="checkbox" name="permissionIds" value="${id}" ${user.permissionIds.includes(id) ? 'checked' : ''}><span>${escapeHtml(label)}</span></label>`).join('');
+    const selectableRoles = (window.RcmFacilityRoles?.list?.() || []).filter((role) => role.active || user.roleIds.includes(role.id));
+    list.innerHTML = selectableRoles.length ? selectableRoles.map((role) => `<label class="form-check"><input type="checkbox" name="roleIds" value="${escapeHtml(role.id)}" ${user.roleIds.includes(role.id) ? 'checked' : ''} ${role.active ? '' : 'disabled'}><span><strong>${escapeHtml(role.englishName)}${role.active ? '' : ' · Inactive'}</strong><small lang="ar" dir="rtl">${escapeHtml(role.arabicName)} · ${escapeHtml(role.level)}</small></span></label>`).join('') : '<p class="user-permission-empty">No active roles are available. Add or activate a role in Settings first.</p>';
     permissionsModal.querySelector('[data-permission-search]').value = '';
     list.querySelectorAll('.form-check').forEach((item) => { item.hidden = false; });
   }
   function openPermissionsModal(user, trigger) {
-    currentUsername = user.username; returnFocus = trigger; renderPermissions(user);
+    currentUsername = user.username; returnFocus = trigger; renderRoleChoices(user);
     permissionsModal.hidden = false; document.body.classList.add('patient-modal-open'); permissionsModal.querySelector('[data-permission-search]').focus();
   }
 
@@ -255,7 +250,7 @@
       branchCode: userForm.elements.namedItem('branchCode').value, facilityId,
     };
     if (mode === 'new') {
-      const record = { ...values, active: true, permissionIds: [] }; users.push(record); save();
+      const record = { ...values, active: true, roleIds: [] }; users.push(record); save();
       grid.querySelectorAll('[data-user-filter]').forEach((field) => { field.value = ''; }); appliedFilters = {}; page = Math.ceil(users.length / pageSize);
       closeModal(userModal, false); render(); showToast(`${record.englishName} was created successfully.`);
     } else {
@@ -277,8 +272,12 @@
   });
   permissionsModal.querySelector('form').addEventListener('submit', (event) => {
     event.preventDefault(); const user = userByName(currentUsername); if (!user) return;
-    user.permissionIds = [...permissionsModal.querySelectorAll('[name="permissionIds"]:checked')].map((input) => Number(input.value));
-    save(); closeModal(permissionsModal); showToast(`Permissions updated for ${user.englishName}.`);
+    user.roleIds = [...permissionsModal.querySelectorAll('[name="roleIds"]:checked')].map((input) => input.value);
+    save(); closeModal(permissionsModal); showToast(`Roles updated for ${user.englishName}.`);
+  });
+  window.addEventListener('rcm:roles-changed', () => {
+    const user = userByName(currentUsername);
+    if (user && !permissionsModal.hidden) renderRoleChoices(user);
   });
 
   for (const modal of [userModal, passwordModal, permissionsModal]) {
