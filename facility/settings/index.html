@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8f7f3">
   <title>Facility Settings · RCM SMB</title>
-  <link rel="stylesheet" href="../../assets/css/shadcn.css?v=facility-payers-1">
+  <link rel="stylesheet" href="../../assets/css/shadcn.css?v=facility-benefits-1">
   <script src="../../assets/js/theme.js" data-theme-view="facility"></script>
-  <script src="../../assets/js/settings-sidebar.js?v=facility-financial-4" defer></script>
+  <script src="../../assets/js/settings-sidebar.js?v=facility-financial-5" defer></script>
   <script src="../../assets/js/sidebar-collapse.js?v=facility-focus-2" defer></script>
   <script src="../../assets/js/facility-store.js?v=facility-focus-2" defer></script>
   <script src="../../assets/js/facility-grid.js?v=facility-record-workspace-1" defer></script>
@@ -19,6 +19,7 @@
   <script src="../../assets/js/facility-cost-centers.js?v=1" defer></script>
   <script src="../../assets/js/facility-payers.js?v=3" defer></script>
   <script src="../../assets/js/facility-tpas.js?v=1" defer></script>
+  <script src="../../assets/js/facility-benefits.js?v=2" defer></script>
   <script src="../../assets/js/facility-practitioners.js?v=6" defer></script>
   <script src="../../assets/js/facility-roles.js?v=2" defer></script>
   <script src="../../assets/js/facility-users.js?v=4" defer></script>
@@ -92,6 +93,7 @@
         <section class="facility-grid roles-page" aria-label="Roles" data-roles-grid hidden></section>
         <section class="facility-grid payers-page" aria-label="Payers" data-payers-grid hidden></section>
         <section class="facility-grid tpas-page" aria-label="TPAs" data-tpas-grid hidden></section>
+        <section class="facility-grid benefits-page" aria-label="Benefits" data-benefits-grid hidden></section>
       </main>
     </div>
   </div>
@@ -148,6 +150,7 @@
   </div>
   <div class="facility-toast" data-facility-toast role="status" aria-live="polite"></div>
   <div class="patient-modal-backdrop" id="tpa-modal" hidden></div>
+  <div class="patient-modal-backdrop" id="benefit-modal" hidden></div>
   <div class="patient-modal-backdrop" id="branch-modal" hidden>
     <section class="patient-modal branch-modal" role="dialog" aria-modal="true" aria-labelledby="branch-modal-title" aria-describedby="branch-modal-description">
       <header class="patient-modal-header"><div><p class="eyebrow">BRANCH RECORD</p><h2 id="branch-modal-title">Add Branch</h2><p id="branch-modal-description">Enter the branch details.</p></div><button type="button" class="icon-button" data-branch-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></header>

@@ -539,3 +539,13 @@ body.patient-modal-open { overflow: hidden; }
 .payer-row-edit { min-height: 28px; padding: 4px 7px; font-size: 10px; }
 @media (max-width: 900px) { .payer-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .payer-section .payer-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .payer-filter-grid, .payer-section .payer-form-grid { grid-template-columns: 1fr; } .payer-checkbox { align-self: auto; } }
+.benefit-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.benefit-table { min-width: 980px; }
+.benefit-modal { width: min(1180px, 100%); }
+.benefit-modal-body { display: grid; grid-auto-rows: max-content; align-content: start; gap: 14px; }
+.benefit-section { overflow: hidden; margin: 0; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.benefit-section .benefit-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 15px; }
+.benefit-section .form-field small { color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 400; }
+.benefit-subsection-title { grid-column: 1 / -1; margin-top: 3px; padding: 7px 0 5px; border-bottom: 1px solid hsl(var(--border)); color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+@media (max-width: 900px) { .benefit-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .benefit-section .benefit-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .benefit-filter-grid, .benefit-section .benefit-form-grid { grid-template-columns: 1fr; } }
