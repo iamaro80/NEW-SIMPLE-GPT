@@ -611,3 +611,36 @@ body.patient-modal-open { overflow: hidden; }
 .policy-terms-table { min-width: 720px; }
 @media (max-width: 900px) { .policy-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .policy-advanced-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } .policy-section .policy-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .policy-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .policy-filter-grid, .policy-advanced-fields, .policy-section .policy-form-grid { grid-template-columns: 1fr; } .policy-advanced-fields { grid-column: 1; } .policy-remarks { grid-column: auto; } .policy-meta-grid { grid-template-columns: 1fr; } .policy-detail-card-heading { align-items: flex-start; flex-direction: column; } .policy-plan-meta { grid-template-columns: 1fr; } .policy-detail-toolbar { align-items: stretch; } }
+.contract-filter-grid { grid-template-columns: repeat(4, minmax(170px, 1fr)); }
+.contracts-table { min-width: 1020px; }
+.contract-modal { width: min(1120px, 100%); }
+.contract-modal-body { display: grid; align-content: start; gap: 14px; }
+.contract-section { overflow: hidden; margin: 0; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.contract-section .contract-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 15px; }
+.contract-check { align-self: end; min-height: 35px; }
+.contract-check input[type="checkbox"] { width: 15px; height: 15px; margin: 0; accent-color: hsl(var(--primary)); }
+.contract-section input[readonly], .contract-section input:disabled { background: hsl(var(--muted) / .55); color: hsl(var(--muted-foreground)); opacity: 1; }
+.contract-association-editor { display: grid; grid-template-columns: minmax(210px, 2fr) minmax(145px, 1fr) minmax(145px, 1fr) auto; align-items: end; gap: 11px; padding: 14px 15px; }
+.contract-association-editor > .button { min-height: 35px; }
+.contract-association-editor > .button svg { width: 14px; height: 14px; }
+.contract-association-table-wrap { margin: 0 15px 14px; border: 1px solid hsl(var(--border)); border-radius: 7px; }
+.contract-association-table { min-width: 610px; }
+.contract-association-table td:last-child { width: 90px; }
+.contract-remove-association { min-height: 27px; padding: 3px 7px; font-size: 10px; }
+.contract-section > .contract-association-empty { margin: 0 15px 14px; padding: 12px; }
+.contract-modal .patient-modal-footer > div { flex-wrap: wrap; justify-content: flex-end; }
+.contract-details-page { display: grid; gap: 14px; min-width: 0; }
+.contract-detail-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.contract-detail-toolbar .button svg { width: 15px; height: 15px; }
+.contract-detail-card { overflow: hidden; padding: 0 0 14px; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
+.contract-detail-card > h3 { margin: 0; padding: 15px 18px; border-bottom: 1px solid hsl(var(--border)); font-size: 13px; }
+.contract-detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 15px 18px; border-bottom: 1px solid hsl(var(--border)); }
+.contract-detail-heading h2 { margin: 0; font-size: 15px; }
+.contract-meta-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
+.contract-meta-grid > div { min-width: 0; padding: 13px 16px; border-bottom: 1px solid hsl(var(--border) / .75); }
+.contract-meta-grid dt { margin: 0 0 5px; color: hsl(var(--muted-foreground)); font-size: 9px; font-weight: 650; }
+.contract-meta-grid dd { overflow-wrap: anywhere; margin: 0; color: hsl(var(--foreground)); font-size: 11px; }
+.contract-detail-table { min-width: 620px; }
+.contract-detail-empty { padding: 14px; }
+@media (max-width: 900px) { .contract-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .contract-section .contract-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .contract-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .contract-filter-grid, .contract-section .contract-form-grid, .contract-meta-grid { grid-template-columns: 1fr; } .contract-association-editor { grid-template-columns: 1fr; align-items: stretch; } .contract-detail-heading, .contract-detail-toolbar { align-items: flex-start; flex-direction: column; } }
