@@ -450,7 +450,7 @@ button { color: inherit; }
 .practitioners-page { width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr); }
 .practitioners-page > *, .practitioners-page .facility-table-card, .practitioners-page .facility-table-scroll { min-width: 0; max-width: 100%; }
 .practitioners-page .facility-table-scroll { width: 100%; }
-.practitioners-table { min-width: 1460px; }
+.practitioners-table { min-width: 1260px; }
 .practitioner-modal { width: min(980px, 100%); }
 .practitioner-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .practitioner-section { overflow: hidden; margin: 0 0 15px; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
