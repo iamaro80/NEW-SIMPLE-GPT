@@ -15,11 +15,24 @@
   };
 
   function periodsForYear(year, frequency) {
-    if (frequency === 'Yearly') {
+    if (frequency === 'Annually') {
       return [{
-        id: `${year}-yearly`, name: String(year), year, startDate: dateString(year, 1, 1), endDate: dateString(year, 12, 31),
+        id: `${year}-annually`, name: String(year), year, startDate: dateString(year, 1, 1), endDate: dateString(year, 12, 31),
         status: 'Future', payerOnly: false, allowClaimCreation: true, fiscalYearType: 'Gregorian Fiscal', frequency,
       }];
+    }
+    if (frequency === 'Quarterly') {
+      return Array.from({ length: 4 }, (_, index) => {
+        const quarter = index + 1;
+        const startMonth = index * 3 + 1;
+        const endMonth = startMonth + 2;
+        const lastDay = new Date(Date.UTC(year, endMonth, 0)).getUTCDate();
+        return {
+          id: `${year}-quarterly-${quarter}`, name: `${year}-Q${quarter}`, year, quarter,
+          startDate: dateString(year, startMonth, 1), endDate: dateString(year, endMonth, lastDay),
+          status: 'Future', payerOnly: false, allowClaimCreation: true, fiscalYearType: 'Gregorian Fiscal', frequency,
+        };
+      });
     }
     if (frequency === 'Weekly') {
       const yearLength = Math.round((Date.UTC(year + 1, 0, 1) - Date.UTC(year, 0, 1)) / 86400000);
@@ -66,7 +79,16 @@
       const saved = localStorage.getItem(storageKey);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          let migrated = false;
+          const records = parsed.map((period) => {
+            if (period.frequency !== 'Yearly') return period;
+            migrated = true;
+            return { ...period, frequency: 'Annually', id: `${period.year}-annually` };
+          });
+          if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
+          return records;
+        }
       }
       const seeded = periodsForYear(2026, 'Monthly');
       localStorage.setItem(storageKey, JSON.stringify(seeded));
@@ -88,7 +110,7 @@
       <div class="branches-add-row"><button class="button button-primary" type="button" data-period-add>${icons.add}Add Billing Periods</button></div>
       <div class="billing-summary-row">
         <label class="facility-filter"><span>Year</span><select data-period-year>${years.map((year) => `<option value="${year}"${year === 2026 ? ' selected' : ''}>${year}</option>`).join('')}</select></label>
-        <label class="facility-filter"><span>Billing Periods</span><select data-period-frequency><option>Weekly</option><option selected>Monthly</option><option>Yearly</option></select></label>
+        <label class="facility-filter"><span>Billing Periods</span><select data-period-frequency><option>Weekly</option><option selected>Monthly</option><option>Quarterly</option><option>Annually</option></select></label>
         <div class="billing-summary-card"><span>Year</span><strong data-summary-year>26</strong></div>
         <div class="billing-summary-card"><span>Billing Frequency</span><strong data-summary-frequency>Monthly</strong></div>
         <div class="billing-summary-card"><span>Fiscal Year Type</span><strong>Gregorian Fiscal</strong></div>
@@ -103,7 +125,7 @@
       <form data-period-form><div class="patient-modal-body"><fieldset class="patient-form-section"><legend class="sr-only">Billing Period Setup</legend><div class="facility-form-section-heading">Billing Period Setup</div><div class="patient-form-grid">
         <label class="form-field"><span>Fiscal Year Type <b>*</b></span><select name="fiscalYearType" required><option>Gregorian Fiscal</option></select></label>
         <label class="form-field"><span>Fiscal Year <b>*</b></span><select name="year" required>${years.map((year) => `<option value="${year}">${year}</option>`).join('')}</select></label>
-        <label class="form-field"><span>Billing Periods <b>*</b></span><select name="frequency" required><option>Weekly</option><option selected>Monthly</option><option>Yearly</option></select></label>
+        <label class="form-field"><span>Billing Periods <b>*</b></span><select name="frequency" required><option>Weekly</option><option selected>Monthly</option><option>Quarterly</option><option>Annually</option></select></label>
       </div></fieldset></div><footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-period-cancel>Cancel</button><button type="submit" class="button button-primary">Generate</button></div></footer></form>
     </section></div>
     <div class="patient-modal-backdrop" data-period-edit-modal hidden><section class="patient-modal branch-modal" role="dialog" aria-modal="true" aria-labelledby="period-edit-title" aria-describedby="period-edit-description">
