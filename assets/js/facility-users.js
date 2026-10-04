@@ -44,7 +44,7 @@
       <label class="facility-filter"><span>Branch</span><select data-user-filter="branchCode"><option value="">All branches</option>${branches.map((item) => `<option value="${escapeHtml(item.code)}">${escapeHtml(item.englishName)}</option>`).join('')}</select></label>
       <label class="facility-filter"><span>Status</span><select data-user-filter="status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
     </div></div>
-    <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table users-table"><thead><tr><th>User Name</th><th>English Name</th><th>Email</th><th>Mobile Number</th><th>User Type</th><th>Branch</th><th>Status</th><th>Actions</th></tr></thead><tbody data-user-rows></tbody></table></div>
+    <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table users-table"><thead><tr><th>English Name</th><th>User Name</th><th>Email</th><th>Mobile Number</th><th>User Type</th><th>Branch</th><th>Status</th><th>Actions</th></tr></thead><tbody data-user-rows></tbody></table></div>
       <div class="facility-empty" data-user-empty hidden>No users match your filters.</div><footer class="facility-pagination"><span data-user-result-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-user-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-user-page="previous" aria-label="Previous page">‹</button><span data-user-page-label></span><button class="icon-button" type="button" data-user-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-user-page="last" aria-label="Last page">»</button></div></footer></div>`;
 
   const userModal = document.createElement('div');
@@ -148,7 +148,7 @@
     const pages = Math.max(1, Math.ceil(matching.length / pageSize)); page = Math.min(page, pages);
     const visible = matching.slice((page - 1) * pageSize, page * pageSize);
     rows.innerHTML = visible.map((user) => `<tr>
-      <td class="branch-code">${escapeHtml(user.username)}</td><td><span class="facility-name-en">${escapeHtml(user.englishName)}</span><small class="practitioner-arabic-name" dir="rtl">${escapeHtml(user.arabicName || '')}</small></td>
+      <td><span class="facility-name-en">${escapeHtml(user.englishName)}</span><small class="practitioner-arabic-name" dir="rtl">${escapeHtml(user.arabicName || '')}</small></td><td class="branch-code">${escapeHtml(user.username)}</td>
       <td>${escapeHtml(user.email)}</td><td>${escapeHtml(`${user.mobileCode || '+966'} ${user.mobile || ''}`.trim())}</td><td>${escapeHtml(user.userType)}</td><td>${escapeHtml(branchName(user.branchCode))}</td>
       <td><span class="facility-status ${user.active ? 'is-active' : 'is-inactive'}"><span></span>${user.active ? 'Active' : 'Inactive'}</span></td>
       <td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-user-row-menu aria-label="Actions for ${escapeHtml(user.englishName)}" aria-haspopup="menu" aria-expanded="false" data-username="${escapeHtml(user.username)}">${icons.more}</button>
@@ -196,7 +196,7 @@
   function renderRoleChoices(user) {
     const list = permissionsModal.querySelector('[data-permission-list]');
     const selectableRoles = (window.RcmFacilityRoles?.list?.() || []).filter((role) => role.active || user.roleIds.includes(role.id));
-    list.innerHTML = selectableRoles.length ? selectableRoles.map((role) => `<label class="form-check"><input type="checkbox" name="roleIds" value="${escapeHtml(role.id)}" ${user.roleIds.includes(role.id) ? 'checked' : ''} ${role.active ? '' : 'disabled'}><span><strong>${escapeHtml(role.englishName)}${role.active ? '' : ' · Inactive'}</strong><small lang="ar" dir="rtl">${escapeHtml(role.arabicName)} · ${escapeHtml(role.level)}</small></span></label>`).join('') : '<p class="user-permission-empty">No active roles are available. Add or activate a role in Settings first.</p>';
+    list.innerHTML = selectableRoles.length ? selectableRoles.map((role) => `<label class="form-check"><input type="checkbox" name="roleIds" value="${escapeHtml(role.id)}" ${user.roleIds.includes(role.id) ? 'checked' : ''} ${role.active ? '' : 'disabled'}><span><strong>${escapeHtml(role.englishName)}${role.active ? '' : ' · Inactive'}</strong><small lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</small></span></label>`).join('') : '<p class="user-permission-empty">No active roles are available. Add or activate a role in Settings first.</p>';
     permissionsModal.querySelector('[data-permission-search]').value = '';
     list.querySelectorAll('.form-check').forEach((item) => { item.hidden = false; });
   }

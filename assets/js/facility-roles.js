@@ -15,10 +15,10 @@
     { id: 'PERM-010', name: 'Access X4Security Application', module: 'Security' },
   ];
   const seed = [
-    { id: 'role-001', arabicName: 'مدير المنشأة', englishName: 'Facility Administrator', level: 'Facility', permissionIds: permissionCatalog.map((item) => item.id), active: true },
-    { id: 'role-002', arabicName: 'منسق وصول المرضى', englishName: 'Patient Access Coordinator', level: 'Facility', permissionIds: ['PERM-001', 'PERM-002', 'PERM-003', 'PERM-004', 'PERM-005', 'PERM-006', 'PERM-007'], active: true },
-    { id: 'role-003', arabicName: 'أخصائي الفوترة', englishName: 'Billing Specialist', level: 'Facility', permissionIds: ['PERM-004', 'PERM-008'], active: true },
-    { id: 'role-004', arabicName: 'مدقق سريري', englishName: 'Clinical Auditor', level: 'Tenant', permissionIds: ['PERM-004', 'PERM-005', 'PERM-008'], active: true },
+    { id: 'role-001', arabicName: 'مدير المنشأة', englishName: 'Facility Administrator', permissionIds: permissionCatalog.map((item) => item.id), active: true },
+    { id: 'role-002', arabicName: 'منسق وصول المرضى', englishName: 'Patient Access Coordinator', permissionIds: ['PERM-001', 'PERM-002', 'PERM-003', 'PERM-004', 'PERM-005', 'PERM-006', 'PERM-007'], active: true },
+    { id: 'role-003', arabicName: 'أخصائي الفوترة', englishName: 'Billing Specialist', permissionIds: ['PERM-004', 'PERM-008'], active: true },
+    { id: 'role-004', arabicName: 'مدقق سريري', englishName: 'Clinical Auditor', permissionIds: ['PERM-004', 'PERM-005', 'PERM-008'], active: true },
   ];
   if (!grid) {
     window.RcmFacilityRoles = { list: () => load().map((role) => ({ ...role })), permissionCatalog, storageKey };
@@ -43,12 +43,12 @@
   let toastTimer;
 
   grid.innerHTML = `<div class="branches-toolbar"><div class="branches-add-row"><button class="button button-primary" type="button" data-role-add>${icons.add}Add Role</button></div><div class="branches-filter-grid role-filter-grid"><label class="facility-filter"><span>Name</span><input type="search" data-role-filter placeholder="Name"></label></div></div>
-    <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table roles-table"><thead><tr><th>Arabic Name</th><th>English Name</th><th>Level</th><th>Permissions</th><th>Status</th><th>Actions</th></tr></thead><tbody data-role-rows></tbody></table></div><div class="facility-empty" data-role-empty hidden>No roles match your filter.</div><footer class="facility-pagination"><span data-role-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-role-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-role-page="previous" aria-label="Previous page">‹</button><span data-role-page-label></span><button class="icon-button" type="button" data-role-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-role-page="last" aria-label="Last page">»</button></div></footer></div>`;
+    <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table roles-table"><thead><tr><th>English Name</th><th>Arabic Name</th><th>Status</th><th>Actions</th></tr></thead><tbody data-role-rows></tbody></table></div><div class="facility-empty" data-role-empty hidden>No roles match your filter.</div><footer class="facility-pagination"><span data-role-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-role-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-role-page="previous" aria-label="Previous page">‹</button><span data-role-page-label></span><button class="icon-button" type="button" data-role-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-role-page="last" aria-label="Last page">»</button></div></footer></div>`;
   const modal = document.createElement('div');
   modal.className = 'patient-modal-backdrop'; modal.id = 'role-modal'; modal.hidden = true;
   modal.innerHTML = `<section class="patient-modal role-modal" role="dialog" aria-modal="true" aria-labelledby="role-modal-title" aria-describedby="role-modal-description"><header class="patient-modal-header"><div><p class="eyebrow">ROLE RECORD</p><h2 id="role-modal-title">Add Role</h2><p id="role-modal-description">Enter role details and select permissions.</p></div><button class="icon-button" type="button" data-role-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><form data-role-form><div class="patient-modal-body role-modal-body">
-      <fieldset class="patient-form-section role-section"><legend class="sr-only">Role Info</legend><div class="facility-form-section-heading">Role Info</div><div class="patient-form-grid role-info-grid"><label class="form-field"><span>Arabic Name <b>*</b></span><input name="arabicName" dir="rtl" required autocomplete="off"></label><label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required autocomplete="off"></label><label class="form-field"><span>Level <b>*</b></span><select name="level" required><option value="">Select</option><option>Tenant</option><option>Facility</option></select></label></div></fieldset>
-      <fieldset class="patient-form-section role-section"><legend class="sr-only">Role Permissions</legend><div class="facility-form-section-heading">Role Permissions</div><div class="role-permission-tools"><label class="facility-filter"><span>Search</span><input type="search" data-role-permission-search placeholder="Search"></label><label class="form-check role-select-all"><input type="checkbox" data-role-select-all><span>Select All</span></label></div><div class="facility-table-scroll role-permission-scroll"><table class="facility-table role-permission-table"><thead><tr><th>Select</th><th>ID</th><th>Name</th><th>Level</th><th>Module</th></tr></thead><tbody data-role-permission-rows></tbody></table></div><div class="facility-empty role-no-permissions" data-role-no-permissions hidden>No permissions match your search.</div></fieldset>
+      <fieldset class="patient-form-section role-section"><legend class="sr-only">Role Info</legend><div class="facility-form-section-heading">Role Info</div><div class="patient-form-grid role-info-grid"><label class="form-field"><span>Arabic Name <b>*</b></span><input name="arabicName" dir="rtl" required autocomplete="off"></label><label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required autocomplete="off"></label></div></fieldset>
+      <fieldset class="patient-form-section role-section"><legend class="sr-only">Role Permissions</legend><div class="facility-form-section-heading">Role Permissions</div><div class="role-permission-tools"><label class="facility-filter"><span>Search</span><input type="search" data-role-permission-search placeholder="Search"></label><label class="form-check role-select-all"><input type="checkbox" data-role-select-all><span>Select All</span></label></div><div class="facility-table-scroll role-permission-scroll"><table class="facility-table role-permission-table"><thead><tr><th>Select</th><th>ID</th><th>Name</th><th>Module</th></tr></thead><tbody data-role-permission-rows></tbody></table></div><div class="facility-empty role-no-permissions" data-role-no-permissions hidden>No permissions match your search.</div></fieldset>
     </div><footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-role-cancel>Cancel</button><button type="submit" class="button button-primary" data-role-save>Create</button></div></footer></form></section>`;
   document.body.append(modal);
   const form = modal.querySelector('[data-role-form]');
@@ -62,7 +62,16 @@
       const stored = localStorage.getItem(storageKey);
       if (stored !== null) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed.map((role) => ({ ...role, permissionIds: Array.isArray(role.permissionIds) ? role.permissionIds : [] }));
+        if (Array.isArray(parsed)) {
+          let migrated = false;
+          const records = parsed.map((role) => {
+            const { level, ...facilityRole } = role;
+            if (level !== undefined) migrated = true;
+            return { ...facilityRole, permissionIds: Array.isArray(role.permissionIds) ? role.permissionIds : [] };
+          });
+          if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
+          return records;
+        }
       }
       localStorage.setItem(storageKey, JSON.stringify(seed));
     } catch { /* Seed remains available in memory when storage is unavailable. */ }
@@ -90,7 +99,7 @@
     const matches = matchedRoles();
     const pages = Math.max(1, Math.ceil(matches.length / pageSize)); page = Math.min(page, pages);
     const visible = matches.slice((page - 1) * pageSize, page * pageSize);
-    rows.innerHTML = visible.map((role) => `<tr><td lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</td><td><span class="facility-name-en">${escapeHtml(role.englishName)}</span></td><td>${escapeHtml(role.level)}</td><td>${role.permissionIds.length}</td><td><span class="facility-status ${role.active ? 'is-active' : 'is-inactive'}"><span></span>${role.active ? 'Active' : 'Inactive'}</span></td><td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-role-row-menu aria-label="Actions for ${escapeHtml(role.englishName)}" aria-haspopup="menu" aria-expanded="false" data-role-id="${escapeHtml(role.id)}">${icons.more}</button><div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-role-action="view" data-role-id="${escapeHtml(role.id)}">${icons.eye}View</button><button type="button" role="menuitem" data-role-action="edit" data-role-id="${escapeHtml(role.id)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-role-action="status" data-role-id="${escapeHtml(role.id)}">${icons.status}${role.active ? 'Deactivate' : 'Activate'}</button></div></div></td></tr>`).join('');
+    rows.innerHTML = visible.map((role) => `<tr><td><span class="facility-name-en">${escapeHtml(role.englishName)}</span></td><td lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</td><td><span class="facility-status ${role.active ? 'is-active' : 'is-inactive'}"><span></span>${role.active ? 'Active' : 'Inactive'}</span></td><td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-role-row-menu aria-label="Actions for ${escapeHtml(role.englishName)}" aria-haspopup="menu" aria-expanded="false" data-role-id="${escapeHtml(role.id)}">${icons.more}</button><div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-role-action="view" data-role-id="${escapeHtml(role.id)}">${icons.eye}View</button><button type="button" role="menuitem" data-role-action="edit" data-role-id="${escapeHtml(role.id)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-role-action="status" data-role-id="${escapeHtml(role.id)}">${icons.status}${role.active ? 'Deactivate' : 'Activate'}</button></div></div></td></tr>`).join('');
     grid.querySelector('[data-role-empty]').hidden = matches.length > 0;
     grid.querySelector('[data-role-count]').textContent = `Total Results: ${matches.length}`;
     grid.querySelector('[data-role-page-label]').textContent = `Page ${matches.length ? page : 0} of ${matches.length ? pages : 0}`;
@@ -99,7 +108,7 @@
   function renderPermissionRows(search = modal.querySelector('[data-role-permission-search]').value) {
     const normalized = search.trim().toLocaleLowerCase();
     const filtered = permissionCatalog.filter((permission) => (mode !== 'view' || selectedPermissionSet.has(permission.id)) && `${permission.id} ${permission.name} ${permission.module}`.toLocaleLowerCase().includes(normalized));
-    permissionRows.innerHTML = filtered.map((permission) => `<tr><td><input type="checkbox" name="permissionIds" value="${escapeHtml(permission.id)}" aria-label="Select ${escapeHtml(permission.name)}" ${selectedPermissionSet.has(permission.id) ? 'checked' : ''} ${mode === 'view' ? 'disabled' : ''}></td><td class="branch-code">${escapeHtml(permission.id)}</td><td>${escapeHtml(permission.name)}</td><td>${escapeHtml(form.elements.namedItem('level').value || 'Facility')}</td><td>${escapeHtml(permission.module)}</td></tr>`).join('');
+    permissionRows.innerHTML = filtered.map((permission) => `<tr><td><input type="checkbox" name="permissionIds" value="${escapeHtml(permission.id)}" aria-label="Select ${escapeHtml(permission.name)}" ${selectedPermissionSet.has(permission.id) ? 'checked' : ''} ${mode === 'view' ? 'disabled' : ''}></td><td class="branch-code">${escapeHtml(permission.id)}</td><td>${escapeHtml(permission.name)}</td><td>${escapeHtml(permission.module)}</td></tr>`).join('');
     const noPermissions = modal.querySelector('[data-role-no-permissions]');
     noPermissions.textContent = mode === 'view' && !selectedPermissionSet.size ? 'No permissions are assigned to this role.' : 'No permissions match your search.';
     noPermissions.hidden = filtered.length > 0;
@@ -132,7 +141,6 @@
     if (role) {
       form.elements.namedItem('arabicName').value = role.arabicName;
       form.elements.namedItem('englishName').value = role.englishName;
-      form.elements.namedItem('level').value = role.level;
     }
     modal.querySelector('[data-role-permission-search]').value = '';
     renderPermissionRows();
@@ -157,7 +165,6 @@
     });
     syncSelectAll();
   });
-  form.elements.namedItem('level').addEventListener('change', () => renderPermissionRows());
   grid.querySelector('[data-role-add]').addEventListener('click', (event) => openModal('new', null, event.currentTarget));
   grid.querySelector('[data-role-filter]').addEventListener('input', (event) => { query = event.currentTarget.value.trim().toLocaleLowerCase(); page = 1; closeMenus(); render(); });
   grid.querySelectorAll('[data-role-page]').forEach((button) => button.addEventListener('click', () => {
@@ -180,7 +187,7 @@
   });
   form.addEventListener('submit', (event) => {
     event.preventDefault(); if (!form.reportValidity()) return;
-    const values = { arabicName: form.elements.namedItem('arabicName').value.trim(), englishName: form.elements.namedItem('englishName').value.trim(), level: form.elements.namedItem('level').value, permissionIds: selectedPermissionIds() };
+    const values = { arabicName: form.elements.namedItem('arabicName').value.trim(), englishName: form.elements.namedItem('englishName').value.trim(), permissionIds: selectedPermissionIds() };
     if (roles.some((role) => role.id !== activeId && role.englishName.toLocaleLowerCase() === values.englishName.toLocaleLowerCase())) {
       form.elements.namedItem('englishName').setCustomValidity('A role with this English Name already exists.'); form.elements.namedItem('englishName').reportValidity(); return;
     }

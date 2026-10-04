@@ -502,11 +502,11 @@ body.patient-modal-open { overflow: hidden; }
 @media (max-width: 900px) { .users-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .user-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .users-filter-grid, .user-form-grid { grid-template-columns: 1fr; } .user-notes { grid-column: auto; } }
 .role-filter-grid { grid-template-columns: minmax(220px, 420px); }
-.roles-table { min-width: 850px; }
+.roles-table { min-width: 600px; }
 .role-modal { width: min(1020px, 100%); }
 .role-modal-body { display: grid; gap: 15px; }
 .role-section { overflow: hidden; margin: 0; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
-.role-info-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 15px; }
+.role-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 15px; }
 .role-permission-tools { display: flex; align-items: end; justify-content: space-between; gap: 15px; padding: 14px 15px 10px; }
 .role-permission-tools .facility-filter { width: min(360px, 70%); }
 .role-select-all { flex: 0 0 auto; min-height: 36px; }
