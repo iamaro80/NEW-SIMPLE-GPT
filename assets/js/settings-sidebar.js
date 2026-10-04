@@ -66,6 +66,7 @@
     const showUsers = matching?.dataset.route === 'users';
     const showRoles = matching?.dataset.route === 'roles';
     const showPayers = matching?.dataset.route === 'payers';
+    const showTpas = matching?.dataset.route === 'tpas';
     const showFacilityStructure = ['divisions', 'locations', 'rooms', 'billing-period', 'cost-centers'].includes(matching?.dataset.route);
     document.querySelector('[data-current-facility-profile]')?.toggleAttribute('hidden', !showFacilityProfile);
     document.querySelector('[data-branches-grid]')?.toggleAttribute('hidden', !showBranches);
@@ -74,8 +75,9 @@
     document.querySelector('[data-users-grid]')?.toggleAttribute('hidden', !showUsers);
     document.querySelector('[data-roles-grid]')?.toggleAttribute('hidden', !showRoles);
     document.querySelector('[data-payers-grid]')?.toggleAttribute('hidden', !showPayers);
+    document.querySelector('[data-tpas-grid]')?.toggleAttribute('hidden', !showTpas);
     document.querySelector('[data-structure-workspace]')?.toggleAttribute('hidden', !showFacilityStructure);
-    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers);
+    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
       const active = item === matching;
       item.classList.toggle('active', active);
@@ -88,7 +90,9 @@
     document.querySelector('[data-page-title]').textContent = label === 'Settings' ? 'Facility Settings' : label;
     document.querySelector('[data-page-subtitle]').textContent = label === 'Settings'
       ? 'Manage administrative configuration for your facility.'
-      : `Configure ${label.toLowerCase()} for your facility.`;
+      : label === 'TPAs'
+        ? 'Manage third party administrator records for your facility.'
+        : `Configure ${label.toLowerCase()} for your facility.`;
     document.querySelector('[data-workspace-title]').textContent = label === 'Settings' ? 'Settings workspace' : `${label} workspace`;
     const activeGroup = matching?.closest('.nav-children');
     document.querySelectorAll('.nav-children').forEach((group) => {

@@ -18,6 +18,7 @@
   <script src="../../assets/js/facility-billing-periods.js?v=3" defer></script>
   <script src="../../assets/js/facility-cost-centers.js?v=1" defer></script>
   <script src="../../assets/js/facility-payers.js?v=3" defer></script>
+  <script src="../../assets/js/facility-tpas.js?v=1" defer></script>
   <script src="../../assets/js/facility-practitioners.js?v=6" defer></script>
   <script src="../../assets/js/facility-roles.js?v=2" defer></script>
   <script src="../../assets/js/facility-users.js?v=4" defer></script>
@@ -90,6 +91,7 @@
         <section class="facility-grid users-page" aria-label="Users" data-users-grid hidden></section>
         <section class="facility-grid roles-page" aria-label="Roles" data-roles-grid hidden></section>
         <section class="facility-grid payers-page" aria-label="Payers" data-payers-grid hidden></section>
+        <section class="facility-grid tpas-page" aria-label="TPAs" data-tpas-grid hidden></section>
       </main>
     </div>
   </div>
@@ -145,6 +147,7 @@
     </section>
   </div>
   <div class="facility-toast" data-facility-toast role="status" aria-live="polite"></div>
+  <div class="patient-modal-backdrop" id="tpa-modal" hidden></div>
   <div class="patient-modal-backdrop" id="branch-modal" hidden>
     <section class="patient-modal branch-modal" role="dialog" aria-modal="true" aria-labelledby="branch-modal-title" aria-describedby="branch-modal-description">
       <header class="patient-modal-header"><div><p class="eyebrow">BRANCH RECORD</p><h2 id="branch-modal-title">Add Branch</h2><p id="branch-modal-description">Enter the branch details.</p></div><button type="button" class="icon-button" data-branch-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></header>
