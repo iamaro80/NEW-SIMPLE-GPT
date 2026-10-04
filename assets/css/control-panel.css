@@ -1,6 +1,13 @@
 .control-panel-content { width: 100%; }
 .control-panel-content .breadcrumbs { justify-content: center; margin-bottom: 26px; }
 .minimal-view.organization-page { width: min(1320px, calc(100% - 64px)); }
+.organization-page .minimal-content { display: block; text-align: left; }
+.organization-page .control-panel-content .breadcrumbs { justify-content: flex-start; }
+.organization-page .control-panel-content > .eyebrow,
+.organization-page .control-panel-content > .hero-title,
+.organization-page .control-panel-content > .hero-copy { width: 100%; max-width: none; margin-left: 0; margin-right: 0; text-align: left; }
+.organization-page .control-panel-content > .hero-title { margin-top: 13px; margin-bottom: 8px; }
+.organization-page .control-panel-content > .workspace { margin-top: 28px !important; }
 .workspace-organizations { width: 100% !important; min-height: 0 !important; display: block; border: 0; background: transparent; text-align: left; }
 .workspace-inner[hidden], .organization-grid[hidden] { display: none !important; }
 .organization-grid { display: grid; gap: 14px; width: 100%; text-align: left; }
