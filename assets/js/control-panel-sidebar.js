@@ -30,17 +30,23 @@
 
   const links = [...navigation.querySelectorAll('[data-control-route]')];
   const seedOrganizations = [
-    { id: 'org-1', en: 'Al Noor Healthcare Group', ar: 'مجموعة النور للرعاية الصحية', plan: 'Enterprise', status: 'Active' },
-    { id: 'org-2', en: 'Riyadh Medical Network', ar: 'شبكة الرياض الطبية', plan: 'Growth', status: 'Active' },
-    { id: 'org-3', en: 'Al Shifa Clinics', ar: 'عيادات الشفاء', plan: 'Standard', status: 'Onboarding' },
-    { id: 'org-4', en: 'GulfCare Hospitals', ar: 'مستشفيات جلف كير', plan: 'Enterprise', status: 'Suspended' },
-    { id: 'org-5', en: 'Amana Health Services', ar: 'خدمات أمانة الصحية', plan: 'Growth', status: 'Deleted' },
+    { id: 'org-1', en: 'Al Noor Healthcare Group', ar: 'مجموعة النور للرعاية الصحية', plan: 'Custom', status: 'Active' },
+    { id: 'org-2', en: 'Riyadh Medical Network', ar: 'شبكة الرياض الطبية', plan: 'Advance', status: 'Active' },
+    { id: 'org-3', en: 'Al Shifa Clinics', ar: 'عيادات الشفاء', plan: 'Basic', status: 'Pending Approval' },
+    { id: 'org-4', en: 'GulfCare Hospitals', ar: 'مستشفيات جلف كير', plan: 'Custom', status: 'Suspended' },
+    { id: 'org-5', en: 'Amana Health Services', ar: 'خدمات أمانة الصحية', plan: 'Advance', status: 'Suspended' },
   ];
+  const normalizeOrganization = (organization) => ({
+    ...organization,
+    plan: ({ Standard: 'Basic', Growth: 'Advance', Enterprise: 'Custom' })[organization.plan] || organization.plan || 'Basic',
+    status: ({ Onboarding: 'Pending Approval', Deleted: 'Suspended' })[organization.status] || organization.status || 'Pending Approval',
+  });
   let organizations = seedOrganizations;
   try {
     const savedOrganizations = JSON.parse(localStorage.getItem('xocialive-control-panel-organizations') || 'null');
-    if (Array.isArray(savedOrganizations)) organizations = savedOrganizations;
+    if (Array.isArray(savedOrganizations)) organizations = savedOrganizations.map(normalizeOrganization);
   } catch { /* Keep the seeded organizations if browser storage is unavailable. */ }
+  organizations = organizations.map(normalizeOrganization);
   const organizationSections = [
     { label: 'Profile', route: 'profile' },
     { label: 'Subscription & Billing', route: 'subscription-billing' },
@@ -63,6 +69,7 @@
   const persistOrganizations = () => {
     try { localStorage.setItem('xocialive-control-panel-organizations', JSON.stringify(organizations)); } catch { /* Keep the current session usable without browser storage. */ }
   };
+  persistOrganizations();
   const organizationsGrid = document.querySelector('[data-control-organizations-grid]');
   let organizationRows;
   let organizationCount;
@@ -74,12 +81,12 @@
         && (!values.plan || organization.plan.toLocaleLowerCase() === values.plan)
         && (!values.status || organization.status.toLocaleLowerCase() === values.status);
     });
-    organizationRows.innerHTML = filtered.map((organization) => `<tr><td class="organization-name-en"><a class="organization-focus-link" href="#organizations/${encodeURIComponent(organization.id)}/profile">${escapeHtml(organization.en)}</a></td><td class="organization-name-ar" lang="ar" dir="rtl">${escapeHtml(organization.ar || '—')}</td><td>${escapeHtml(organization.plan || '—')}</td><td><span class="organization-status status-${escapeHtml(organization.status.toLowerCase())}"><span aria-hidden="true"></span>${escapeHtml(organization.status)}</span></td></tr>`).join('');
+    organizationRows.innerHTML = filtered.map((organization) => `<tr><td class="organization-name-en"><a class="organization-focus-link" href="#organizations/${encodeURIComponent(organization.id)}/profile">${escapeHtml(organization.en)}</a></td><td class="organization-name-ar" lang="ar" dir="rtl">${escapeHtml(organization.ar || '—')}</td><td>${escapeHtml(organization.plan || '—')}</td><td><span class="organization-status status-${escapeHtml(organization.status.toLowerCase().replace(/\s+/g, '-'))}"><span aria-hidden="true"></span>${escapeHtml(organization.status)}</span></td></tr>`).join('');
     organizationsGrid.querySelector('[data-control-org-empty]').hidden = filtered.length > 0;
     organizationCount.textContent = `${filtered.length} of ${organizations.length} organizations`;
   };
   if (organizationsGrid) {
-    organizationsGrid.innerHTML = `<div class="organization-toolbar"><button class="button button-primary" type="button" data-control-add-organization><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Organization</button></div><div class="facility-filter-grid organization-filter-grid" aria-label="Organization filters"><label class="facility-filter"><span>Organization Name (en)</span><input type="search" data-control-org-filter="en" placeholder="Search English name"></label><label class="facility-filter"><span>Organization Name (ar)</span><input type="search" data-control-org-filter="ar" placeholder="Search Arabic name"></label><label class="facility-filter"><span>Subscription Plan</span><select data-control-org-filter="plan"><option value="">All plans</option>${[...new Set(organizations.map((item) => item.plan).filter(Boolean))].map((plan) => `<option value="${escapeHtml(plan.toLowerCase())}">${escapeHtml(plan)}</option>`).join('')}</select></label><label class="facility-filter"><span>Status</span><select data-control-org-filter="status"><option value="">All statuses</option><option>Active</option><option>Onboarding</option><option>Suspended</option><option>Deleted</option></select></label></div><div class="organization-grid-card"><div class="organization-grid-heading"><p data-control-org-count></p></div><div class="organization-grid-scroll"><table class="organization-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Status</th></tr></thead><tbody data-control-org-rows></tbody></table><div class="organization-grid-empty" data-control-org-empty hidden>No organizations match these filters.</div></div></div>`;
+    organizationsGrid.innerHTML = `<div class="organization-toolbar"><button class="button button-primary" type="button" data-control-add-organization><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Organization</button></div><div class="facility-filter-grid organization-filter-grid" aria-label="Organization filters"><label class="facility-filter"><span>Organization Name (en)</span><input type="search" data-control-org-filter="en" placeholder="Search English name"></label><label class="facility-filter"><span>Organization Name (ar)</span><input type="search" data-control-org-filter="ar" placeholder="Search Arabic name"></label><label class="facility-filter"><span>Subscription Plan</span><select data-control-org-filter="plan"><option value="">All plans</option><option>Basic</option><option>Advance</option><option>Custom</option></select></label><label class="facility-filter"><span>Status</span><select data-control-org-filter="status"><option value="">All statuses</option><option>Active</option><option>Pending Approval</option><option>Suspended</option></select></label></div><div class="organization-grid-card"><div class="organization-grid-heading"><p data-control-org-count></p></div><div class="organization-grid-scroll"><table class="organization-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Status</th></tr></thead><tbody data-control-org-rows></tbody></table><div class="organization-grid-empty" data-control-org-empty hidden>No organizations match these filters.</div></div></div>`;
     organizationRows = organizationsGrid.querySelector('[data-control-org-rows]');
     organizationCount = organizationsGrid.querySelector('[data-control-org-count]');
     organizationsGrid.addEventListener('input', (event) => { if (event.target.matches('[data-control-org-filter]')) renderOrganizationRows(); });
@@ -89,7 +96,12 @@
       organizationModal.hidden = false;
       document.body.classList.add('organization-modal-open');
       organizationForm.reset();
-      organizationForm.elements.status.value = 'Onboarding';
+      organizationForm.elements.status.value = 'Pending Approval';
+      organizationForm.elements.plan.value = 'Basic';
+      organizationForm.elements.country.value = 'Saudi Arabia';
+      organizationForm.elements.facilityStructure.value = 'Single Facility';
+      organizationForm.elements.consultationRules.value = 'No';
+      syncOrganizationConditionalFields();
       organizationForm.elements.en.focus();
     });
     renderOrganizationRows();
@@ -98,6 +110,23 @@
   const organizationModal = document.querySelector('[data-control-organization-modal]');
   const organizationForm = document.querySelector('[data-control-organization-form]');
   const organizationToast = document.querySelector('[data-control-organization-toast]');
+  const syncOrganizationConditionalFields = () => {
+    if (!organizationForm) return;
+    const method = organizationForm.elements.paymentMethod.value;
+    organizationForm.querySelectorAll('[data-payment-field]').forEach((field) => {
+      field.hidden = field.dataset.paymentField !== method;
+      if (field.hidden) field.querySelector('input').value = '';
+    });
+    const hisEnabled = organizationForm.elements.hisIntegration.checked;
+    organizationForm.querySelector('[data-his-field]').hidden = !hisEnabled;
+    organizationForm.elements.consultationRules.disabled = !hisEnabled;
+    if (!hisEnabled) {
+      organizationForm.elements.hisSystem.value = '';
+      organizationForm.elements.consultationRules.value = 'No';
+    }
+  };
+  organizationForm.elements.paymentMethod.addEventListener('change', syncOrganizationConditionalFields);
+  organizationForm.elements.hisIntegration.addEventListener('change', syncOrganizationConditionalFields);
   let toastTimer;
   const closeOrganizationModal = () => {
     organizationModal.hidden = true;
@@ -116,9 +145,22 @@
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !organizationModal.hidden) closeOrganizationModal(); });
   organizationForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    const data = new FormData(organizationForm);
+    const data = Object.fromEntries(new FormData(organizationForm));
     const sequence = organizations.reduce((max, item) => Math.max(max, Number(item.id.match(/\d+$/)?.[0]) || 0), 0) + 1;
-    organizations.push({ id: `org-${sequence}`, en: String(data.get('en') || '').trim(), ar: String(data.get('ar') || '').trim(), plan: String(data.get('plan') || ''), status: String(data.get('status') || 'Onboarding') });
+    const organization = {
+      ...data,
+      id: `org-${sequence}`,
+      en: String(data.en || '').trim(),
+      ar: String(data.ar || '').trim(),
+      plan: String(data.plan || 'Basic'),
+      status: String(data.status || 'Pending Approval'),
+      hisIntegration: organizationForm.elements.hisIntegration.checked,
+      consultationRules: organizationForm.elements.consultationRules.value,
+      hisSystem: organizationForm.elements.hisIntegration.checked ? organizationForm.elements.hisSystem.value : '',
+      addonAiFeatures: organizationForm.elements.addonAiFeatures.checked,
+      addonAppointmentBooking: organizationForm.elements.addonAppointmentBooking.checked,
+    };
+    organizations.push(organization);
     persistOrganizations();
     for (const filter of organizationsGrid.querySelectorAll('[data-control-org-filter]')) filter.value = '';
     renderOrganizationRows();

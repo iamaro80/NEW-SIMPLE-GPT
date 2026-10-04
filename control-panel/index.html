@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f8f7f3">
   <title>Xocialive Control Panel</title>
   <link rel="stylesheet" href="../assets/css/shadcn.css?v=control-panel-navigation-1">
-  <link rel="stylesheet" href="../assets/css/control-panel.css?v=8">
+  <link rel="stylesheet" href="../assets/css/control-panel.css?v=9">
   <script src="../assets/js/theme.js" data-theme-view="control-panel"></script>
   <script src="../assets/js/sidebar-collapse.js" defer></script>
-  <script src="../assets/js/control-panel-sidebar.js?v=8" defer></script>
+  <script src="../assets/js/control-panel-sidebar.js?v=9" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -41,14 +41,53 @@
   </div>
   <div class="patient-modal-backdrop" data-control-organization-modal hidden>
     <section class="patient-modal organization-modal" role="dialog" aria-modal="true" aria-labelledby="control-organization-modal-title">
-      <header class="patient-modal-header"><div><p class="eyebrow">CUSTOMER ORGANIZATION</p><h2 id="control-organization-modal-title">Add Organization</h2><p>Enter the organization’s basic account details.</p></div><button type="button" class="icon-button" data-control-organization-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+      <header class="patient-modal-header"><div><p class="eyebrow">CUSTOMER ORGANIZATION</p><h2 id="control-organization-modal-title">Add Organization</h2><p>Enter the organization’s account and subscription details.</p></div><button type="button" class="icon-button" data-control-organization-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
       <form data-control-organization-form>
-        <div class="patient-modal-body"><div class="organization-form-grid">
-          <label class="form-field"><span>Organization Name (en) <b>*</b></span><input name="en" required maxlength="120" autocomplete="organization"></label>
-          <label class="form-field"><span>Organization Name (ar)</span><input name="ar" dir="rtl" maxlength="120" autocomplete="organization"></label>
-          <label class="form-field"><span>Subscription Plan</span><select name="plan"><option value="">Select plan</option><option>Standard</option><option>Growth</option><option>Enterprise</option></select></label>
-          <label class="form-field"><span>Status</span><select name="status"><option>Onboarding</option><option>Active</option><option>Suspended</option><option>Deleted</option></select></label>
-        </div></div>
+        <div class="patient-modal-body organization-modal-body">
+          <fieldset class="patient-form-section organization-form-section"><legend>Legal Entity Information</legend><div class="organization-form-grid">
+            <label class="form-field"><span>Organization Name (EN) <b>*</b></span><input name="en" required maxlength="120" autocomplete="organization"></label>
+            <label class="form-field"><span>Organization Name (AR)</span><input name="ar" dir="rtl" maxlength="120" autocomplete="organization"></label>
+            <label class="form-field"><span>ZATCA VAT Number</span><input name="vatNumber" inputmode="numeric" autocomplete="off"></label>
+            <label class="form-field"><span>Primary Contact Name <b>*</b></span><input name="contactName" required autocomplete="name"></label>
+            <label class="form-field"><span>Primary Contact Email <b>*</b></span><input name="contactEmail" type="email" required autocomplete="email"></label>
+            <label class="form-field"><span>Primary Contact Phone Number <b>*</b></span><input name="contactPhone" type="tel" required autocomplete="tel"></label>
+          </div><div class="organization-address-grid">
+            <label class="form-field"><span>Country <b>*</b></span><select name="country" required><option>Saudi Arabia</option></select></label>
+            <label class="form-field"><span>City <b>*</b></span><input name="city" required autocomplete="address-level2"></label>
+            <label class="form-field"><span>District <b>*</b></span><input name="district" required autocomplete="address-level3"></label>
+            <label class="form-field"><span>Building Number</span><input name="buildingNumber" autocomplete="address-line2"></label>
+            <label class="form-field"><span>Street Name</span><input name="streetName" autocomplete="address-line1"></label>
+            <label class="form-field"><span>Postal Code</span><input name="postalCode" inputmode="numeric" autocomplete="postal-code"></label>
+            <label class="form-field"><span>Additional Number</span><input name="additionalNumber" inputmode="numeric"></label>
+          </div></fieldset>
+
+          <fieldset class="patient-form-section organization-form-section"><legend>Subscription Details</legend><div class="organization-form-grid">
+            <label class="form-field"><span>Subscription Status</span><select name="status"><option>Pending Approval</option><option>Active</option><option>Suspended</option></select></label>
+            <label class="form-field"><span>Plan</span><select name="plan"><option>Basic</option><option>Advance</option><option>Custom</option></select></label>
+            <label class="form-field"><span>Contract Start Date</span><input name="contractStartDate" type="date"></label>
+            <label class="form-field"><span>Subscription Renewal Date</span><input name="renewalDate" type="date"></label>
+            <label class="form-field"><span>Payment Method</span><select name="paymentMethod" data-payment-method><option value="">Select payment method</option><option>Credit Card</option><option>Bank Transfer</option><option>Check</option></select></label>
+            <label class="form-field"><span>Payment Status</span><select name="paymentStatus"><option value="">Select payment status</option><option>Fully Paid</option><option>Not Paid</option><option>Partially Paid</option></select></label>
+            <label class="form-field" data-payment-field="Credit Card" hidden><span>Cardholder Name</span><input name="cardholderName" autocomplete="cc-name"></label>
+            <label class="form-field" data-payment-field="Credit Card" hidden><span>Card Last Four Digits</span><input name="cardLastFour" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off"></label>
+            <label class="form-field" data-payment-field="Credit Card" hidden><span>Card Expiry Date</span><input name="cardExpiry" type="month" autocomplete="cc-exp"></label>
+            <label class="form-field" data-payment-field="Bank Transfer" hidden><span>Bank Name</span><input name="bankName" autocomplete="off"></label>
+            <label class="form-field" data-payment-field="Bank Transfer" hidden><span>IBAN</span><input name="iban" autocomplete="off"></label>
+            <label class="form-field" data-payment-field="Check" hidden><span>Check Number</span><input name="checkNumber" autocomplete="off"></label>
+          </div></fieldset>
+
+          <fieldset class="patient-form-section organization-form-section"><legend>Organization Settings</legend><div class="organization-form-grid">
+            <label class="form-field"><span>Facility Structure</span><select name="facilityStructure"><option>Single Facility</option><option>Multiple Facilities</option></select></label>
+            <label class="form-field form-field-checkbox"><input name="hisIntegration" type="checkbox" data-his-integration><span>HIS Integration</span></label>
+            <label class="form-field" data-his-field hidden><span>Target System</span><select name="hisSystem"><option value="">Select target system</option><option>Bestcare</option><option>Other</option></select></label>
+            <label class="form-field"><span>Consultation Rules Engine</span><select name="consultationRules" data-consultation-rules disabled><option>No</option><option>Yes</option></select></label>
+          </div><p class="organization-field-note">All branches are treated as billing branches.</p></fieldset>
+
+          <fieldset class="patient-form-section organization-form-section"><legend>Features &amp; Add-ons</legend><div class="organization-addon-grid">
+            <label class="form-field form-field-checkbox"><input name="addonAiFeatures" type="checkbox"><span>AI Features</span></label>
+            <label class="form-field form-field-checkbox"><input name="addonAppointmentBooking" type="checkbox"><span>Appointment and Booking</span></label>
+          </div></fieldset>
+        </div>
         <footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-control-organization-cancel>Cancel</button><button type="submit" class="button button-primary">Save Organization</button></div></footer>
       </form>
     </section>
