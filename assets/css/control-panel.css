@@ -53,5 +53,17 @@
 [data-theme="dark"] .organization-status.status-pending-approval { background: hsl(35 50% 22%); color: hsl(40 90% 76%); }
 .organization-modal .form-field[hidden] { display: none; }
 .organization-modal-open { overflow: hidden; }
+.onboarding-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.onboarding-table { min-width: 940px; }
+.onboarding-status.status-not-started { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+.onboarding-status.status-in-progress { background: hsl(44 100% 92%); color: hsl(31 83% 33%); }
+.onboarding-status.status-ready-for-review { background: hsl(154 54% 93%); color: hsl(154 55% 30%); }
+[data-theme="dark"] .onboarding-status.status-in-progress { background: hsl(35 50% 22%); color: hsl(40 90% 76%); }
+[data-theme="dark"] .onboarding-status.status-ready-for-review { background: hsl(154 45% 20%); color: hsl(154 55% 75%); }
+.onboarding-launch-button { min-height: 31px; padding: 6px 10px; white-space: nowrap; font-size: 10px; }
+.onboarding-modal { width: min(1280px, 100%); height: min(94vh, 1020px); max-height: 96vh; }
+.onboarding-modal iframe { flex: 1 1 auto; width: 100%; min-height: 0; border: 0; background: hsl(var(--background)); }
+.onboarding-modal-backdrop { z-index: 50; }
 @media (max-width: 800px) { .organization-form-grid, .organization-address-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .organization-grid-heading { align-items: flex-start; } .organization-table { min-width: 640px; } .organization-filter-grid { grid-template-columns: 1fr; } .organization-modal { max-height: 96vh; } .organization-form-grid, .organization-address-grid { grid-template-columns: 1fr; } .organization-form-section { padding: 11px; } }
+@media (max-width: 600px) { .onboarding-modal { height: 96vh; } .onboarding-filter-grid { grid-template-columns: 1fr; } }

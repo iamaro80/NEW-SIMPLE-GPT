@@ -32,15 +32,22 @@
   const seedOrganizations = [
     { id: 'org-1', en: 'Al Noor Healthcare Group', ar: 'مجموعة النور للرعاية الصحية', plan: 'Custom', status: 'Active' },
     { id: 'org-2', en: 'Riyadh Medical Network', ar: 'شبكة الرياض الطبية', plan: 'Advance', status: 'Active' },
-    { id: 'org-3', en: 'Al Shifa Clinics', ar: 'عيادات الشفاء', plan: 'Basic', status: 'Pending Approval' },
+    { id: 'org-3', en: 'Al Shifa Clinics', ar: 'عيادات الشفاء', plan: 'Basic', status: 'Pending Approval', onboardingStatus: 'In Progress' },
     { id: 'org-4', en: 'GulfCare Hospitals', ar: 'مستشفيات جلف كير', plan: 'Custom', status: 'Suspended' },
     { id: 'org-5', en: 'Amana Health Services', ar: 'خدمات أمانة الصحية', plan: 'Advance', status: 'Suspended' },
   ];
-  const normalizeOrganization = (organization) => ({
-    ...organization,
-    plan: ({ Standard: 'Basic', Growth: 'Advance', Enterprise: 'Custom' })[organization.plan] || organization.plan || 'Basic',
-    status: ({ Onboarding: 'Pending Approval', Deleted: 'Suspended' })[organization.status] || organization.status || 'Pending Approval',
-  });
+  const normalizeOrganization = (organization) => {
+    const status = ({ Onboarding: 'Pending Approval', Deleted: 'Suspended' })[organization.status] || organization.status || 'Pending Approval';
+    const onboardingStatus = organization.onboardingStatus || (status === 'Pending Approval' ? (organization.id === 'org-3' ? 'In Progress' : 'Not Started') : '');
+    const onboardingWizard = organization.onboardingWizard || (onboardingStatus === 'In Progress' ? { current: 0, saved: { 0: { englishName: organization.en || '' } }, completed: [] } : undefined);
+    return {
+      ...organization,
+      plan: ({ Standard: 'Basic', Growth: 'Advance', Enterprise: 'Custom' })[organization.plan] || organization.plan || 'Basic',
+      status,
+      onboardingStatus,
+      onboardingWizard,
+    };
+  };
   let organizations = seedOrganizations;
   try {
     const savedOrganizations = JSON.parse(localStorage.getItem('xocialive-control-panel-organizations') || 'null');
@@ -71,8 +78,14 @@
   };
   persistOrganizations();
   const organizationsGrid = document.querySelector('[data-control-organizations-grid]');
+  const onboardingGrid = document.querySelector('[data-control-onboarding-grid]');
+  const onboardingModal = document.querySelector('[data-control-onboarding-modal]');
+  const onboardingFrame = document.querySelector('[data-control-onboarding-frame]');
+  let onboardingOpener = null;
   let organizationRows;
   let organizationCount;
+  let onboardingRows;
+  let onboardingCount;
   const renderOrganizationRows = () => {
     const values = Object.fromEntries([...organizationsGrid.querySelectorAll('[data-control-org-filter]')].map((field) => [field.dataset.controlOrgFilter, field.value.trim().toLocaleLowerCase()]));
     const filtered = organizations.filter((organization) => {
@@ -106,6 +119,62 @@
     });
     renderOrganizationRows();
   }
+
+  const renderOnboardingRows = () => {
+    if (!onboardingGrid || !onboardingRows) return;
+    const values = Object.fromEntries([...onboardingGrid.querySelectorAll('[data-control-onboarding-filter]')].map((field) => [field.dataset.controlOnboardingFilter, field.value.trim().toLocaleLowerCase()]));
+    const eligible = organizations.filter((organization) => organization.status === 'Pending Approval');
+    const filtered = eligible.filter((organization) => (!values.en || organization.en.toLocaleLowerCase().includes(values.en))
+      && (!values.ar || String(organization.ar || '').toLocaleLowerCase().includes(values.ar))
+      && (!values.status || (organization.onboardingStatus || 'Not Started').toLocaleLowerCase() === values.status));
+    onboardingRows.innerHTML = filtered.map((organization) => `<tr><td class="organization-name-en">${escapeHtml(organization.en)}</td><td class="organization-name-ar" lang="ar" dir="rtl">${escapeHtml(organization.ar || '—')}</td><td>${escapeHtml(organization.plan || '—')}</td><td><span class="organization-status onboarding-status status-${escapeHtml((organization.onboardingStatus || 'Not Started').toLowerCase().replace(/\s+/g, '-'))}"><span aria-hidden="true"></span>${escapeHtml(organization.onboardingStatus || 'Not Started')}</span></td><td><button class="button button-secondary onboarding-launch-button" type="button" data-open-onboarding="${escapeHtml(organization.id)}">Open Onboarding Wizard</button></td></tr>`).join('');
+    onboardingGrid.querySelector('[data-control-onboarding-empty]').hidden = filtered.length > 0;
+    onboardingCount.textContent = `${filtered.length} of ${eligible.length} organizations awaiting approval`;
+  };
+  if (onboardingGrid) {
+    onboardingGrid.innerHTML = `<div class="facility-filter-grid organization-filter-grid onboarding-filter-grid" aria-label="Onboarding filters"><label class="facility-filter"><span>Organization Name (EN)</span><input type="search" data-control-onboarding-filter="en" placeholder="Search English name"></label><label class="facility-filter"><span>Organization Name (AR)</span><input type="search" data-control-onboarding-filter="ar" placeholder="Search Arabic name"></label><label class="facility-filter"><span>Onboarding Status</span><select data-control-onboarding-filter="status"><option value="">All statuses</option><option>Not Started</option><option>In Progress</option><option>Ready for Review</option></select></label></div><div class="organization-grid-card"><div class="organization-grid-heading"><p data-control-onboarding-count></p></div><div class="organization-grid-scroll"><table class="organization-table onboarding-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Onboarding Status</th><th scope="col">Actions</th></tr></thead><tbody data-control-onboarding-rows></tbody></table><div class="organization-grid-empty" data-control-onboarding-empty hidden>No organizations match these filters.</div></div></div>`;
+    onboardingRows = onboardingGrid.querySelector('[data-control-onboarding-rows]');
+    onboardingCount = onboardingGrid.querySelector('[data-control-onboarding-count]');
+    onboardingGrid.addEventListener('input', (event) => { if (event.target.matches('[data-control-onboarding-filter]')) renderOnboardingRows(); });
+    onboardingGrid.addEventListener('change', (event) => { if (event.target.matches('[data-control-onboarding-filter]')) renderOnboardingRows(); });
+    onboardingGrid.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-open-onboarding]');
+      if (!button) return;
+      const organization = organizations.find((item) => item.id === button.dataset.openOnboarding);
+      if (!organization) return;
+      onboardingOpener = button;
+      document.querySelector('[data-control-onboarding-organization]').textContent = organization.en;
+      onboardingFrame.src = `onboarding-wizard.html?organizationId=${encodeURIComponent(organization.id)}`;
+      onboardingModal.hidden = false;
+      document.body.classList.add('organization-modal-open');
+    });
+    renderOnboardingRows();
+  }
+
+  const closeOnboardingModal = () => {
+    const openerId = onboardingOpener?.dataset.openOnboarding;
+    onboardingModal.hidden = true;
+    onboardingFrame.src = 'about:blank';
+    document.body.classList.remove('organization-modal-open');
+    [...onboardingGrid.querySelectorAll('[data-open-onboarding]')].find((button) => button.dataset.openOnboarding === openerId)?.focus();
+    onboardingOpener = null;
+  };
+  onboardingModal.querySelector('[data-control-onboarding-close]').addEventListener('click', closeOnboardingModal);
+  onboardingModal.addEventListener('click', (event) => { if (event.target === onboardingModal) closeOnboardingModal(); });
+  window.addEventListener('message', (event) => {
+    if (event.origin !== window.location.origin || event.source !== onboardingFrame.contentWindow) return;
+    if (event.data?.type === 'control-panel-onboarding-close') {
+      closeOnboardingModal();
+      return;
+    }
+    if (event.data?.type !== 'control-panel-onboarding-update') return;
+    try {
+      const savedOrganizations = JSON.parse(localStorage.getItem('xocialive-control-panel-organizations') || '[]');
+      if (Array.isArray(savedOrganizations)) organizations = savedOrganizations.map(normalizeOrganization);
+    } catch { /* Keep the current organization list if browser storage is unavailable. */ }
+    renderOnboardingRows();
+    renderOrganizationRows();
+  });
 
   const organizationModal = document.querySelector('[data-control-organization-modal]');
   const organizationForm = document.querySelector('[data-control-organization-form]');
@@ -142,7 +211,10 @@
   organizationModal.querySelector('[data-control-organization-close]').addEventListener('click', closeOrganizationModal);
   organizationModal.querySelector('[data-control-organization-cancel]').addEventListener('click', closeOrganizationModal);
   organizationModal.addEventListener('click', (event) => { if (event.target === organizationModal) closeOrganizationModal(); });
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !organizationModal.hidden) closeOrganizationModal(); });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !organizationModal.hidden) closeOrganizationModal();
+    if (event.key === 'Escape' && !onboardingModal.hidden) closeOnboardingModal();
+  });
   organizationForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(organizationForm));
@@ -154,6 +226,7 @@
       ar: String(data.ar || '').trim(),
       plan: String(data.plan || 'Basic'),
       status: String(data.status || 'Pending Approval'),
+      onboardingStatus: String(data.status || 'Pending Approval') === 'Pending Approval' ? 'Not Started' : '',
       hisIntegration: organizationForm.elements.hisIntegration.checked,
       consultationRules: organizationForm.elements.consultationRules.value,
       hisSystem: organizationForm.elements.hisIntegration.checked ? organizationForm.elements.hisSystem.value : '',
@@ -219,10 +292,14 @@
     document.querySelector('[data-control-subtitle]').textContent = `${label} in the Xocialive Control Panel.`;
     document.querySelector('[data-control-workspace-title]').textContent = `${label} workspace`;
     const showOrganizations = route === 'organizations' && !isOrganizationFocus;
-    document.querySelector('[data-control-placeholder]').hidden = showOrganizations;
+    const showOnboarding = route === 'onboarding';
+    if (showOnboarding) renderOnboardingRows();
+    document.querySelector('[data-control-placeholder]').hidden = showOrganizations || showOnboarding;
     organizationsGrid.hidden = !showOrganizations;
-    document.querySelector('.workspace').classList.toggle('workspace-organizations', showOrganizations);
-    document.querySelector('.minimal-view').classList.toggle('organization-page', showOrganizations);
+    onboardingGrid.hidden = !showOnboarding;
+    document.querySelector('.workspace').classList.toggle('workspace-organizations', showOrganizations || showOnboarding);
+    document.querySelector('.minimal-view').classList.toggle('organization-page', showOrganizations || showOnboarding);
+    if (showOnboarding) document.querySelector('[data-control-subtitle]').textContent = 'Track facility setup progress for organizations awaiting approval.';
 
     const focusCrumb = document.querySelector('[data-control-focus-organization]');
     const focusSectionCrumb = document.querySelector('[data-control-focus-section]');

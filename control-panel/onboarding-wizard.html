@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Healthcare Facility Setup Wizard</title>
+  <link rel="stylesheet" href="../assets/css/shadcn.css">
+  <script src="../assets/js/theme.js" data-theme-view="control-panel"></script>
+  <style>
+    :root {
+      --w-bg: hsl(var(--background));
+      --w-surface: hsl(var(--card));
+      --w-surface-soft: hsl(var(--muted));
+      --w-text: hsl(var(--foreground));
+      --w-muted: hsl(var(--muted-foreground));
+      --w-border: hsl(var(--border));
+      --w-primary: hsl(var(--primary));
+      --w-primary-soft: hsl(var(--primary) / .12);
+      --w-success: #15803d;
+      --w-success-soft: #e9f8ef;
+      --w-danger: #b42318;
+      --w-danger-soft: #fff0ee;
+      --shadow: 0 8px 28px rgba(16, 24, 40, 0.08);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--w-bg);
+      color: var(--w-text);
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button { cursor: pointer; }
+
+    .app {
+      width: min(1440px, calc(100% - 32px));
+      margin: 24px auto 48px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 6px;
+      font-size: 26px;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: var(--w-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--w-primary-soft);
+      color: var(--w-primary);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .button {
+      border: 1px solid var(--w-border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      background: var(--w-surface);
+      color: var(--w-text);
+      font-weight: 700;
+    }
+
+    .button:hover { background: var(--w-surface-soft); }
+
+    .button.primary {
+      background: var(--w-primary);
+      color: white;
+      border-color: var(--w-primary);
+    }
+
+    .button.primary:hover { filter: brightness(0.96); }
+
+    .button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .stepper-shell {
+      background: var(--w-surface);
+      border: 1px solid var(--w-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      overflow-x: auto;
+      margin-bottom: 18px;
+    }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(110px, 1fr));
+      min-width: 920px;
+      gap: 8px;
+      position: relative;
+    }
+
+    .stepper::before {
+      content: "";
+      position: absolute;
+      left: 58px;
+      right: 58px;
+      top: 20px;
+      height: 2px;
+      background: var(--w-border);
+      z-index: 0;
+    }
+
+    .step {
+      position: relative;
+      z-index: 1;
+      border: 0;
+      background: transparent;
+      text-align: center;
+      padding: 0 6px;
+      color: var(--w-muted);
+    }
+
+    .step-number {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      margin: 0 auto 8px;
+      border: 2px solid var(--w-border);
+      background: var(--w-surface);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      transition: 0.2s ease;
+    }
+
+    .step-label {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    .step.active {
+      color: var(--w-primary);
+    }
+
+    .step.active .step-number {
+      border-color: var(--w-primary);
+      box-shadow: 0 0 0 4px var(--w-primary-soft);
+    }
+
+    .step.complete {
+      color: var(--w-success);
+    }
+
+    .step.complete .step-number {
+      border-color: var(--w-success);
+      background: var(--w-success);
+      color: white;
+    }
+
+    .message {
+      display: none;
+      margin-bottom: 18px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .message.success {
+      display: block;
+      background: var(--w-success-soft);
+      color: var(--w-success);
+      border: 1px solid #b7e4c7;
+    }
+
+    .message.error {
+      display: block;
+      background: var(--w-danger-soft);
+      color: var(--w-danger);
+      border: 1px solid #ffc9c2;
+    }
+
+    .panel {
+      background: var(--w-surface);
+      border: 1px solid var(--w-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--w-border);
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      color: var(--w-muted);
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .panel-header h2 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+
+    .panel-header p {
+      margin: 0;
+      color: var(--w-muted);
+    }
+
+    .section {
+      padding-top: 22px;
+      margin-top: 22px;
+      border-top: 1px solid var(--w-border);
+    }
+
+    .section:first-child {
+      padding-top: 0;
+      margin-top: 0;
+      border-top: 0;
+    }
+
+    .section h3 {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .required { color: var(--w-danger); }
+
+    .control {
+      width: 100%;
+      border: 1px solid var(--w-border);
+      border-radius: 10px;
+      background: var(--w-surface);
+      padding: 11px 12px;
+      color: var(--w-text);
+      outline: none;
+    }
+
+    .control:focus {
+      border-color: var(--w-primary);
+      box-shadow: 0 0 0 3px var(--w-primary-soft);
+    }
+
+    .control:disabled {
+      background: #eef1f5;
+      color: #98a2b3;
+      cursor: not-allowed;
+    }
+
+    textarea.control {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    input[type="color"].control {
+      min-height: 44px;
+      padding: 5px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding-top: 25px;
+    }
+
+    .checkbox-row input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .checkbox-row label {
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .panel-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding-top: 22px;
+      margin-top: 24px;
+      border-top: 1px solid var(--w-border);
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .metric {
+      background: var(--w-surface);
+      border: 1px solid var(--w-border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .metric-label {
+      color: var(--w-muted);
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .invalid {
+      border-color: var(--w-danger) !important;
+      background: var(--w-danger-soft);
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        width: min(100% - 18px, 1440px);
+        margin-top: 10px;
+      }
+
+      .page-header,
+      .panel-header,
+      .panel-footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .form-grid,
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-actions {
+        flex-direction: column;
+      }
+
+      .button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="page-header">
+      <div class="header-actions">
+        <span id="progressBadge" class="badge">0 of 8 completed</span>
+        <button id="resetButton" type="button" class="button">Reset Progress</button>
+      </div>
+    </header>
+
+    <section class="stepper-shell" aria-label="Wizard steps">
+      <div id="stepper" class="stepper"></div>
+    </section>
+
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <div id="stepEyebrow" class="eyebrow"></div>
+          <h2 id="stepTitle"></h2>
+          <p id="stepDescription"></p>
+        </div>
+        <span id="stepStatus" class="badge">Not saved</span>
+      </div>
+
+      <div id="formArea"></div>
+
+      <footer class="panel-footer">
+        <button id="previousButton" type="button" class="button">Previous</button>
+        <div class="footer-actions">
+          <button id="saveButton" type="button" class="button">Save progress</button>
+          <button id="nextButton" type="button" class="button primary">Save & Next</button>
+        </div>
+      </footer>
+    </section>
+
+    <section class="metrics">
+      <div class="metric">
+        <div class="metric-label">Current step</div>
+        <div id="currentMetric" class="metric-value">1</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Completed steps</div>
+        <div id="completedMetric" class="metric-value">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Saved fields</div>
+        <div id="fieldMetric" class="metric-value">0</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const steps = [
+      {
+        title: "Preliminary info",
+        short: "Facility",
+        description: "Define facility details, address, configuration and ZATCA information.",
+        sections: [
+          {
+            name: "Facilities Information",
+            fields: [
+              ["facilityIdentifier", "Facility Identifier", "text", true],
+              ["hcp", "HCP", "select", true, ["Hospital", "Medical Complex", "Clinic", "Laboratory"]],
+              ["arabicName", "Arabic Name", "text", true],
+              ["englishName", "English Name", "text", true],
+              ["contactName", "Contact Name", "text", true],
+              ["facilityEmail", "Email", "email", true],
+              ["phone", "Phone Number (+ Ext.)", "tel", false],
+              ["mobile", "Mobile Number", "tel", true],
+              ["licenseNumber", "License Number", "text", true],
+              ["licenseStart", "License Start", "date", true],
+              ["licenseEnd", "License End", "date", false, null, true],
+              ["chiId", "CHI ID", "text", false],
+              ["unifiedId", "Unified ID", "text", false],
+              ["vatNumber", "VAT Number", "text", false],
+              ["crNumber", "CR Number", "text", false],
+              ["nhicNumber", "NHIC Number", "text", false],
+              ["facilityCategory", "Facility Category", "select", true, ["Private", "Government", "Charitable", "Other"]]
+            ]
+          },
+          {
+            name: "Address",
+            fields: [
+              ["country", "Country", "select", true, ["Saudi Arabia", "Jordan", "United Arab Emirates"]],
+              ["city", "City", "select", true, ["Riyadh", "Jeddah", "Dammam", "Amman"]],
+              ["district", "District", "select", false, ["Select city first"], true],
+              ["buildingNumber", "Building Number", "text", false],
+              ["streetName", "Street Name", "text", false],
+              ["postalCode", "Postal Code", "text", false],
+              ["additionalNumber", "Additional Number", "text", false]
+            ]
+          },
+          {
+            name: "Facility Configurations",
+            fields: [
+              ["episodeExpiry", "Episode Expiry Time", "select", true, ["24 hours", "48 hours", "72 hours", "7 days"]],
+              ["autoAuthorization", "Is Auto Authorization Process", "checkbox", false],
+              ["invoiceEnglish", "Invoice Configurations English", "textarea", false],
+              ["invoiceArabic", "Invoice Configurations Arabic", "textarea", false],
+              ["backgroundColor", "Background Color", "color", false],
+              ["foregroundColor", "Foreground Color", "color", false],
+              ["facilityLogo", "Logo / Image Upload", "file", false]
+            ]
+          },
+          {
+            name: "ZATCA Details",
+            fields: [
+              ["organizationId", "Organization ID", "text", true],
+              ["invoiceBook", "Invoice Book", "text", true, null, false, true]
+            ]
+          }
+        ]
+      },
+      {
+        title: "Create departments",
+        short: "Departments",
+        description: "Create departments and associate specialties, profiles and categories.",
+        sections: [{
+          name: "Add Department",
+          fields: [
+            ["departmentCode", "Department Code", "text", true],
+            ["departmentName", "Department Name", "text", true],
+            ["departmentType", "Type", "select", true, ["Clinical", "Administrative", "Support"]],
+            ["specialty", "Specialty", "select", true, ["Cardiology", "Dental", "General Practice", "Laboratory"]],
+            ["profile", "Profile", "select", true, ["Outpatient", "Inpatient", "Emergency"]],
+            ["departmentCategory", "Category", "select", true, ["Medical", "Surgical", "Diagnostic"]]
+          ]
+        }]
+      },
+      {
+        title: "Create locations",
+        short: "Locations",
+        description: "Define physical or virtual service locations.",
+        sections: [{
+          name: "Add Location",
+          fields: [
+            ["locationName", "Location Name", "text", true],
+            ["locationDepartment", "Department", "select", true, ["Cardiology", "General Practice", "Laboratory"]]
+          ]
+        }]
+      },
+      {
+        title: "Add practitioners",
+        short: "Practitioners",
+        description: "Register practitioner identity, role, specialty and license information.",
+        sections: [
+          {
+            name: "Practitioner Data",
+            fields: [
+              ["practitionerDepartment", "Departments", "select", true, ["Cardiology", "General Practice", "Laboratory"]],
+              ["practitionerArabicName", "Arabic Name", "text", true],
+              ["practitionerEnglishName", "English Name", "text", true],
+              ["practitionerEmail", "Email", "email", true],
+              ["practitionerMobile", "Mobile Number", "tel", true],
+              ["practitionerPhone", "Phone Number (+ Ext.)", "tel", false],
+              ["practitionerRole", "Practitioner Role", "select", true, ["Physician", "Nurse", "Technician", "Pharmacist"]],
+              ["documentId", "Document ID", "text", true],
+              ["documentType", "Document Type", "select", true, ["National ID", "Iqama", "Passport"]],
+              ["badgeId", "Badge ID", "text", false],
+              ["prefix", "Prefix", "text", false],
+              ["degree", "Degree", "text", false],
+              ["practitionerLicense", "License Number", "text", true],
+              ["practitionerLicenseStart", "License Start", "date", true],
+              ["practitionerLicenseEnd", "License End", "date", false, null, true],
+              ["linkedUser", "User", "select", false, ["Not linked", "user@example.com"]],
+              ["consultationItem", "Consultation Item", "select", false, ["General consultation", "Specialist consultation"]],
+              ["followUpItem", "Follow Up", "select", false, ["Standard follow-up", "No-charge follow-up"]]
+            ]
+          },
+          {
+            name: "Practitioner Role Details",
+            fields: [
+              ["practitionerSpecialty", "Practitioner Specialty", "select", true, ["Cardiology", "Dentistry", "General Practice", "Radiology"]],
+              ["designation", "Designation", "select", true, ["Consultant", "Specialist", "Resident", "Technician"]]
+            ]
+          }
+        ]
+      },
+      {
+        title: "Add & configure payers",
+        short: "Payers",
+        description: "Capture payer identity, financial rules, contacts and TPA arrangements.",
+        sections: [
+          {
+            name: "Payer Information",
+            fields: [
+              ["payerLogo", "Logo Upload", "file", false],
+              ["payerType", "Payer Type", "select", true, ["Insurance Company", "Corporate", "Government"]],
+              ["payerCode", "Payer Code", "text", true],
+              ["healthInsuranceCompany", "Health Insurance Company", "select", true, ["Bupa Arabia", "Tawuniya", "MedGulf", "Other"]],
+              ["payerCategory", "Payer Category", "select", true, ["Primary", "Secondary", "Self-pay"]],
+              ["payerArabicName", "Arabic Name", "text", true],
+              ["payerEnglishName", "English Name", "text", true],
+              ["acronym", "Acronym", "text", false],
+              ["payerUnifiedNumber", "Unified Number", "text", false],
+              ["payerCr", "CR / License Number", "text", false],
+              ["payerVat", "VAT Number", "text", false],
+              ["payerChi", "CHI Number", "text", false],
+              ["payerNhic", "NHIC Number", "text", false],
+              ["rating", "Rating", "select", false, ["A", "B", "C", "Unrated"]]
+            ]
+          },
+          {
+            name: "Financial Information",
+            fields: [
+              ["promptDiscount", "Prompt Payment Discount", "number", false],
+              ["targetAmount", "Target Amount", "number", false],
+              ["payerDiscount", "Discount", "number", false],
+              ["gracePeriod", "Grace Period", "number", false]
+            ]
+          },
+          {
+            name: "Payer Address",
+            fields: [
+              ["payerCountry", "Country", "select", true, ["Saudi Arabia", "Jordan"]],
+              ["payerCity", "City", "select", true, ["Riyadh", "Jeddah", "Dammam", "Amman"]],
+              ["payerDistrict", "District", "select", false, ["Select city first"], true],
+              ["payerBuilding", "Building Number", "text", false],
+              ["payerStreet", "Street Name", "text", false],
+              ["payerPostal", "Postal Code", "text", false],
+              ["payerAdditional", "Additional Number", "text", false]
+            ]
+          },
+          {
+            name: "Payer Contacts List",
+            fields: [
+              ["payerContactName", "Contact Name", "text", true],
+              ["payerContactEmail", "Email", "email", true],
+              ["payerContactPhone", "Phone Number (+ Ext.)", "tel", false],
+              ["payerContactMobile", "Mobile Number", "tel", true]
+            ]
+          },
+          {
+            name: "Payer Configuration",
+            fields: [
+              ["adjudicationHandling", "Adjudication Handling", "select", true, ["Internal", "External", "Hybrid"]]
+            ]
+          },
+          {
+            name: "TPA Information",
+            fields: [
+              ["hasTpa", "Has TPA", "checkbox", false],
+              ["tpa", "TPA", "select", false, ["Select TPA", "NextCare", "MedNet", "GlobeMed"], true],
+              ["tpaStart", "Start Date", "date", false],
+              ["tpaEnd", "End Date", "date", false],
+              ["comparisonType", "Date Comparison Type", "select", false, ["Service date", "Submission date", "Approval date"]]
+            ]
+          }
+        ]
+      },
+      {
+        title: "Define items",
+        short: "Items",
+        description: "Define billable items, tax attributes, ownership and costs.",
+        sections: [
+          {
+            name: "Add Item",
+            fields: [
+              ["chapter", "Chapter", "select", true, ["Consultations", "Laboratory", "Radiology", "Procedures"]],
+              ["block", "Block", "select", true, ["General", "Specialty", "Diagnostic"]],
+              ["itemCode", "Code", "text", true],
+              ["longDescription", "Long Description", "text", true],
+              ["shortDescription", "Short Description", "text", true],
+              ["alias", "Alias", "text", false],
+              ["hospitalCode", "Hospital Code", "text", true],
+              ["hospitalDescription", "Hospital Description", "text", false],
+              ["costCenter", "Cost Center", "select", true, ["Clinical", "Laboratory", "Radiology"]],
+              ["subCostCenter", "Sub Cost Center", "select", false, ["Main"], true],
+              ["itemDepartment", "Department Name", "select", true, ["Cardiology", "General Practice", "Laboratory"]],
+              ["subDepartment", "Sub Department", "select", false, ["Not configured"], true],
+              ["itemCategory", "Category", "select", true, ["Service", "Medication", "Supply"]],
+              ["taxCategory", "Tax Category", "select", true, ["Standard VAT", "Zero-rated", "Exempt"]],
+              ["itemType", "Type", "select", true, ["Procedure", "Consultation", "Product"]],
+              ["isPackage", "Is Package", "checkbox", false],
+              ["isListed", "Is Listed", "checkbox", false]
+            ]
+          },
+          {
+            name: "Cost",
+            fields: [
+              ["materialCost", "Material Cost", "number", false],
+              ["departmentCost", "Department Cost", "number", false],
+              ["totalCost", "Total", "number", false, null, true]
+            ]
+          }
+        ]
+      },
+      {
+        title: "Configure pricing",
+        short: "Pricing",
+        description: "Configure catalog price, discount, VAT and approval status.",
+        sections: [{
+          name: "Service Catalog / Search List",
+          fields: [
+            ["catalogSearch", "Search", "text", false],
+            ["categoryFilter", "Category Filter", "select", false, ["All", "Consultations", "Laboratory", "Radiology"]],
+            ["pricingCode", "Code", "text", true],
+            ["pricingHospitalCode", "Hospital Code", "text", true],
+            ["pricingDescription", "Description", "text", true],
+            ["pricingDiscount", "Discount", "number", false],
+            ["price", "Price", "number", true],
+            ["pricingVat", "VAT Category", "select", true, ["Standard VAT", "Zero-rated", "Exempt"]],
+            ["approvalStatus", "Approval Status", "select", true, ["Draft", "Pending approval", "Approved"]]
+          ]
+        }]
+      },
+      {
+        title: "Configure contracts",
+        short: "Contracts",
+        description: "Create payer contracts and assign price lists and discounts.",
+        sections: [
+          {
+            name: "Create Contract",
+            fields: [
+              ["contractPayer", "Payers", "select", true, ["Bupa Arabia", "Tawuniya", "MedGulf"]],
+              ["contractType", "Contract Type", "select", false, ["Standard"], true],
+              ["contractName", "Name", "text", true],
+              ["contractCode", "Code", "text", true],
+              ["contractStart", "Start Date", "date", true],
+              ["contractEnd", "End Date", "date", false, null, true],
+              ["policies", "Policies", "select", false, ["Available after payer selection"], true],
+              ["plans", "Plans", "select", false, ["Available after policy selection"], true],
+              ["network", "Network", "select", false, ["Available after plan selection"], true],
+              ["contractClass", "Class", "select", false, ["Available after network selection"], true],
+              ["premiumFrequency", "Premium Billing Frequency", "select", false, ["Monthly"], true],
+              ["encounterType", "Encounter Type", "select", true, ["Outpatient", "Inpatient", "Emergency"]],
+              ["nationality", "Nationality", "select", false, ["All", "Saudi", "Non-Saudi"]],
+              ["referralDiscount", "Apply Discount for Referral Cases", "checkbox", false],
+              ["masterFallback", "Apply Master Pricing Fallback", "checkbox", false],
+              ["dedicatedAccount", "Create Dedicated Account for This Contract", "checkbox", false]
+            ]
+          },
+          {
+            name: "Price List",
+            fields: [
+              ["priceList", "Price List", "select", true, ["Master Price List", "Insurance Price List", "Corporate Price List"]],
+              ["priceListStart", "Start Date", "date", true],
+              ["priceListEnd", "End Date", "date", false, null, true]
+            ]
+          },
+          {
+            name: "Discounts",
+            fields: [
+              ["discountRule", "Discount", "select", false, ["No discount", "5% standard", "10% preferred"]],
+              ["discountStart", "Start Date", "date", false],
+              ["discountEnd", "End Date", "date", false, null, true]
+            ]
+          }
+        ]
+      }
+    ];
+
+    const organizationId = new URLSearchParams(window.location.search).get("organizationId");
+    const organizationsStorageKey = "xocialive-control-panel-organizations";
+    let organizations = [];
+    let organization = null;
+    try {
+      organizations = JSON.parse(localStorage.getItem(organizationsStorageKey) || "[]");
+      organization = organizations.find(item => item.id === organizationId) || null;
+    } catch { /* Continue with a fresh wizard session if storage is unavailable. */ }
+
+    const savedProgress = organization?.onboardingWizard || {};
+    const state = {
+      current: Math.max(0, Math.min(steps.length - 1, Number(savedProgress.current) || 0)),
+      saved: savedProgress.saved && typeof savedProgress.saved === "object" ? savedProgress.saved : {},
+      completed: new Set(Array.isArray(savedProgress.completed) ? savedProgress.completed : [])
+    };
+
+    const stepper = document.getElementById("stepper");
+    const formArea = document.getElementById("formArea");
+    const message = document.getElementById("message");
+    const saveButton = document.getElementById("saveButton");
+    const nextButton = document.getElementById("nextButton");
+    const previousButton = document.getElementById("previousButton");
+
+    function createField(field) {
+      const [id, label, type, required, options, disabled, fullWidth] = field;
+      const wrapper = document.createElement("div");
+      wrapper.className = "field" + (fullWidth ? " full" : "");
+
+      if (type === "checkbox") {
+        wrapper.className += " checkbox-row";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.id = id;
+        input.dataset.field = id;
+        input.disabled = !!disabled;
+
+        const labelEl = document.createElement("label");
+        labelEl.htmlFor = id;
+        labelEl.textContent = label;
+
+        wrapper.append(input, labelEl);
+        return wrapper;
+      }
+
+      const labelEl = document.createElement("label");
+      labelEl.htmlFor = id;
+      labelEl.innerHTML = label + (required ? ' <span class="required">*</span>' : "");
+
+      let input;
+
+      if (type === "select") {
+        input = document.createElement("select");
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Select";
+        input.appendChild(placeholder);
+
+        (options || []).forEach(option => {
+          const optionEl = document.createElement("option");
+          optionEl.value = option;
+          optionEl.textContent = option;
+          input.appendChild(optionEl);
+        });
+      } else if (type === "textarea") {
+        input = document.createElement("textarea");
+      } else {
+        input = document.createElement("input");
+        input.type = type;
+        if (type === "number") {
+          input.min = "0";
+          input.step = "0.01";
+        }
+        if (type === "file") {
+          input.accept = "image/*";
+        }
+      }
+
+      input.id = id;
+      input.dataset.field = id;
+      input.required = !!required;
+      input.disabled = !!disabled;
+      input.className = "control";
+
+      wrapper.append(labelEl, input);
+      return wrapper;
+    }
+
+    function renderStepper() {
+      stepper.innerHTML = "";
+
+      steps.forEach((step, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "step";
+        if (index === state.current) button.classList.add("active");
+        if (state.completed.has(index)) button.classList.add("complete");
+
+        button.innerHTML = `
+          <span class="step-number">${state.completed.has(index) ? "✓" : index + 1}</span>
+          <span class="step-label">${step.short}</span>
+        `;
+
+        button.addEventListener("click", () => {
+          captureCurrent(false);
+          state.current = index;
+          render();
+        });
+
+        stepper.appendChild(button);
+      });
+    }
+
+    function renderForm() {
+      const step = steps[state.current];
+
+      document.getElementById("stepEyebrow").textContent = `Step ${state.current + 1} of ${steps.length}`;
+      document.getElementById("stepTitle").textContent = step.title;
+      document.getElementById("stepDescription").textContent = step.description;
+
+      if (state.completed.has(state.current)) {
+        document.getElementById("stepStatus").textContent = "Completed";
+      } else if (state.saved[state.current]) {
+        document.getElementById("stepStatus").textContent = "Draft saved";
+      } else {
+        document.getElementById("stepStatus").textContent = "Not saved";
+      }
+
+      formArea.innerHTML = "";
+
+      step.sections.forEach(section => {
+        const sectionEl = document.createElement("section");
+        sectionEl.className = "section";
+
+        const title = document.createElement("h3");
+        title.textContent = section.name;
+
+        const grid = document.createElement("div");
+        grid.className = "form-grid";
+
+        section.fields.forEach(field => grid.appendChild(createField(field)));
+
+        sectionEl.append(title, grid);
+        formArea.appendChild(sectionEl);
+      });
+
+      const saved = state.saved[state.current] || {};
+
+      formArea.querySelectorAll("[data-field]").forEach(control => {
+        const value = saved[control.dataset.field];
+        if (value === undefined || control.type === "file") return;
+
+        if (control.type === "checkbox") {
+          control.checked = Boolean(value);
+        } else {
+          control.value = value;
+        }
+      });
+
+      const material = document.getElementById("materialCost");
+      const department = document.getElementById("departmentCost");
+      const total = document.getElementById("totalCost");
+
+      if (material && department && total) {
+        const calculate = () => {
+          total.value = ((Number(material.value) || 0) + (Number(department.value) || 0)).toFixed(2);
+        };
+        material.addEventListener("input", calculate);
+        department.addEventListener("input", calculate);
+        calculate();
+      }
+
+      previousButton.disabled = state.current === 0;
+      nextButton.textContent = state.current === steps.length - 1 ? "Save & Finish" : "Save & Next";
+    }
+
+    function captureCurrent(validate) {
+      const values = {};
+      let valid = true;
+
+      formArea.querySelectorAll("[data-field]").forEach(control => {
+        control.classList.remove("invalid");
+
+        if (control.type === "file") {
+          values[control.dataset.field] = control.files[0]?.name || "";
+        } else if (control.type === "checkbox") {
+          values[control.dataset.field] = control.checked;
+        } else {
+          values[control.dataset.field] = control.value;
+        }
+
+        if (validate && control.required && !control.value) {
+          valid = false;
+          control.classList.add("invalid");
+        }
+      });
+
+      state.saved[state.current] = values;
+      return valid;
+    }
+
+    function saveCurrent(moveNext) {
+      const savedStep = state.current + 1;
+      const valid = captureCurrent(true);
+
+      if (!valid) {
+        state.completed.delete(state.current);
+        persistProgress();
+        showMessage("Complete all required fields before marking this step as completed.", "error");
+        updateMetrics();
+        renderStepper();
+        return;
+      }
+
+      state.completed.add(state.current);
+
+      if (moveNext && state.current < steps.length - 1) {
+        state.current += 1;
+      }
+
+      persistProgress();
+      showMessage(`Step ${savedStep} saved successfully.`, "success");
+
+      render();
+    }
+
+    function onboardingStatus() {
+      if (state.completed.size === steps.length) return "Ready for Review";
+      const hasSavedValues = Object.values(state.saved).some(values => Object.values(values || {}).some(value => value !== "" && value !== false && value !== null && value !== undefined));
+      return hasSavedValues || state.completed.size ? "In Progress" : (organization?.onboardingStatus || "Not Started");
+    }
+
+    function persistProgress() {
+      if (!organization || !organizationId) return;
+      organization.onboardingWizard = { current: state.current, saved: state.saved, completed: [...state.completed] };
+      organization.onboardingStatus = onboardingStatus();
+      try {
+        const index = organizations.findIndex(item => item.id === organizationId);
+        if (index >= 0) organizations[index] = organization;
+        localStorage.setItem(organizationsStorageKey, JSON.stringify(organizations));
+      } catch { /* Keep the current wizard usable even when browser storage is unavailable. */ }
+      window.parent.postMessage({ type: "control-panel-onboarding-update", organizationId, onboardingStatus: organization.onboardingStatus }, window.location.origin);
+    }
+
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = `message ${type}`;
+    }
+
+    function updateMetrics() {
+      const savedFields = Object.values(state.saved).reduce((total, values) => {
+        return total + Object.values(values).filter(value => value !== "" && value !== false).length;
+      }, 0);
+
+      document.getElementById("currentMetric").textContent = state.current + 1;
+      document.getElementById("completedMetric").textContent = state.completed.size;
+      document.getElementById("fieldMetric").textContent = savedFields;
+      document.getElementById("progressBadge").textContent = `${state.completed.size} of ${steps.length} completed`;
+    }
+
+    function render() {
+      renderStepper();
+      renderForm();
+      updateMetrics();
+    }
+
+    saveButton.addEventListener("click", () => saveCurrent(false));
+    nextButton.addEventListener("click", () => saveCurrent(true));
+
+    previousButton.addEventListener("click", () => {
+      captureCurrent(false);
+      if (state.current > 0) state.current -= 1;
+      render();
+    });
+
+    document.getElementById("resetButton").addEventListener("click", () => {
+      if (!window.confirm("Clear saved onboarding progress for this organization?")) return;
+      state.current = 0;
+      state.saved = {};
+      state.completed.clear();
+      if (organization) delete organization.onboardingWizard;
+      if (organization) organization.onboardingStatus = "Not Started";
+      persistProgress();
+      showMessage("Onboarding progress has been reset.", "success");
+      render();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") window.parent.postMessage({ type: "control-panel-onboarding-close" }, window.location.origin);
+    });
+
+    render();
+  </script>
+</body>
+</html>

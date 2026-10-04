@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f8f7f3">
   <title>Xocialive Control Panel</title>
   <link rel="stylesheet" href="../assets/css/shadcn.css?v=control-panel-navigation-1">
-  <link rel="stylesheet" href="../assets/css/control-panel.css?v=9">
+  <link rel="stylesheet" href="../assets/css/control-panel.css?v=10">
   <script src="../assets/js/theme.js" data-theme-view="control-panel"></script>
   <script src="../assets/js/sidebar-collapse.js" defer></script>
-  <script src="../assets/js/control-panel-sidebar.js?v=9" defer></script>
+  <script src="../assets/js/control-panel-sidebar.js?v=10" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -32,6 +32,7 @@
             <section class="workspace" style="margin:32px auto 0" aria-label="Platform administration workspace">
               <div class="workspace-inner" data-control-placeholder><span class="workspace-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1-2.1"/><circle cx="12" cy="12" r="5"/></svg></span><h2 data-control-workspace-title>Overview workspace</h2><p>This workspace is ready for platform administration.</p></div>
               <div class="organization-grid" data-control-organizations-grid hidden></div>
+              <div class="organization-grid onboarding-grid" data-control-onboarding-grid hidden></div>
             </section>
           </div></section>
           <footer class="launcher-footer"><a class="launcher-link" href="../index.html">← Back to launcher</a><span>RCM SMB Prototype</span></footer>
@@ -93,5 +94,11 @@
     </section>
   </div>
   <div class="patient-toast" data-control-organization-toast role="status" aria-live="polite"></div>
+  <div class="patient-modal-backdrop onboarding-modal-backdrop" data-control-onboarding-modal hidden>
+    <section class="patient-modal onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="control-onboarding-modal-title">
+      <header class="patient-modal-header"><div><p class="eyebrow">ORGANIZATION ONBOARDING</p><h2 id="control-onboarding-modal-title">Facility Setup Wizard</h2><p data-control-onboarding-organization></p></div><button type="button" class="icon-button" data-control-onboarding-close aria-label="Close onboarding wizard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+      <iframe data-control-onboarding-frame title="Organization facility setup wizard" src="about:blank"></iframe>
+    </section>
+  </div>
 </body>
 </html>
