@@ -271,6 +271,10 @@
       padding: 15px;
     }
 
+    .facility-config-section .form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .field.full { grid-column: 1 / -1; }
 
     .field label {
@@ -946,6 +950,7 @@
       step.sections.forEach(section => {
         const sectionEl = document.createElement("section");
         sectionEl.className = "section";
+        if (section.name === "Facility Configuration") sectionEl.classList.add("facility-config-section");
 
         const title = document.createElement("h3");
         title.textContent = section.name;
