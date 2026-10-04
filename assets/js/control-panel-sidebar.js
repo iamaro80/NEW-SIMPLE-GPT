@@ -30,23 +30,66 @@
 
   const links = [...navigation.querySelectorAll('[data-control-route]')];
   const organizations = [
-    { en: 'Al Noor Healthcare Group', ar: 'مجموعة النور للرعاية الصحية', plan: 'Enterprise', status: 'Active' },
-    { en: 'Riyadh Medical Network', ar: 'شبكة الرياض الطبية', plan: 'Growth', status: 'Active' },
-    { en: 'Al Shifa Clinics', ar: 'عيادات الشفاء', plan: 'Standard', status: 'Onboarding' },
-    { en: 'GulfCare Hospitals', ar: 'مستشفيات جلف كير', plan: 'Enterprise', status: 'Suspended' },
-    { en: 'Amana Health Services', ar: 'خدمات أمانة الصحية', plan: 'Growth', status: 'Deleted' },
+    { id: 'org-1', en: 'Al Noor Healthcare Group', ar: 'مجموعة النور للرعاية الصحية', plan: 'Enterprise', status: 'Active' },
+    { id: 'org-2', en: 'Riyadh Medical Network', ar: 'شبكة الرياض الطبية', plan: 'Growth', status: 'Active' },
+    { id: 'org-3', en: 'Al Shifa Clinics', ar: 'عيادات الشفاء', plan: 'Standard', status: 'Onboarding' },
+    { id: 'org-4', en: 'GulfCare Hospitals', ar: 'مستشفيات جلف كير', plan: 'Enterprise', status: 'Suspended' },
+    { id: 'org-5', en: 'Amana Health Services', ar: 'خدمات أمانة الصحية', plan: 'Growth', status: 'Deleted' },
   ];
+  const organizationSections = [
+    { label: 'Profile', route: 'profile' },
+    { label: 'Subscription & Billing', route: 'subscription-billing' },
+    { label: 'Entitlements & Features', route: 'entitlements-features' },
+    { label: 'Integrations', route: 'integrations' },
+    { label: 'Facilities', route: 'facilities' },
+    { label: 'Admin Users', route: 'admin-users' },
+  ];
+  const operationsSections = [
+    { label: 'Usage', route: 'usage' },
+    { label: 'Audit', route: 'audit' },
+  ];
+  const contextSidebar = document.querySelector('#organization-focus-sidebar');
+  const focusBack = document.querySelector('[data-control-focus-back]');
+  const shell = document.querySelector('.app-shell');
+  const sidebarControls = window.rcmSidebarControls?.['control-panel'];
+  let wasCollapsedBeforeFocus = false;
+  let inOrganizationFocus = false;
+  const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
   const organizationsGrid = document.querySelector('[data-control-organizations-grid]');
   if (organizationsGrid) {
-    organizationsGrid.innerHTML = `<div class="organization-grid-heading"><div><h2>Customer Organizations</h2><p>${organizations.length} organizations</p></div></div><div class="organization-grid-scroll"><table class="organization-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Status</th></tr></thead><tbody>${organizations.map((organization) => `<tr><td class="organization-name-en">${organization.en}</td><td class="organization-name-ar" lang="ar" dir="rtl">${organization.ar}</td><td>${organization.plan}</td><td><span class="organization-status status-${organization.status.toLowerCase()}"><span aria-hidden="true"></span>${organization.status}</span></td></tr>`).join('')}</tbody></table></div>`;
+    organizationsGrid.innerHTML = `<div class="organization-grid-heading"><div><h2>Customer Organizations</h2><p>${organizations.length} organizations</p></div></div><div class="organization-grid-scroll"><table class="organization-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Status</th></tr></thead><tbody>${organizations.map((organization) => `<tr><td class="organization-name-en"><a class="organization-focus-link" href="#organizations/${organization.id}/profile">${escapeHtml(organization.en)}</a></td><td class="organization-name-ar" lang="ar" dir="rtl">${escapeHtml(organization.ar)}</td><td>${escapeHtml(organization.plan)}</td><td><span class="organization-status status-${organization.status.toLowerCase()}"><span aria-hidden="true"></span>${organization.status}</span></td></tr>`).join('')}</tbody></table></div>`;
   }
 
+  function renderOrganizationSidebar(organization, activeRoute) {
+    const organizationIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths.customers}</svg>`;
+    const itemLink = (item) => `<a class="nav-link${item.route === activeRoute ? ' active' : ''}" href="#organizations/${organization.id}/${item.route}"${item.route === activeRoute ? ' aria-current="page"' : ''}><span class="nav-icon" aria-hidden="true"></span><span>${item.label}</span></a>`;
+    const operationIsActive = operationsSections.some((item) => item.route === activeRoute);
+    contextSidebar.innerHTML = `<div class="facility-context-brand">${organizationIcon}<div><strong>${escapeHtml(organization.en)}</strong><small>Organization workspace</small></div></div><nav class="side-scroll" aria-label="Organization workspace menu"><div class="nav-caption">Organization</div>${organizationSections.map(itemLink).join('')}<section class="nav-group"><button class="nav-group-button" type="button" aria-expanded="${operationIsActive}" aria-controls="organization-operations-menu"><span class="nav-icon" aria-hidden="true"></span><span>Operations</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths.chevron}</svg></button><div class="nav-children" id="organization-operations-menu"${operationIsActive ? '' : ' hidden'}>${operationsSections.map(itemLink).join('')}</div></section></nav>`;
+    contextSidebar.hidden = false;
+  }
+
+  contextSidebar?.addEventListener('click', (event) => {
+    const button = event.target.closest('.nav-group-button');
+    if (!button || !contextSidebar.contains(button)) return;
+    const children = document.getElementById(button.getAttribute('aria-controls'));
+    const expanded = button.getAttribute('aria-expanded') !== 'true';
+    button.setAttribute('aria-expanded', String(expanded));
+    children.hidden = !expanded;
+  });
+
   const updateSelection = () => {
-    const requested = window.location.hash.slice(1) || 'overview';
+    const hashRoute = window.location.hash.slice(1) || 'overview';
+    const focusMatch = hashRoute.match(/^organizations\/([a-z0-9-]+)\/([a-z0-9-]+)$/);
+    const focusedOrganization = focusMatch ? organizations.find((item) => item.id === focusMatch[1]) : null;
+    const focusSection = focusMatch ? [...organizationSections, ...operationsSections].find((item) => item.route === focusMatch[2]) : null;
+    const isOrganizationFocus = Boolean(focusedOrganization && focusSection);
+    const requested = focusMatch ? 'organizations' : hashRoute;
     const activeLink = links.find((item) => item.dataset.controlRoute === requested) || links.find((item) => item.dataset.controlRoute === 'overview');
     const route = activeLink.dataset.controlRoute;
     const label = activeLink.dataset.controlLabel;
-    if (!window.location.hash || route !== requested) history.replaceState(null, '', `#${route}`);
+    if (!window.location.hash) history.replaceState(null, '', '#overview');
+    else if (focusMatch && !isOrganizationFocus) history.replaceState(null, '', '#organizations');
+    else if (!focusMatch && route !== requested) history.replaceState(null, '', `#${route}`);
 
     links.forEach((item) => {
       const active = item === activeLink;
@@ -67,11 +110,52 @@
     document.querySelector('[data-control-breadcrumb]').hidden = label === 'Overview';
     document.querySelector('[data-control-subtitle]').textContent = `${label} in the Xocialive Control Panel.`;
     document.querySelector('[data-control-workspace-title]').textContent = `${label} workspace`;
-    const showOrganizations = route === 'organizations';
+    const showOrganizations = route === 'organizations' && !isOrganizationFocus;
     document.querySelector('[data-control-placeholder]').hidden = showOrganizations;
     organizationsGrid.hidden = !showOrganizations;
     document.querySelector('.workspace').classList.toggle('workspace-organizations', showOrganizations);
     document.querySelector('.minimal-view').classList.toggle('organization-page', showOrganizations);
+
+    const focusCrumb = document.querySelector('[data-control-focus-organization]');
+    const focusSectionCrumb = document.querySelector('[data-control-focus-section]');
+    const focusSeparator = document.querySelector('[data-control-focus-separator]');
+    const focusSectionSeparator = document.querySelector('[data-control-focus-section-separator]');
+    if (isOrganizationFocus) {
+      if (!inOrganizationFocus) wasCollapsedBeforeFocus = sidebarControls?.isCollapsed() || false;
+      inOrganizationFocus = true;
+      shell.classList.add('facility-context-open');
+      sidebarControls?.setCollapsed(true);
+      focusBack.hidden = false;
+      focusBack.setAttribute('aria-label', `Return to organizations from ${focusedOrganization.en}`);
+      focusCrumb.textContent = focusedOrganization.en;
+      focusSectionCrumb.textContent = focusSection.label;
+      focusCrumb.hidden = false;
+      focusSectionCrumb.hidden = false;
+      focusSeparator.hidden = false;
+      focusSectionSeparator.hidden = false;
+      document.querySelector('[data-control-breadcrumb]').textContent = 'Organizations';
+      document.querySelector('[data-control-breadcrumb]').removeAttribute('aria-current');
+      focusSectionCrumb.setAttribute('aria-current', 'page');
+      document.querySelector('[data-control-title]').textContent = focusSection.label;
+      document.querySelector('[data-control-subtitle]').textContent = `${focusedOrganization.en} · Organization`;
+      document.querySelector('[data-control-workspace-title]').textContent = `${focusSection.label} workspace`;
+      renderOrganizationSidebar(focusedOrganization, focusSection.route);
+    } else {
+      if (inOrganizationFocus) sidebarControls?.setCollapsed(wasCollapsedBeforeFocus);
+      inOrganizationFocus = false;
+      shell.classList.remove('facility-context-open');
+      contextSidebar.hidden = true;
+      contextSidebar.replaceChildren();
+      focusBack.hidden = true;
+      focusCrumb.hidden = true;
+      focusSectionCrumb.hidden = true;
+      focusSeparator.hidden = true;
+      focusSectionSeparator.hidden = true;
+      focusCrumb.textContent = '';
+      focusSectionCrumb.textContent = '';
+      focusSectionCrumb.removeAttribute('aria-current');
+      document.querySelector('[data-control-breadcrumb]').setAttribute('aria-current', 'page');
+    }
   };
 
   navigation.addEventListener('click', (event) => {

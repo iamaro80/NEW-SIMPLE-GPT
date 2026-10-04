@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f8f7f3">
   <title>Xocialive Control Panel</title>
   <link rel="stylesheet" href="../assets/css/shadcn.css?v=control-panel-navigation-1">
-  <link rel="stylesheet" href="../assets/css/control-panel.css?v=3">
+  <link rel="stylesheet" href="../assets/css/control-panel.css?v=5">
   <script src="../assets/js/theme.js" data-theme-view="control-panel"></script>
   <script src="../assets/js/sidebar-collapse.js" defer></script>
-  <script src="../assets/js/control-panel-sidebar.js?v=3" defer></script>
+  <script src="../assets/js/control-panel-sidebar.js?v=5" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -18,13 +18,14 @@
       <nav class="side-scroll" id="control-panel-navigation" aria-label="Platform administration navigation"></nav>
       <div class="sidebar-bottom"><a class="nav-link" href="../index.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-2 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6"/></svg><span>Back to Launcher</span></a></div>
     </aside>
+    <aside class="facility-context-sidebar" id="organization-focus-sidebar" aria-label="Organization workspace navigation" hidden></aside>
     <div class="scrim" data-scrim></div>
     <div class="main-wrapper">
       <div class="minimal-view">
-        <header class="minimal-topbar"><div class="topbar-left"><button class="icon-button mobile-menu" type="button" data-menu-toggle aria-label="Open navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><a class="brand" href="../index.html"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></span><span>Xocialive</span></a></div><div style="display:flex;align-items:center;gap:13px"><span class="badge">Platform Admin</span><button class="icon-button" type="button" data-theme-toggle aria-label="Toggle theme"></button></div></header>
+        <header class="minimal-topbar"><div class="topbar-left"><button class="icon-button mobile-menu" type="button" data-menu-toggle aria-label="Open navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><a class="brand" href="../index.html"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></span><span>Xocialive</span></a><a class="organization-context-back" data-control-focus-back href="#organizations" hidden>← Organizations</a></div><div style="display:flex;align-items:center;gap:13px"><span class="badge">Platform Admin</span><button class="icon-button" type="button" data-theme-toggle aria-label="Toggle theme"></button></div></header>
         <main class="minimal-main">
           <section class="minimal-content"><div class="control-panel-content">
-            <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html">Launcher</a><svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span>Xocialive Control Panel</span><svg class="breadcrumb-sep" data-control-breadcrumb-separator viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span data-control-breadcrumb aria-current="page">Overview</span></nav>
+            <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html">Launcher</a><svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span>Xocialive Control Panel</span><svg class="breadcrumb-sep" data-control-breadcrumb-separator viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span data-control-breadcrumb aria-current="page">Overview</span><svg class="breadcrumb-sep" data-control-focus-separator hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span data-control-focus-organization hidden></span><svg class="breadcrumb-sep" data-control-focus-section-separator hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span data-control-focus-section hidden></span></nav>
             <div class="eyebrow">Platform Admin</div>
             <h1 class="hero-title" data-control-title style="font-size:clamp(30px,4vw,42px)">Overview</h1>
             <p class="hero-copy" data-control-subtitle style="margin:0 auto">Xocialive Control Panel overview.</p>
