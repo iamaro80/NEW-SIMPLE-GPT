@@ -71,6 +71,7 @@
     document.querySelector('[data-control-placeholder]').hidden = showOrganizations;
     organizationsGrid.hidden = !showOrganizations;
     document.querySelector('.workspace').classList.toggle('workspace-organizations', showOrganizations);
+    document.querySelector('.minimal-view').classList.toggle('organization-page', showOrganizations);
   };
 
   navigation.addEventListener('click', (event) => {

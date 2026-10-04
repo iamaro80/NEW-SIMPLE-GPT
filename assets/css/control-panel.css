@@ -1,5 +1,6 @@
 .control-panel-content { width: 100%; }
 .control-panel-content .breadcrumbs { justify-content: center; margin-bottom: 26px; }
+.minimal-view.organization-page { width: min(1320px, calc(100% - 64px)); }
 .workspace-organizations { width: 100% !important; min-height: 0 !important; display: block; border: 0; background: transparent; text-align: left; }
 .workspace-inner[hidden], .organization-grid[hidden] { display: none !important; }
 .organization-grid { overflow: hidden; width: 100%; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); text-align: left; }
@@ -24,3 +25,5 @@
 [data-theme="dark"] .organization-status.status-onboarding { background: hsl(35 50% 22%); color: hsl(40 90% 76%); }
 [data-theme="dark"] .organization-status.status-suspended { background: hsl(0 45% 23%); color: hsl(0 85% 80%); }
 @media (max-width: 600px) { .organization-grid-heading { align-items: flex-start; } .organization-table { min-width: 640px; } }
+@media (max-width: 900px) { .minimal-view.organization-page { width: calc(100% - 40px); } }
+@media (max-width: 580px) { .minimal-view.organization-page { width: calc(100% - 28px); } }
