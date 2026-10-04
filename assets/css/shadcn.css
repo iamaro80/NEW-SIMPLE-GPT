@@ -549,3 +549,20 @@ body.patient-modal-open { overflow: hidden; }
 .benefit-subsection-title { grid-column: 1 / -1; margin-top: 3px; padding: 7px 0 5px; border-bottom: 1px solid hsl(var(--border)); color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 @media (max-width: 900px) { .benefit-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .benefit-section .benefit-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .benefit-filter-grid, .benefit-section .benefit-form-grid { grid-template-columns: 1fr; } }
+.plan-filter-grid { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+.plans-table { min-width: 1120px; }
+.plan-modal { width: min(1120px, 100%); }
+.plan-modal-body, .plan-benefit-modal-body { display: grid; grid-auto-rows: max-content; align-content: start; gap: 14px; }
+.plan-section { overflow: hidden; margin: 0; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.plan-section .plan-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 15px; }
+.plan-checkbox { align-self: end; min-height: 37px; }
+.plan-checkbox input[type="checkbox"] { width: 15px; height: 15px; margin: 0; accent-color: hsl(var(--primary)); }
+.plan-benefit-tools { display: flex; align-items: end; justify-content: flex-end; gap: 9px; padding: 14px 15px 12px; }
+.plan-benefit-tools .facility-filter { width: min(390px, 100%); margin-right: auto; }
+.plan-benefit-scroll { margin: 0 15px 15px; border: 1px solid hsl(var(--border)); border-radius: 7px; }
+.plan-benefit-table { min-width: 720px; }
+.plan-benefit-empty { margin: 0 15px 15px; padding: 14px; }
+.plan-benefit-modal { width: min(1120px, 100%); }
+.plan-unlink { min-height: 27px; padding: 3px 7px; font-size: 10px; }
+@media (max-width: 900px) { .plan-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .plan-section .plan-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .plan-filter-grid, .plan-section .plan-form-grid { grid-template-columns: 1fr; } .plan-benefit-tools { align-items: stretch; flex-direction: column; } .plan-benefit-tools .facility-filter { width: 100%; } }
