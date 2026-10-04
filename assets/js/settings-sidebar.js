@@ -74,6 +74,7 @@
     const showTat = matching?.dataset.route === 'tat-management';
     const showConsultationRules = matching?.dataset.route === 'consultation-rules';
     const showServiceItems = matching?.dataset.route === 'service-items';
+    const showCategories = matching?.dataset.route === 'categories';
     const showDirectBilling = matching?.dataset.route === 'direct-billing';
     const showFacilityStructure = ['divisions', 'locations', 'rooms', 'billing-period', 'cost-centers'].includes(matching?.dataset.route);
     document.querySelector('[data-current-facility-profile]')?.toggleAttribute('hidden', !showFacilityProfile);
@@ -93,9 +94,10 @@
     document.querySelector('[data-tat-grid]')?.toggleAttribute('hidden', !showTat);
     document.querySelector('[data-consultation-rules-grid]')?.toggleAttribute('hidden', !showConsultationRules);
     document.querySelector('[data-service-items-grid]')?.toggleAttribute('hidden', !showServiceItems);
+    document.querySelector('[data-categories-grid]')?.toggleAttribute('hidden', !showCategories);
     document.querySelector('[data-direct-billing-settings]')?.toggleAttribute('hidden', !showDirectBilling);
     document.querySelector('[data-structure-workspace]')?.toggleAttribute('hidden', !showFacilityStructure);
-    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts || showDirectBilling || showTat || showConsultationRules || showServiceItems);
+    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts || showDirectBilling || showTat || showConsultationRules || showServiceItems || showCategories);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
       const active = item === matching;
       item.classList.toggle('active', active);

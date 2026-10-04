@@ -399,6 +399,18 @@ button { color: inherit; }
 .service-picker-shared .patient-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (max-width: 900px) { .service-items-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .service-item-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .service-items-filter-grid, .service-item-form-grid, .service-picker-shared .patient-form-grid { grid-template-columns: 1fr; } .service-items-toolbar-spacer { display: none; } .service-items-actions .button { flex: 1 1 calc(50% - 8px); } .service-item-checks { align-items: flex-start; flex-direction: column; } }
+.categories-page, .categories-page > * { min-width: 0; max-width: 100%; }
+.categories-page .facility-table-card, .categories-page .facility-table-scroll { width: 100%; min-width: 0; max-width: 100%; }
+.category-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.categories-table { min-width: 760px; }
+.category-modal { width: min(760px, 100%); }
+.category-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.category-mapped-services { margin-top: 16px; }
+.category-mapped-services > .facility-form-section-heading { margin-bottom: 8px; border: 1px solid hsl(var(--border)); border-radius: 8px 8px 0 0; }
+.category-services-table { min-width: 620px; }
+.category-view-status { padding-top: 14px; }
+@media (max-width: 900px) { .category-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .category-filter-grid, .category-form-grid { grid-template-columns: 1fr; } }
 .tat-form-grid small { color: hsl(var(--muted-foreground)); font-size: 10px; line-height: 1.45; }
 .tat-row-menu { width: 132px; }
 .tat-confirm-modal { width: min(480px, 100%); }
