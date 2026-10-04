@@ -295,6 +295,11 @@
       cursor: not-allowed;
     }
 
+    .control:read-only {
+      background: var(--w-surface-soft);
+      cursor: default;
+    }
+
     textarea.control {
       min-height: 96px;
       resize: vertical;
@@ -459,7 +464,7 @@
           {
             name: "Facilities Information",
             fields: [
-              ["facilityIdentifier", "Facility Identifier", "text", true],
+              ["facilityIdentifier", "Facility Identifier", "text", true, null, false, false, true],
               ["hcp", "HCP", "select", true, ["Hospital", "Medical Complex", "Clinic", "Laboratory"]],
               ["arabicName", "Arabic Name", "text", true],
               ["englishName", "English Name", "text", true],
@@ -766,6 +771,48 @@
       completed: new Set(Array.isArray(savedProgress.completed) ? savedProgress.completed : [])
     };
 
+    const facilityIdentifierSequenceKey = "xocialive-control-panel-facility-identifier-sequence";
+    const numericFacilityIdentifier = value => /^\d+$/.test(String(value ?? "")) ? Number(value) : null;
+    function ensureFacilityIdentifier() {
+      const currentValues = state.saved[0] || {};
+      const currentIdentifier = numericFacilityIdentifier(currentValues.facilityIdentifier);
+      const used = new Set();
+      let highest = 58; // Existing Facility Settings seed identifiers are 47–58.
+
+      try {
+        const facilities = JSON.parse(localStorage.getItem("rcm-facilities:v1") || "[]");
+        facilities.forEach(facility => {
+          const identifier = numericFacilityIdentifier(facility.facilityIdentifier);
+          if (identifier !== null) {
+            used.add(identifier);
+            highest = Math.max(highest, identifier);
+          }
+        });
+      } catch { /* Use the known seeded range if facility storage is unavailable. */ }
+
+      organizations.forEach(item => {
+        if (item.id === organizationId) return;
+        const identifier = numericFacilityIdentifier(item.onboardingWizard?.saved?.[0]?.facilityIdentifier);
+        if (identifier !== null) {
+          used.add(identifier);
+          highest = Math.max(highest, identifier);
+        }
+      });
+
+      let next = Math.max(highest + 1, Number(localStorage.getItem(facilityIdentifierSequenceKey)) || 59);
+      if (currentIdentifier !== null && !used.has(currentIdentifier)) {
+        localStorage.setItem(facilityIdentifierSequenceKey, String(Math.max(next, currentIdentifier + 1)));
+        return String(currentIdentifier);
+      }
+
+      while (used.has(next)) next += 1;
+      localStorage.setItem(facilityIdentifierSequenceKey, String(next + 1));
+      return String(next);
+    }
+
+    const savedIdentifier = numericFacilityIdentifier(state.saved[0]?.facilityIdentifier);
+    if (savedIdentifier === null) state.saved[0] = { ...(state.saved[0] || {}), facilityIdentifier: ensureFacilityIdentifier() };
+
     const stepper = document.getElementById("stepper");
     const formArea = document.getElementById("formArea");
     const message = document.getElementById("message");
@@ -774,7 +821,7 @@
     const previousButton = document.getElementById("previousButton");
 
     function createField(field) {
-      const [id, label, type, required, options, disabled, fullWidth] = field;
+      const [id, label, type, required, options, disabled, fullWidth, readOnly] = field;
       const wrapper = document.createElement("div");
       wrapper.className = "field" + (fullWidth ? " full" : "");
 
@@ -831,6 +878,8 @@
       input.dataset.field = id;
       input.required = !!required;
       input.disabled = !!disabled;
+      input.readOnly = !!readOnly;
+      if (readOnly) input.setAttribute("aria-readonly", "true");
       input.className = "control";
 
       wrapper.append(labelEl, input);
@@ -871,7 +920,7 @@
 
       if (state.completed.has(state.current)) {
         document.getElementById("stepStatus").textContent = "Completed";
-      } else if (state.saved[state.current]) {
+      } else if (Object.entries(state.saved[state.current] || {}).some(([key, value]) => key !== "facilityIdentifier" && value !== "" && value !== false && value !== null && value !== undefined)) {
         document.getElementById("stepStatus").textContent = "Draft saved";
       } else {
         document.getElementById("stepStatus").textContent = "Not saved";
@@ -977,7 +1026,9 @@
 
     function onboardingStatus() {
       if (state.completed.size === steps.length) return "Ready for Review";
-      const hasSavedValues = Object.values(state.saved).some(values => Object.values(values || {}).some(value => value !== "" && value !== false && value !== null && value !== undefined));
+      const hasSavedValues = Object.entries(state.saved).some(([stepIndex, values]) => Object.entries(values || {}).some(([key, value]) => {
+        return !(Number(stepIndex) === 0 && key === "facilityIdentifier") && value !== "" && value !== false && value !== null && value !== undefined;
+      }));
       return hasSavedValues || state.completed.size ? "In Progress" : (organization?.onboardingStatus || "Not Started");
     }
 
@@ -1000,7 +1051,7 @@
 
     function updateMetrics() {
       const savedFields = Object.values(state.saved).reduce((total, values) => {
-        return total + Object.values(values).filter(value => value !== "" && value !== false).length;
+        return total + Object.entries(values || {}).filter(([key, value]) => key !== "facilityIdentifier" && value !== "" && value !== false).length;
       }, 0);
 
       document.getElementById("currentMetric").textContent = state.current + 1;
@@ -1027,7 +1078,7 @@
     document.getElementById("resetButton").addEventListener("click", () => {
       if (!window.confirm("Clear saved onboarding progress for this organization?")) return;
       state.current = 0;
-      state.saved = {};
+      state.saved = { 0: { facilityIdentifier: state.saved[0]?.facilityIdentifier || ensureFacilityIdentifier() } };
       state.completed.clear();
       if (organization) delete organization.onboardingWizard;
       if (organization) organization.onboardingStatus = "Not Started";
@@ -1040,6 +1091,7 @@
       if (event.key === "Escape") window.parent.postMessage({ type: "control-panel-onboarding-close" }, window.location.origin);
     });
 
+    persistProgress();
     render();
   </script>
 </body>
