@@ -241,26 +241,34 @@
     }
 
     .section {
-      padding-top: 22px;
-      margin-top: 22px;
-      border-top: 1px solid var(--w-border);
-    }
-
-    .section:first-child {
-      padding-top: 0;
-      margin-top: 0;
-      border-top: 0;
+      overflow: hidden;
+      margin: 0 0 15px;
+      padding: 0;
+      border: 1px solid var(--w-border);
+      border-radius: 9px;
+      background: var(--w-surface);
     }
 
     .section h3 {
-      margin: 0 0 16px;
-      font-size: 18px;
+      box-sizing: border-box;
+      width: 100%;
+      margin: 0;
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--w-border);
+      background: var(--w-surface-soft);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
     }
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px 14px;
+      padding: 15px;
     }
 
     .field.full { grid-column: 1 / -1; }
@@ -389,7 +397,7 @@
 
       .form-grid,
       .metrics {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .footer-actions {
@@ -398,6 +406,13 @@
 
       .button {
         width: 100%;
+      }
+    }
+
+    @media (max-width: 580px) {
+      .form-grid,
+      .metrics {
+        grid-template-columns: 1fr;
       }
     }
   </style>
