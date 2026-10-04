@@ -7,11 +7,11 @@
   const facility = (window.RcmFacilityStore?.list?.() || []).find((item) => String(item.id) === facilityId) || { id: facilityId, englishName: 'Current Facility' };
   const branchKey = `rcm-facility-branches:v1:${facilityId}`;
   const usersSeed = [
-    { username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', branchCode: '1', badgeNumber: 'EMP-1042', notes: '', active: true, permissionIds: [] },
-    { username: 'k.alharbi', englishName: 'Khalid Alharbi', arabicName: 'خالد الحربي', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', branchCode: '2', badgeNumber: 'BC-2081', notes: '', active: true, permissionIds: [] },
-    { username: 'n.aldosari', englishName: 'Noura Aldosari', arabicName: 'نورة الدوسري', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', branchCode: '1', badgeNumber: 'ADM-0017', notes: '', active: true, permissionIds: [1, 2] },
-    { username: 'f.alqahtani', englishName: 'Faisal Alqahtani', arabicName: 'فيصل القحطاني', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', branchCode: '3', badgeNumber: '', notes: '', active: false, permissionIds: [] },
-    { username: 's.alshammari', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', branchCode: '4', badgeNumber: 'EMP-1186', notes: '', active: true, permissionIds: [] },
+    { username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', branchCode: '1', notes: '', active: true, permissionIds: [] },
+    { username: 'k.alharbi', englishName: 'Khalid Alharbi', arabicName: 'خالد الحربي', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', branchCode: '2', notes: '', active: true, permissionIds: [] },
+    { username: 'n.aldosari', englishName: 'Noura Aldosari', arabicName: 'نورة الدوسري', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', branchCode: '1', notes: '', active: true, permissionIds: [1, 2] },
+    { username: 'f.alqahtani', englishName: 'Faisal Alqahtani', arabicName: 'فيصل القحطاني', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', branchCode: '3', notes: '', active: false, permissionIds: [] },
+    { username: 's.alshammari', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', branchCode: '4', notes: '', active: true, permissionIds: [] },
   ].map((record) => ({ ...record, facilityId }));
   const permissions = [
     [1, 'Sync medical records permission'], [2, 'Test reports permission'], [3, 'Employee Permissions'],
@@ -64,7 +64,6 @@
         <label class="form-field"><span>Email <b>*</b></span><input name="email" type="email" required autocomplete="off"></label>
         <label class="form-field"><span>Mobile Number <b>*</b></span><span class="phone-control"><select name="mobileCode" aria-label="Mobile country code"><option selected>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="mobile" type="tel" required autocomplete="tel-national"></span></label>
         <label class="form-field"><span>User Type <b>*</b></span><select name="userType" required><option value="">Select user type</option>${userTypes.map((item) => `<option>${escapeHtml(item)}</option>`).join('')}</select></label>
-        <label class="form-field"><span>Badge Number</span><input name="badgeNumber" autocomplete="off"></label>
         <label class="form-field user-notes"><span>Notes</span><textarea name="notes" rows="3"></textarea></label>
       </div></fieldset>
       <fieldset class="patient-form-section user-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="patient-form-grid user-form-grid">
@@ -110,7 +109,16 @@
       const stored = localStorage.getItem(storageKey);
       if (stored !== null) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed.map((record) => ({ ...record, facilityId, permissionIds: Array.isArray(record.permissionIds) ? record.permissionIds : [] }));
+        if (Array.isArray(parsed)) {
+          let migrated = false;
+          const records = parsed.map((record) => {
+            const { badgeNumber, ...cleanRecord } = record;
+            if (badgeNumber !== undefined) migrated = true;
+            return { ...cleanRecord, facilityId, permissionIds: Array.isArray(record.permissionIds) ? record.permissionIds : [] };
+          });
+          if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
+          return records;
+        }
       }
       localStorage.setItem(storageKey, JSON.stringify(usersSeed));
     } catch { /* Keep mock state usable if browser storage is unavailable. */ }
@@ -171,7 +179,7 @@
     userModal.querySelector('[data-user-save]').textContent = isNew ? 'Create' : 'Save changes';
     userForm.elements.namedItem('facilityName').value = facility.englishName || 'Current Facility';
     if (user) {
-      for (const name of ['arabicName', 'englishName', 'username', 'email', 'mobile', 'userType', 'badgeNumber', 'notes', 'branchCode']) {
+      for (const name of ['arabicName', 'englishName', 'username', 'email', 'mobile', 'userType', 'notes', 'branchCode']) {
         const field = userForm.elements.namedItem(name);
         if (field) field.value = user[name] || '';
       }
@@ -243,7 +251,7 @@
       englishName: userForm.elements.namedItem('englishName').value.trim(), username: usernameField.value.trim(),
       email: userForm.elements.namedItem('email').value.trim(), mobileCode: userForm.elements.namedItem('mobileCode').value,
       mobile: userForm.elements.namedItem('mobile').value.trim(), userType: userForm.elements.namedItem('userType').value,
-      badgeNumber: userForm.elements.namedItem('badgeNumber').value.trim(), notes: userForm.elements.namedItem('notes').value.trim(),
+      notes: userForm.elements.namedItem('notes').value.trim(),
       branchCode: userForm.elements.namedItem('branchCode').value, facilityId,
     };
     if (mode === 'new') {
