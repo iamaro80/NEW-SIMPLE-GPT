@@ -521,3 +521,21 @@ body.patient-modal-open { overflow: hidden; }
 .user-permission-empty { margin: 0; padding: 12px 0; color: hsl(var(--muted-foreground)); font-size: 11px; }
 @media (max-width: 900px) { .role-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .role-filter-grid { grid-template-columns: 1fr; } .role-info-grid { grid-template-columns: 1fr; } .role-permission-tools { align-items: stretch; flex-direction: column; } .role-permission-tools .facility-filter { width: 100%; } }
+.payer-filter-grid { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
+.payers-table { min-width: 1450px; }
+.payer-modal { width: min(1220px, 100%); }
+.payer-modal-body { display: grid; grid-auto-rows: max-content; align-content: start; gap: 14px; }
+.payer-section { min-height: max-content; overflow: hidden; margin: 0; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.payer-section .payer-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 15px; }
+.payer-nested-editor[hidden], .payer-nested-action[hidden], .payer-nested-table-scroll[hidden] { display: none !important; }
+.payer-nested-action { display: flex; justify-content: flex-end; padding: 0 15px 12px; }
+.payer-nested-action .button svg, .payer-row-edit svg { width: 14px; height: 14px; vertical-align: middle; margin-right: 5px; }
+.payer-nested-table-scroll { margin: 0 15px 15px; border: 1px solid hsl(var(--border)); border-radius: 7px; }
+.payer-nested-table { min-width: 930px; }
+.payer-nested-empty { margin: 0 15px 15px; padding: 14px; }
+.payer-checkbox { align-self: end; min-height: 38px; }
+.payer-checkbox input[type="checkbox"] { width: 15px; height: 15px; margin: 0; accent-color: hsl(var(--primary)); vertical-align: middle; }
+.payer-tpa-add { padding-top: 0; }
+.payer-row-edit { min-height: 28px; padding: 4px 7px; font-size: 10px; }
+@media (max-width: 900px) { .payer-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .payer-section .payer-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .payer-filter-grid, .payer-section .payer-form-grid { grid-template-columns: 1fr; } .payer-checkbox { align-self: auto; } }
