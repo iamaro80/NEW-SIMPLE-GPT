@@ -566,3 +566,48 @@ body.patient-modal-open { overflow: hidden; }
 .plan-unlink { min-height: 27px; padding: 3px 7px; font-size: 10px; }
 @media (max-width: 900px) { .plan-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .plan-section .plan-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .plan-filter-grid, .plan-section .plan-form-grid { grid-template-columns: 1fr; } .plan-benefit-tools { align-items: stretch; flex-direction: column; } .plan-benefit-tools .facility-filter { width: 100%; } }
+.policy-filter-grid { grid-template-columns: repeat(3, minmax(170px, 1fr)); align-items: end; }
+.policy-advanced-toggle { justify-self: start; min-height: 35px; }
+.policy-advanced-fields { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(170px, 1fr)); gap: 12px; padding-top: 3px; }
+.policy-advanced-fields[hidden] { display: none; }
+.policies-table { min-width: 1020px; }
+.policy-number { font-weight: 650; }
+.policy-modal { width: min(900px, 100%); }
+.policy-modal-body { display: grid; align-content: start; }
+.policy-section { overflow: hidden; margin: 0; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.policy-section .policy-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 15px; }
+.policy-checkbox { align-self: end; min-height: 35px; }
+.policy-checkbox input[type="checkbox"] { width: 15px; height: 15px; margin: 0; accent-color: hsl(var(--primary)); }
+.policy-remarks { grid-column: span 2; }
+.policy-modal .patient-modal-footer > div { flex-wrap: wrap; justify-content: flex-end; }
+.policy-details-page { display: grid; gap: 15px; min-width: 0; }
+.policy-detail-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.policy-detail-toolbar .button svg { width: 15px; height: 15px; }
+.policy-detail-card, .policy-plan-accordion { overflow: hidden; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
+.policy-detail-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 15px 18px; border-bottom: 1px solid hsl(var(--border)); }
+.policy-detail-card-heading h2 { margin: 0; font-size: 15px; }
+.policy-meta-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
+.policy-meta-grid > div { min-width: 0; padding: 13px 16px; border-bottom: 1px solid hsl(var(--border) / .75); }
+.policy-meta-grid dt, .policy-plan-meta span { margin: 0 0 5px; color: hsl(var(--muted-foreground)); font-size: 9px; font-weight: 650; }
+.policy-meta-grid dd { overflow-wrap: anywhere; margin: 0; color: hsl(var(--foreground)); font-size: 11px; }
+.policy-plan-accordion > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 18px; font-size: 13px; font-weight: 650; cursor: pointer; list-style: none; }
+.policy-plan-accordion > summary::-webkit-details-marker { display: none; }
+.policy-plan-accordion > summary svg { width: 16px; height: 16px; color: hsl(var(--muted-foreground)); transition: transform .15s ease; }
+.policy-plan-accordion[open] > summary svg { transform: rotate(90deg); }
+.policy-plan-content { display: grid; gap: 12px; padding: 0 16px 17px; }
+.policy-plan-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 13px; border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--background)); }
+.policy-plan-meta > div { display: grid; gap: 5px; min-width: 0; }
+.policy-plan-meta strong { overflow-wrap: anywhere; font-size: 11px; }
+.policy-plan-content h3, .policy-remarks-card h3 { margin: 3px 0 0; font-size: 12px; }
+.policy-detail-table { min-width: 760px; }
+.policy-no-data { padding: 18px !important; color: hsl(var(--muted-foreground)) !important; text-align: center; }
+.policy-term-trigger { min-height: 27px; padding: 3px 7px; font-size: 10px; }
+.policy-remarks-card { padding-bottom: 14px; }
+.policy-remarks-card h3 { padding: 15px 18px 0; }
+.policy-remarks-card p { margin: 8px 18px 0; color: hsl(var(--muted-foreground)); font-size: 11px; white-space: pre-wrap; }
+.policy-plan-unavailable { padding: 22px; }
+.policy-terms-modal { width: min(940px, 100%); }
+.policy-terms-body { display: grid; align-content: start; }
+.policy-terms-table { min-width: 720px; }
+@media (max-width: 900px) { .policy-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .policy-advanced-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } .policy-section .policy-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .policy-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .policy-filter-grid, .policy-advanced-fields, .policy-section .policy-form-grid { grid-template-columns: 1fr; } .policy-advanced-fields { grid-column: 1; } .policy-remarks { grid-column: auto; } .policy-meta-grid { grid-template-columns: 1fr; } .policy-detail-card-heading { align-items: flex-start; flex-direction: column; } .policy-plan-meta { grid-template-columns: 1fr; } .policy-detail-toolbar { align-items: stretch; } }
