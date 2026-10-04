@@ -22,7 +22,7 @@
     { label: 'Staff & Access', icon: 'users', items: ['Practitioners', 'Users', 'Roles'] },
     { label: 'Payers Setup', icon: 'payer', items: ['Payers', 'TPAs'] },
     { label: 'Insurance Setup', icon: 'shield', items: ['Policies', 'Plans', 'Benefits'] },
-    { label: 'Payer Contracts', icon: 'contract', items: ['Contracts', 'Direct Billing Toggle'] },
+    { label: 'Payer Contracts', icon: 'contract', items: ['Contracts', 'Direct Billing'] },
     { label: 'Billing Rules', icon: 'rules', items: ['TAT Management', 'Consultation Rules'] },
     { label: 'Services and Pricing', icon: 'services', items: ['Service Items', 'Categories', 'Groups', 'Service Catalog', 'Master Price List', 'Price Lists', 'Premium Pricing', 'Discounts'] },
     { label: 'HIS Management', icon: 'his', items: [] },
@@ -36,6 +36,7 @@
     'master-price-lists': 'master-price-list',
     facility: 'facility-profile',
     'billing-periods': 'billing-period',
+    'direct-billing-toggle': 'direct-billing',
   };
   const getSelected = () => decodeURIComponent(location.hash.slice(1));
   const sidebar = document.querySelector('#sidebar-container');
