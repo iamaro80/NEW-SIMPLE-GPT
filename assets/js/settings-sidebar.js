@@ -79,6 +79,7 @@
     const showServiceCatalog = matching?.dataset.route === 'service-catalog';
     const showMasterPriceList = matching?.dataset.route === 'master-price-list';
     const showPriceLists = matching?.dataset.route === 'price-lists';
+    const showPremiumPricing = matching?.dataset.route === 'premium-pricing';
     const showDirectBilling = matching?.dataset.route === 'direct-billing';
     const showFacilityStructure = ['divisions', 'locations', 'rooms', 'billing-period', 'cost-centers'].includes(matching?.dataset.route);
     document.querySelector('[data-current-facility-profile]')?.toggleAttribute('hidden', !showFacilityProfile);
@@ -103,9 +104,10 @@
     document.querySelector('[data-service-catalog-grid]')?.toggleAttribute('hidden', !showServiceCatalog);
     document.querySelector('[data-master-price-list]')?.toggleAttribute('hidden', !showMasterPriceList);
     document.querySelector('[data-price-lists]')?.toggleAttribute('hidden', !showPriceLists);
+    document.querySelector('[data-premium-pricing]')?.toggleAttribute('hidden', !showPremiumPricing);
     document.querySelector('[data-direct-billing-settings]')?.toggleAttribute('hidden', !showDirectBilling);
     document.querySelector('[data-structure-workspace]')?.toggleAttribute('hidden', !showFacilityStructure);
-    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts || showDirectBilling || showTat || showConsultationRules || showServiceItems || showCategories || showGroups || showServiceCatalog || showMasterPriceList || showPriceLists);
+    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts || showDirectBilling || showTat || showConsultationRules || showServiceItems || showCategories || showGroups || showServiceCatalog || showMasterPriceList || showPriceLists || showPremiumPricing);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
       const active = item === matching;
       item.classList.toggle('active', active);

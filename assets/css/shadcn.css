@@ -896,4 +896,43 @@ body.patient-modal-open { overflow: hidden; }
 .price-list-check input { width: 15px; height: 15px; margin: 0; accent-color: hsl(var(--primary)); }
 @media (max-width: 900px) { .price-list-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .price-list-items-toolbar { align-items: flex-start; flex-direction: column; } }
 @media (max-width: 620px) { .price-list-toolbar { justify-content: flex-start; } .price-list-primary-actions { width: 100%; } .price-list-primary-actions .button { flex: 1 1 calc(50% - 8px); } .price-list-filters, .price-list-item-filters, .price-picker-filters { grid-template-columns: 1fr; } .price-list-detail-heading { align-items: flex-start; flex-direction: column; } .price-list-detail-actions { width: 100%; } .price-list-detail-actions .button { flex: 1; } .price-list-form-grid { grid-template-columns: 1fr; } .price-list-version-control { width: 100%; align-items: stretch; flex-direction: column; } .price-list-version-control .facility-filter { min-width: 0; } .price-list-form-heading { align-items: flex-start; } }
+/* Facility Premium Pricing screen prototype */
+.premium-pricing-page, .premium-pricing-page > * { min-width: 0; max-width: 100%; }
+.premium-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.premium-toolbar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.premium-toolbar-actions .button svg, .premium-form-footer .button svg, .premium-add-fee svg { width: 15px; height: 15px; }
+.premium-filter-grid { grid-template-columns: minmax(220px, 420px); margin-bottom: 14px; }
+.premium-list-table { min-width: 760px; }
+.premium-list-table th:last-child, .premium-list-table td:last-child { width: 76px; text-align: center; }
+.premium-description { display: block; max-width: 560px; overflow: hidden; color: hsl(var(--muted-foreground)); text-overflow: ellipsis; white-space: nowrap; }
+.premium-row-menu { width: 148px; }
+.premium-form-screen { display: grid; gap: 14px; }
+.premium-form-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.premium-form-heading .eyebrow { margin: 8px 0 5px; color: hsl(var(--primary)); font-size: 9px; font-weight: 700; letter-spacing: .12em; }
+.premium-form-heading h2 { margin: 0; font-size: 20px; }
+.premium-form-heading p:last-child { margin: 5px 0 0; color: hsl(var(--muted-foreground)); font-size: 11px; }
+.premium-form-card { min-width: 0; padding: 16px; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
+.premium-record-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.premium-record-fields .form-field, .premium-record-fields input { min-width: 0; }
+.premium-newborn-check { display: inline-flex; align-items: center; gap: 9px; margin: 8px 0 14px; color: hsl(var(--foreground)); font-size: 11px; font-weight: 600; }
+.premium-newborn-check input { width: 15px; height: 15px; margin: 0; accent-color: hsl(var(--primary)); }
+.premium-fee-editor { display: grid; grid-template-columns: repeat(4, minmax(90px, 1fr)) auto; gap: 10px; align-items: end; padding: 14px; border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--muted) / .2); }
+.premium-fee-editor .form-field { min-width: 0; }
+.premium-fee-editor input[readonly] { color: hsl(var(--muted-foreground)); background: hsl(var(--muted) / .45); }
+.premium-add-fee { min-height: 36px; white-space: nowrap; }
+.premium-fees-table { min-width: 900px; }
+.premium-fees-table td { height: 46px; }
+.premium-fees-table td:nth-child(1) { font-weight: 600; }
+.premium-fee-row-actions { display: flex; justify-content: center; gap: 3px; }
+.premium-fee-row-actions .icon-button { width: 30px; height: 30px; }
+.premium-fee-row-actions svg { width: 14px; height: 14px; }
+.premium-delete-fee { color: hsl(var(--destructive)); }
+.premium-no-fees { padding: 22px !important; color: hsl(var(--muted-foreground)); text-align: center !important; }
+.premium-form-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.premium-form-footer > div { display: flex; gap: 8px; }
+.premium-confirm-backdrop { z-index: 57; }
+.premium-confirm-modal { width: min(470px, 100%); }
+.premium-confirm-modal .patient-modal-body .form-field { max-width: 360px; }
+@media (max-width: 900px) { .premium-fee-editor { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .premium-toolbar { justify-content: flex-start; } .premium-toolbar-actions { width: 100%; } .premium-toolbar-actions .button { flex: 1 1 calc(50% - 8px); } .premium-filter-grid, .premium-record-fields { grid-template-columns: 1fr; } .premium-form-heading { align-items: flex-start; flex-direction: column; } .premium-form-heading > .button { align-self: stretch; } .premium-fee-editor { grid-template-columns: repeat(2, minmax(0, 1fr)); } .premium-add-fee { grid-column: 1 / -1; } .premium-form-footer { align-items: flex-start; flex-direction: column; } .premium-form-footer > div { width: 100%; } .premium-form-footer .button { flex: 1; } }
 [hidden] { display: none !important; }
