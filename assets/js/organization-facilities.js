@@ -11,6 +11,8 @@
   const contextCrumb = document.querySelector('[data-facility-context-crumb]');
   const contextCrumbSeparator = document.querySelector('[data-facility-context-crumb-separator]');
   const profileContent = document.querySelector('[data-facility-profile-content]');
+  const frameWrap = document.querySelector('[data-facility-entity-frame-wrap]');
+  const facilityFrame = document.querySelector('[data-facility-entity-frame]');
   if (!shell || !organizationSidebar || !contextSidebar || !detail || !window.RcmFacilityStore) return;
 
   const sections = [
@@ -24,6 +26,7 @@
     { label: 'Cost Centers', route: 'cost-centers' },
   ];
   let inFacilityFocus = false;
+  let embeddedPageKey = '';
   const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   const icon = '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5M8 9h.01M12 9h.01M16 9h.01"/></svg>';
   const separator = '<svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
@@ -76,14 +79,44 @@
 
   function setSectionContent(facility, section) {
     const isProfile = section.route === 'facility-profile';
+    const embeddedRoutes = new Set(['branches', 'departments', 'locations', 'billing-period', 'cost-centers']);
+    const useEmbeddedPage = embeddedRoutes.has(section.route);
     detail.hidden = !isProfile;
-    placeholder.hidden = isProfile;
+    placeholder.hidden = isProfile || useEmbeddedPage;
+    frameWrap.hidden = !useEmbeddedPage;
     if (isProfile) {
+      embeddedPageKey = '';
+      facilityFrame.src = 'about:blank';
       renderProfile(facility);
       return;
     }
+    if (useEmbeddedPage) {
+      const key = `${facility.id}:${section.route}`;
+      facilityFrame.title = `${section.label} for ${facility.englishName}`;
+      frameWrap.setAttribute('aria-label', `${section.label} for ${facility.englishName}`);
+      if (key !== embeddedPageKey) {
+        embeddedPageKey = key;
+        const url = new URL('../facility/settings/index.html', window.location.href);
+        url.searchParams.set('embed', 'organization');
+        url.searchParams.set('facilityId', String(facility.id));
+        url.hash = section.route;
+        facilityFrame.src = url.href;
+      }
+      syncEmbeddedTheme();
+      return;
+    }
+    embeddedPageKey = '';
+    facilityFrame.src = 'about:blank';
     document.querySelector('[data-facility-placeholder-title]').textContent = `${section.label} workspace`;
     document.querySelector('[data-facility-placeholder-description]').textContent = `${section.label} setup for ${facility.englishName} is ready for buildout.`;
+  }
+
+  function syncEmbeddedTheme() {
+    if (!facilityFrame?.contentWindow || facilityFrame.hidden) return;
+    facilityFrame.contentWindow.postMessage({
+      type: 'rcm:theme',
+      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+    }, window.location.origin);
   }
 
   function renderContextSidebar(facility, activeRoute) {
@@ -98,6 +131,9 @@
     backLink.hidden = true;
     detail.hidden = true;
     placeholder.hidden = true;
+    frameWrap.hidden = true;
+    facilityFrame.src = 'about:blank';
+    embeddedPageKey = '';
     contextCrumb.hidden = true;
     contextCrumbSeparator.hidden = true;
     if (inFacilityFocus) setOrganizationSidebarCollapsed(false);
@@ -143,5 +179,7 @@
   });
   window.addEventListener('hashchange', updateRoute);
   window.addEventListener('rcm:facilities-changed', updateRoute);
+  facilityFrame.addEventListener('load', syncEmbeddedTheme);
+  new MutationObserver(syncEmbeddedTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   updateRoute();
 })();
