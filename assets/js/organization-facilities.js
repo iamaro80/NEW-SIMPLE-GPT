@@ -24,6 +24,7 @@
     { label: 'Rooms', route: 'rooms' },
     { label: 'Billing Period', route: 'billing-period' },
     { label: 'Cost Centers', route: 'cost-centers' },
+    { label: 'Consultation Rules', route: 'consultation-rules' },
   ];
   let inFacilityFocus = false;
   let embeddedPageKey = '';
@@ -79,7 +80,7 @@
 
   function setSectionContent(facility, section) {
     const isProfile = section.route === 'facility-profile';
-    const embeddedRoutes = new Set(['branches', 'departments', 'locations', 'billing-period', 'cost-centers']);
+    const embeddedRoutes = new Set(['branches', 'departments', 'locations', 'billing-period', 'cost-centers', 'consultation-rules']);
     const useEmbeddedPage = embeddedRoutes.has(section.route);
     detail.hidden = !isProfile;
     placeholder.hidden = isProfile || useEmbeddedPage;

@@ -18,12 +18,11 @@
     return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.reference}</svg>`;
   };
   const sections = [
-    { label: 'Facility Setup', icon: 'building', items: ['Facility Profile', 'Branches', 'Departments', 'Divisions', 'Locations', 'Rooms', 'Billing Period', 'Cost Centers'] },
+    { label: 'Facility Setup', icon: 'building', items: ['Facility Profile', 'Branches', 'Departments', 'Divisions', 'Locations', 'Rooms', 'Billing Period', 'Cost Centers', 'Consultation Rules'] },
     { label: 'Staff & Access', icon: 'users', items: ['Practitioners', 'Users', 'Roles'] },
-    { label: 'Payers Setup', icon: 'payer', items: ['Payers', 'TPAs'] },
+    { label: 'Payers Setup', icon: 'payer', items: ['Payers', 'TPAs', 'TAT Management'] },
     { label: 'Insurance Setup', icon: 'shield', items: ['Policies', 'Plans', 'Benefits'] },
     { label: 'Payer Contracts', icon: 'contract', items: ['Contracts', 'Direct Billing'] },
-    { label: 'Billing Rules', icon: 'rules', items: ['TAT Management', 'Consultation Rules'] },
     { label: 'Services and Pricing', icon: 'services', items: ['Service Items', 'Categories', 'Groups', 'Service Catalog', 'Master Price List', 'Price Lists', 'Premium Pricing', 'Discounts'] },
     { label: 'HIS Management', icon: 'his', items: [] },
     { label: 'Reference Data', icon: 'reference', items: ['Global Dictionary'] },
