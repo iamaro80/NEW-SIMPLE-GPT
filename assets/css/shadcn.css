@@ -417,6 +417,11 @@ button { color: inherit; }
 .button-destructive { border: 1px solid hsl(0 72% 47%); background: hsl(0 72% 47%); color: white; }
 .button-destructive:hover { background: hsl(0 72% 40%); }
 .consultation-filter-grid { grid-template-columns: repeat(3, minmax(170px, 1fr)); }
+.consultation-rules-page { width: 100%; min-width: 0; max-width: 100%; }
+.consultation-rules-page > * { min-width: 0; max-width: 100%; }
+.consultation-rules-page .branches-toolbar { width: 100%; min-width: 0; }
+.consultation-rules-page .facility-table-card { width: 100%; min-width: 0; max-width: 100%; overflow: hidden; }
+.consultation-rules-page .facility-table-scroll { width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; }
 .consultation-table { min-width: 1680px; }
 .consultation-pair-value { display: block; min-width: 90px; padding: 2px 0; }
 .consultation-modal { width: min(1020px, 100%); }
