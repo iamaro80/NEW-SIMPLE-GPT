@@ -571,6 +571,7 @@ body.modal-open { overflow: hidden; }
 .users-table { min-width: 1100px; }
 .user-modal { width: min(900px, 100%); }
 .user-section { overflow: hidden; margin: 0 0 15px; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.user-assignment-section { position: relative; overflow: visible; }
 .user-section:last-child { margin-bottom: 0; }
 .user-section .patient-form-grid { padding: 15px; }
 .user-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -582,13 +583,24 @@ body.modal-open { overflow: hidden; }
 .user-permission-list .form-check { min-height: 36px; border-bottom: 1px solid hsl(var(--border) / .65); }
 .user-permission-list .form-check:last-child { border-bottom: 0; }
 .user-permission-list .form-check[hidden] { display: none; }
-.user-role-assignment { display: grid; gap: 10px; padding: 15px; }
-.user-role-chips { display: flex; min-height: 38px; flex-wrap: wrap; align-items: center; gap: 7px; padding: 6px 9px; border: 1px solid hsl(var(--border)); border-radius: 7px; background: hsl(var(--background)); }
-.user-role-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 25px; padding: 3px 7px 3px 9px; border: 1px solid hsl(var(--primary) / .24); border-radius: 999px; background: hsl(var(--primary) / .09); color: hsl(var(--foreground)); font-size: 10px; }
-.user-role-chip button { display: inline-grid; width: 18px; height: 18px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: hsl(var(--muted-foreground)); cursor: pointer; font-size: 15px; line-height: 1; }
-.user-role-chip button:hover { background: hsl(var(--primary) / .14); color: hsl(var(--foreground)); }
+.user-role-assignment { padding: 15px; }
+.user-multiselect { position: relative; }
+.user-multiselect-control { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; min-height: 40px; padding: 5px 8px; border: 1px solid hsl(var(--input)); border-radius: 6px; background: hsl(var(--background)); }
+.user-multiselect-control:focus-within { border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / .18); }
+.user-multiselect-control > input[data-user-branch-search], .user-multiselect-control > input[data-user-role-search] { flex: 1 1 150px; width: auto; min-width: 120px; min-height: 26px; padding: 3px 2px; border: 0; outline: 0; background: transparent; box-shadow: none; color: hsl(var(--foreground)); font: inherit; font-size: 11px; }
+.user-multiselect-control > input[data-user-branch-search]:focus, .user-multiselect-control > input[data-user-role-search]:focus { border: 0; box-shadow: none; }
+.user-multiselect-control > input[hidden], .user-multiselect-toggle[hidden] { display: none; }
+.user-role-chips { display: contents; }
+.user-assignment-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; margin: 0; padding: 4px 7px; border-radius: 999px; background: hsl(var(--muted)); color: hsl(var(--foreground)); font-size: 10px; white-space: normal; }
+.user-assignment-chip button { display: inline-grid; flex: 0 0 16px; width: 16px; height: 16px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: hsl(var(--muted-foreground)); font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
+.user-assignment-chip button:hover { background: hsl(var(--background)); color: hsl(var(--foreground)); }
+.user-assignment-placeholder { padding: 3px; color: hsl(var(--muted-foreground)); font-size: 10px; }
+.user-multiselect-toggle { display: inline-grid; flex: 0 0 26px; width: 26px; height: 26px; place-items: center; padding: 0; border: 0; border-radius: 5px; background: transparent; color: hsl(var(--muted-foreground)); font: inherit; cursor: pointer; }
+.user-multiselect-toggle:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+.user-multiselect-options { position: absolute; z-index: 8; top: calc(100% + 4px); right: 0; left: 0; display: grid; max-height: 210px; overflow: auto; padding: 5px 8px; border: 1px solid hsl(var(--border)); border-radius: 7px; background: hsl(var(--popover)); color: hsl(var(--popover-foreground)); box-shadow: 0 8px 24px hsl(222 25% 10% / .16); }
+.user-multiselect-options[hidden] { display: none; }
 .user-role-search { width: min(420px, 100%); }
-.user-role-options { display: grid; max-height: 190px; overflow: auto; padding: 4px 10px; border: 1px solid hsl(var(--border)); border-radius: 7px; background: hsl(var(--background)); }
+.user-role-options { display: grid; }
 .user-role-option { display: flex; min-height: 37px; align-items: center; gap: 9px; border-bottom: 1px solid hsl(var(--border) / .65); color: hsl(var(--foreground)); cursor: pointer; font-size: 10px; }
 .user-role-option:last-child { border-bottom: 0; }
 .user-role-option[hidden] { display: none; }

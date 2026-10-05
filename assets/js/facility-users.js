@@ -31,6 +31,8 @@
   let currentUsername = null;
   let selectedRoleIds = [];
   let selectedBranchCodes = [];
+  const assignmentPickerOpen = { branch: false, role: false };
+  let suppressPickerFocusOpen = false;
   let returnFocus = null;
   let toastTimer;
   let appliedFilters = {};
@@ -61,8 +63,8 @@
         <label class="form-field"><span>User Type <b>*</b></span><select name="userType" required><option value="">Select user type</option>${userTypes.map((item) => `<option>${escapeHtml(item)}</option>`).join('')}</select></label>
         <label class="form-field user-notes"><span>Notes</span><textarea name="notes" rows="3"></textarea></label>
       </div></fieldset>
-      <fieldset class="patient-form-section user-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="user-role-assignment" data-user-branch-assignment><div class="user-role-chips" data-user-branch-chips aria-live="polite"></div><label class="facility-filter user-role-search"><span>Search branches</span><input type="search" data-user-branch-search placeholder="Search branches"></label><div class="user-role-options" data-user-branch-options role="group" aria-label="Branches available to this facility"></div><p class="user-role-help" data-user-branch-help>Choose any branches assigned to this user; branch assignment is optional.</p></div></fieldset>
-      <fieldset class="patient-form-section user-section"><legend class="sr-only">Role Assignment</legend><div class="facility-form-section-heading">Role Assignment</div><div class="user-role-assignment" data-user-role-assignment><div class="user-role-chips" data-user-role-chips aria-live="polite"></div><label class="facility-filter user-role-search"><span>Search roles</span><input type="search" data-user-role-search placeholder="Search available roles"></label><div class="user-role-options" data-user-role-options role="group" aria-label="Roles available to this facility"></div><p class="user-role-help" data-user-role-help>Select one or more active roles for this user.</p></div></fieldset>
+      <fieldset class="patient-form-section user-section user-assignment-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="user-multiselect" data-user-branch-assignment><div class="user-multiselect-control" data-user-branch-control><div class="user-role-chips" data-user-branch-chips aria-live="polite"></div><input type="search" data-user-branch-search placeholder="Select branches..." aria-label="Search branches" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-branch-options"><button class="user-multiselect-toggle" type="button" data-user-branch-toggle aria-label="Show branches" aria-expanded="false">⌄</button></div><div class="user-multiselect-options" id="user-branch-options" data-user-branch-options role="group" aria-label="Branches available to this facility" hidden></div><p class="user-role-help" data-user-branch-help>Choose any branches assigned to this user; branch assignment is optional.</p></div></fieldset>
+      <fieldset class="patient-form-section user-section user-assignment-section"><legend class="sr-only">Role Assignment</legend><div class="facility-form-section-heading">Role Assignment</div><div class="user-multiselect" data-user-role-assignment><div class="user-multiselect-control" data-user-role-control><div class="user-role-chips" data-user-role-chips aria-live="polite"></div><input type="search" data-user-role-search placeholder="Select roles..." aria-label="Search roles" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-role-options"><button class="user-multiselect-toggle" type="button" data-user-role-toggle aria-label="Show roles" aria-expanded="false">⌄</button></div><div class="user-multiselect-options" id="user-role-options" data-user-role-options role="group" aria-label="Roles available to this facility" hidden></div><p class="user-role-help" data-user-role-help>Select one or more active roles for this user.</p></div></fieldset>
     </div><footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-user-cancel>Cancel</button><button type="submit" class="button button-primary" data-user-save>Create</button></div></footer></form></section>`;
   document.body.append(userModal);
 
@@ -167,12 +169,14 @@
   }
   function setFormReadOnly(readOnly) {
     [...userForm.elements].forEach((field) => { if (field.name) field.disabled = readOnly; });
-    userModal.querySelector('[data-user-branch-search]').closest('label').hidden = readOnly;
-    userModal.querySelector('[data-user-branch-options]').hidden = readOnly;
+    userModal.querySelector('[data-user-branch-search]').hidden = readOnly;
+    userModal.querySelector('[data-user-branch-toggle]').hidden = readOnly;
     userModal.querySelector('[data-user-branch-help]').hidden = readOnly;
-    userModal.querySelector('[data-user-role-search]').closest('label').hidden = readOnly;
-    userModal.querySelector('[data-user-role-options]').hidden = readOnly;
+    userModal.querySelector('[data-user-role-search]').hidden = readOnly;
+    userModal.querySelector('[data-user-role-toggle]').hidden = readOnly;
     userModal.querySelector('[data-user-role-help]').hidden = readOnly;
+    setAssignmentPickerOpen('branch', false);
+    setAssignmentPickerOpen('role', false);
     userModal.querySelector('[data-user-save]').hidden = readOnly;
     userModal.querySelector('[data-user-cancel]').textContent = readOnly ? 'Back' : 'Cancel';
   }
@@ -184,6 +188,7 @@
     userModal.querySelector('#user-modal-description').textContent = isNew ? 'Enter user information, branch, and roles.' : nextMode === 'view' ? 'Review user information, branch, and assigned roles.' : 'Update user information, branch, and roles.';
     userModal.querySelector('[data-user-save]').textContent = isNew ? 'Create' : 'Save changes';
     selectedRoleIds = (user?.roleIds || []).map(String);
+    assignmentPickerOpen.branch = false; assignmentPickerOpen.role = false;
     userModal.querySelector('[data-user-role-search]').value = '';
     selectedBranchCodes = user ? userBranchCodes(user) : [];
     userModal.querySelector('[data-user-branch-search]').value = '';
@@ -228,8 +233,8 @@
     const chosen = roleList.filter((role) => selected.has(String(role.id)));
     const chips = userModal.querySelector('[data-user-role-chips]');
     chips.innerHTML = chosen.length
-      ? chosen.map((role) => `<span class="user-role-chip">${escapeHtml(role.englishName)}${!role.active ? ' · Inactive' : ''}${readOnly || !role.active ? '' : `<button type="button" data-user-role-remove="${escapeHtml(role.id)}" aria-label="Remove ${escapeHtml(role.englishName)} role">×</button>`}</span>`).join('')
-      : '<span class="user-role-empty">No roles assigned.</span>';
+      ? chosen.map((role) => `<span class="user-assignment-chip">${escapeHtml(role.englishName)}${!role.active ? ' · Inactive' : ''}${readOnly || !role.active ? '' : `<button type="button" data-user-role-remove="${escapeHtml(role.id)}" aria-label="Remove ${escapeHtml(role.englishName)} role">×</button>`}</span>`).join('')
+      : '<span class="user-assignment-placeholder">No roles assigned</span>';
     const options = roleList.filter((role) => role.active || selected.has(String(role.id)));
     const query = searchInput.value.trim().toLocaleLowerCase();
     const list = userModal.querySelector('[data-user-role-options]');
@@ -238,6 +243,7 @@
       const searchable = `${role.englishName} ${role.arabicName || ''}`.toLocaleLowerCase();
       return `<label class="user-role-option"${query && !searchable.includes(query) ? ' hidden' : ''}><input type="checkbox" data-user-role-choice value="${escapeHtml(role.id)}" ${isSelected ? 'checked' : ''} ${!role.active && isSelected ? 'disabled' : ''}><span>${escapeHtml(role.englishName)}${!role.active ? ' · Inactive' : ''}${role.arabicName ? `<small lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</small>` : ''}</span></label>`;
     }).join('') : '<p class="user-role-empty">No active roles are available. Add or activate a role in Settings first.</p>';
+    setAssignmentPickerOpen('role', assignmentPickerOpen.role && !readOnly);
     if (restoreSearch) { searchInput.focus(); searchInput.setSelectionRange(cursor, cursor); }
     else if (focusedChoice !== null) [...list.querySelectorAll('[data-user-role-choice]')].find((input) => input.value === focusedChoice)?.focus();
   }
@@ -251,8 +257,8 @@
     const chips = userModal.querySelector('[data-user-branch-chips]');
     const chosen = branches.filter((branch) => selected.has(String(branch.code)));
     chips.innerHTML = chosen.length
-      ? chosen.map((branch) => `<span class="user-role-chip">${escapeHtml(branch.englishName)}${readOnly ? '' : `<button type="button" data-user-branch-remove="${escapeHtml(branch.code)}" aria-label="Remove ${escapeHtml(branch.englishName)} branch">×</button>`}</span>`).join('')
-      : '<span class="user-role-empty">No branches assigned.</span>';
+      ? chosen.map((branch) => `<span class="user-assignment-chip">${escapeHtml(branch.englishName)}${readOnly ? '' : `<button type="button" data-user-branch-remove="${escapeHtml(branch.code)}" aria-label="Remove ${escapeHtml(branch.englishName)} branch">×</button>`}</span>`).join('')
+      : '<span class="user-assignment-placeholder">No branches selected</span>';
     const query = searchInput.value.trim().toLocaleLowerCase();
     const list = userModal.querySelector('[data-user-branch-options]');
     list.innerHTML = branches.length ? branches.map((branch) => {
@@ -260,8 +266,31 @@
       const searchable = `${branch.englishName} ${branch.arabicName || ''} ${branch.code}`.toLocaleLowerCase();
       return `<label class="user-role-option"${query && !searchable.includes(query) ? ' hidden' : ''}><input type="checkbox" data-user-branch-choice value="${escapeHtml(code)}" ${isSelected ? 'checked' : ''}><span>${escapeHtml(branch.englishName)}${branch.arabicName ? `<small lang="ar" dir="rtl">${escapeHtml(branch.arabicName)}</small>` : ''}</span></label>`;
     }).join('') : '<p class="user-role-empty">No branches are available for this facility.</p>';
+    setAssignmentPickerOpen('branch', assignmentPickerOpen.branch && !readOnly);
     if (restoreSearch) { searchInput.focus(); searchInput.setSelectionRange(cursor, cursor); }
     else if (focusedChoice !== null) [...list.querySelectorAll('[data-user-branch-choice]')].find((input) => input.value === focusedChoice)?.focus();
+  }
+  function setAssignmentPickerOpen(type, open) {
+    if (open) {
+      const otherType = type === 'branch' ? 'role' : 'branch';
+      assignmentPickerOpen[otherType] = false;
+      const otherPrefix = otherType === 'branch' ? 'branch' : 'role';
+      userModal.querySelector(`[data-user-${otherPrefix}-assignment]`).style.zIndex = '';
+      userModal.querySelector(`[data-user-${otherPrefix}-options]`).hidden = true;
+      userModal.querySelector(`[data-user-${otherPrefix}-search]`).setAttribute('aria-expanded', 'false');
+      userModal.querySelector(`[data-user-${otherPrefix}-toggle]`).setAttribute('aria-expanded', 'false');
+      userModal.querySelector(`[data-user-${otherPrefix}-toggle]`).setAttribute('aria-label', `Show ${otherPrefix === 'branch' ? 'branches' : 'roles'}`);
+    }
+    assignmentPickerOpen[type] = Boolean(open) && mode !== 'view';
+    const prefix = type === 'branch' ? 'branch' : 'role';
+    const list = userModal.querySelector(`[data-user-${prefix}-options]`);
+    const input = userModal.querySelector(`[data-user-${prefix}-search]`);
+    const toggle = userModal.querySelector(`[data-user-${prefix}-toggle]`);
+    userModal.querySelector(`[data-user-${prefix}-assignment]`).style.zIndex = assignmentPickerOpen[type] ? '10' : '';
+    list.hidden = !assignmentPickerOpen[type];
+    input.setAttribute('aria-expanded', String(assignmentPickerOpen[type]));
+    toggle.setAttribute('aria-expanded', String(assignmentPickerOpen[type]));
+    toggle.setAttribute('aria-label', `${assignmentPickerOpen[type] ? 'Hide' : 'Show'} ${prefix === 'branch' ? 'branches' : 'roles'}`);
   }
   function openPermissionsModal(user, trigger) {
     currentUsername = user.username; returnFocus = trigger; renderRoleChoices(user);
@@ -295,8 +324,27 @@
 
   userForm.addEventListener('input', (event) => {
     if (event.target.name === 'username') event.target.setCustomValidity('');
-    if (event.target.matches('[data-user-branch-search]')) renderUserBranchAssignment();
-    if (event.target.matches('[data-user-role-search]')) renderUserRoleAssignment();
+    if (event.target.matches('[data-user-branch-search]')) { setAssignmentPickerOpen('branch', true); renderUserBranchAssignment(); }
+    if (event.target.matches('[data-user-role-search]')) { setAssignmentPickerOpen('role', true); renderUserRoleAssignment(); }
+  });
+  userForm.addEventListener('focusin', (event) => {
+    if (suppressPickerFocusOpen) return;
+    if (event.target.matches('[data-user-branch-search]')) setAssignmentPickerOpen('branch', true);
+    if (event.target.matches('[data-user-role-search]')) setAssignmentPickerOpen('role', true);
+  });
+  userForm.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-user-branch-toggle], [data-user-role-toggle]');
+    if (toggle) {
+      const type = toggle.hasAttribute('data-user-branch-toggle') ? 'branch' : 'role';
+      setAssignmentPickerOpen(type, !assignmentPickerOpen[type]);
+      if (assignmentPickerOpen[type]) userModal.querySelector(`[data-user-${type}-search]`).focus();
+      return;
+    }
+    const control = event.target.closest('[data-user-branch-control], [data-user-role-control]');
+    if (control && !event.target.closest('[data-user-branch-remove], [data-user-role-remove]')) {
+      const type = control.hasAttribute('data-user-branch-control') ? 'branch' : 'role';
+      setAssignmentPickerOpen(type, true);
+    }
   });
   userForm.addEventListener('change', (event) => {
     if (event.target.matches('[data-user-branch-choice]')) {
@@ -380,10 +428,27 @@
     modal.querySelectorAll('[data-user-close], [data-simple-close], [data-user-cancel], [data-simple-cancel]').forEach((button) => button.addEventListener('click', () => closeModal(modal)));
     modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(modal); });
   }
-  document.addEventListener('click', (event) => { if (!event.target.closest('.facility-row-action')) closeMenus(); });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.facility-row-action')) closeMenus();
+    if (!userModal.hidden) {
+      if (!event.target.closest('[data-user-branch-assignment]')) setAssignmentPickerOpen('branch', false);
+      if (!event.target.closest('[data-user-role-assignment]')) setAssignmentPickerOpen('role', false);
+    }
+  });
   document.addEventListener('keydown', (event) => {
     const openModal = [userModal, passwordModal, permissionsModal].find((modal) => !modal.hidden);
-    if (event.key === 'Escape') { if (openModal) closeModal(openModal); else closeMenus(); }
+    if (event.key === 'Escape') {
+      const openPicker = ['role', 'branch'].find((type) => assignmentPickerOpen[type]);
+      if (openModal === userModal && openPicker) {
+        event.preventDefault(); event.stopPropagation();
+        setAssignmentPickerOpen(openPicker, false);
+        suppressPickerFocusOpen = true;
+        userModal.querySelector(`[data-user-${openPicker}-search]`).focus();
+        setTimeout(() => { suppressPickerFocusOpen = false; }, 0);
+        return;
+      }
+      if (openModal) closeModal(openModal); else closeMenus();
+    }
     if (!openModal || event.key !== 'Tab') return;
     const focusable = [...openModal.querySelectorAll('button:not([hidden]):not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled)')];
     const first = focusable[0], last = focusable[focusable.length - 1];
