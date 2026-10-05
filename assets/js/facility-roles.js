@@ -58,6 +58,8 @@
   const pageSize = 8;
 
   function load() {
+    const shared = window.RcmOrganizationStaffStore?.forFacility('roles', facilityId);
+    if (shared?.length) return shared;
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored !== null) {
@@ -74,11 +76,13 @@
         }
       }
       localStorage.setItem(storageKey, JSON.stringify(seed));
+      window.RcmOrganizationStaffStore?.saveFacility('roles', facilityId, seed);
     } catch { /* Seed remains available in memory when storage is unavailable. */ }
     return seed.map((role) => ({ ...role, permissionIds: [...role.permissionIds] }));
   }
   function persist() {
     try { localStorage.setItem(storageKey, JSON.stringify(roles)); } catch { /* Keep the workflow available in memory. */ }
+    window.RcmOrganizationStaffStore?.saveFacility('roles', facilityId, roles);
     window.dispatchEvent(new CustomEvent('rcm:roles-changed', { detail: { facilityId, roles: list() } }));
   }
   function list() { return roles.map((role) => ({ ...role, permissionIds: [...role.permissionIds] })); }

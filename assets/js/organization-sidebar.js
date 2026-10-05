@@ -80,7 +80,9 @@
       children.hidden = !containsActive;
     });
 
-    document.querySelector('[data-org-overview]')?.toggleAttribute('hidden', route === 'facilities');
+    const isStaffRoute = ['practitioners', 'users', 'roles'].includes(route);
+    document.querySelector('[data-org-overview]')?.toggleAttribute('hidden', route === 'facilities' || isStaffRoute);
+    document.querySelector('[data-organization-staff-workspace]')?.toggleAttribute('hidden', !isStaffRoute);
     document.querySelector('[data-facility-grid]')?.toggleAttribute('hidden', route !== 'facilities' || isFacilityFocusRoute);
 
     const label = activeLink.dataset.orgLabel;

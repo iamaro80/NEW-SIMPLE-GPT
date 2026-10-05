@@ -99,6 +99,8 @@
   }
 
   function loadUsers() {
+    const shared = window.RcmOrganizationStaffStore?.forFacility('users', facilityId);
+    if (shared?.length) return shared;
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored !== null) {
@@ -115,12 +117,14 @@
         }
       }
       localStorage.setItem(storageKey, JSON.stringify(usersSeed));
+      window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, usersSeed);
     } catch { /* Keep mock state usable if browser storage is unavailable. */ }
     return usersSeed.map((record) => ({ ...record, roleIds: [...record.roleIds] }));
   }
 
   function save() {
     try { localStorage.setItem(storageKey, JSON.stringify(users)); } catch { /* Continue with in-memory state. */ }
+    window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, users);
   }
 
   function branchName(code) { return branches.find((item) => String(item.code) === String(code))?.englishName || '—'; }

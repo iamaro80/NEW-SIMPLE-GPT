@@ -53,6 +53,8 @@
     ];
   }
   function loadRecords() {
+    const shared = window.RcmOrganizationStaffStore?.forFacility('practitioners', facilityId);
+    if (shared?.length) return shared;
     try {
       const data = JSON.parse(localStorage.getItem(storageKey) || 'null');
       if (Array.isArray(data)) {
@@ -61,8 +63,10 @@
         return migrated;
       }
     } catch { /* Seed below. */ }
-    try { localStorage.setItem(storageKey, JSON.stringify(seed)); } catch { /* Keep seed in memory. */ }
-    return seed.map((record) => ({ ...record, departmentCodes: [...record.departmentCodes] }));
+    const initial = seed.map((record) => ({ ...record, departmentCodes: [...record.departmentCodes] }));
+    try { localStorage.setItem(storageKey, JSON.stringify(initial)); } catch { /* Keep seed in memory. */ }
+    window.RcmOrganizationStaffStore?.saveFacility('practitioners', facilityId, initial);
+    return initial;
   }
   let departments = departmentRecordsFor(facilityId);
   let selectedFormFacilityId = String(facilityId);
@@ -131,7 +135,10 @@
   const scfhsFields = ['scfhsCategoryCode','scfhsCategoryNameEn','scfhsSpecialityCode','scfhsSpecialityNameEn','scfhsCategoryNameAr','scfhsSpecialityNameAr'];
   const allFields = [...valuesToSave, ...scfhsFields];
 
-  function persist() { try { localStorage.setItem(storageKey, JSON.stringify(records)); } catch { /* Keep changes in memory if storage is unavailable. */ } }
+  function persist() {
+    try { localStorage.setItem(storageKey, JSON.stringify(records)); } catch { /* Keep changes in memory if storage is unavailable. */ }
+    window.RcmOrganizationStaffStore?.saveFacility('practitioners', facilityId, records);
+  }
   function showToast(message) { if (!toast) return; toast.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2300); }
   function facilityName(id) { return facilityCache.get(String(id))?.englishName || `Facility ${id}`; }
   function departmentName(code, targetFacilityId = selectedFormFacilityId) {
