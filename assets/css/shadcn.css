@@ -1008,9 +1008,11 @@ html.organization-embedded .settings-page-container { width: 100%; max-width: no
 .organization-staff-grid .facility-table { min-width: 920px; }
 .organization-staff-grid .facility-table small { display: block; margin-top: 3px; color: hsl(var(--muted-foreground)); font-size: 10px; }
 .organization-staff-grid .facility-table td { vertical-align: top; }
-.organization-staff-modal { width: min(1120px, 100%); }
-.organization-staff-modal .patient-modal-body { display: grid; align-content: start; gap: 13px; }
-.organization-staff-modal .facility-modal-section { margin: 0; }
+.organization-staff-modal { width: min(1120px, 100%); height: min(92vh, 920px); max-height: min(92vh, 920px); }
+.organization-staff-modal form { min-height: 0; flex: 1 1 auto; overflow: hidden; }
+.organization-staff-modal .patient-modal-body { display: block; min-height: 0; height: auto; flex: 1 1 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; -webkit-overflow-scrolling: touch; }
+.organization-staff-modal .facility-modal-section { margin: 0 0 13px; }
+.organization-staff-modal .facility-modal-section:last-child { margin-bottom: 0; }
 .organization-staff-modal .facility-modal-section > .patient-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .organization-staff-modal .facility-modal-section > .organization-assignment-field { display: block; grid-column: 1 / -1; }
 .facility-assignment-picks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; margin-top: 7px; }
