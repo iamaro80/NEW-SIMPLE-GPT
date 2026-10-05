@@ -943,13 +943,15 @@ body.modal-open { overflow: hidden; }
 .discount-inline-actions .icon-button { width: 30px; height: 30px; }
 .discount-inline-actions svg { width: 15px; height: 15px; }
 .discount-delete-action { color: hsl(var(--destructive)); }
-.discount-modal-backdrop { z-index: 58; }
-.discount-modal { width: min(1120px, 100%); height: min(94vh, 920px); max-height: 94vh; }
-.discount-modal form { display: flex; min-height: 0; height: 0; flex: 1 1 0; flex-direction: column; overflow: hidden; }
-.discount-modal .patient-modal-body { min-height: 0; height: 0; flex: 1 1 0; overflow-x: hidden; overflow-y: scroll; overscroll-behavior: contain; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: hsl(var(--muted-foreground) / .45) transparent; }
-.discount-modal .patient-modal-body::-webkit-scrollbar { width: 8px; }
-.discount-modal .patient-modal-body::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: hsl(var(--muted-foreground) / .42); background-clip: padding-box; }
-.discount-modal .patient-modal-body::-webkit-scrollbar-track { background: transparent; }
+.discount-modal-backdrop { z-index: 58; display: block; overflow-x: hidden; overflow-y: auto; padding: 24px; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: hsl(var(--muted-foreground) / .45) transparent; }
+.discount-modal-backdrop::-webkit-scrollbar { width: 9px; }
+.discount-modal-backdrop::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: hsl(var(--muted-foreground) / .42); background-clip: padding-box; }
+.discount-modal-backdrop::-webkit-scrollbar-track { background: transparent; }
+.discount-modal { width: min(1120px, 100%); height: auto; max-height: none; margin: 0 auto; overflow: visible; }
+.discount-modal .patient-modal-header { position: sticky; top: 0; z-index: 2; background: hsl(var(--background)); }
+.discount-modal form { display: block; min-height: 0; height: auto; flex: none; overflow: visible; }
+.discount-modal .patient-modal-body { min-height: 0; height: auto; flex: none; overflow: visible; }
+.discount-modal .patient-modal-footer { position: sticky; bottom: 0; z-index: 2; background: hsl(var(--card)); }
 .discount-modal-body { display: grid; align-content: start; gap: 14px; }
 .discount-section { min-width: 0; margin: 0; padding: 0; overflow: hidden; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
 .discount-section > .facility-form-section-heading { margin: 0; padding: 12px 15px; border-bottom: 1px solid hsl(var(--border)); font-size: 13px; font-weight: 700; }
@@ -978,7 +980,7 @@ body.modal-open { overflow: hidden; }
 .discount-spec-grid strong { display: block; overflow-wrap: anywhere; font-size: 11px; font-weight: 600; }
 .discount-rules-section .facility-empty { padding: 17px; }
 @media (max-width: 900px) { .discount-filter-grid, .discount-lookup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 620px) { .discount-filter-grid, .discount-fields, .discount-rule-editor > .discount-fields, .discount-lookup-grid, .discount-spec-grid { grid-template-columns: 1fr; } .discount-rule-editor-heading { flex-direction: column; } .discount-rule-editor-heading .button { align-self: flex-start; } .discount-modal { height: 96vh; max-height: 96vh; } .discount-modal .patient-modal-header { padding: 16px; } .discount-modal .patient-modal-body { padding: 12px; } .discount-modal .patient-modal-footer { align-items: stretch; flex-direction: column; } .discount-modal .patient-modal-footer > div { display: flex; width: 100%; gap: 8px; } .discount-modal .patient-modal-footer .button { flex: 1; } }
+@media (max-width: 620px) { .discount-filter-grid, .discount-fields, .discount-rule-editor > .discount-fields, .discount-lookup-grid, .discount-spec-grid { grid-template-columns: 1fr; } .discount-rule-editor-heading { flex-direction: column; } .discount-rule-editor-heading .button { align-self: flex-start; } .discount-modal-backdrop { padding: 8px; } .discount-modal { height: auto; max-height: none; } .discount-modal .patient-modal-header { padding: 16px; } .discount-modal .patient-modal-body { padding: 12px; } .discount-modal .patient-modal-footer { align-items: stretch; flex-direction: column; } .discount-modal .patient-modal-footer > div { display: flex; width: 100%; gap: 8px; } .discount-modal .patient-modal-footer .button { flex: 1; } }
 @media (max-width: 900px) { .premium-fee-editor { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .premium-toolbar { justify-content: flex-start; } .premium-toolbar-actions { width: 100%; } .premium-toolbar-actions .button { flex: 1 1 calc(50% - 8px); } .premium-filter-grid, .premium-record-fields { grid-template-columns: 1fr; } .premium-form-heading { align-items: flex-start; flex-direction: column; } .premium-form-heading > .button { align-self: stretch; } .premium-fee-editor { grid-template-columns: repeat(2, minmax(0, 1fr)); } .premium-add-fee { grid-column: 1 / -1; } .premium-form-footer { align-items: flex-start; flex-direction: column; } .premium-form-footer > div { width: 100%; } .premium-form-footer .button { flex: 1; } }
 [hidden] { display: none !important; }
