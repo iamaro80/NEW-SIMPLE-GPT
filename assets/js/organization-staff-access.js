@@ -44,7 +44,7 @@
       result[key] = activeKind === 'practitioners'
         ? { departmentCodes: [...(record.departmentsByFacility?.[key] || [])] }
         : activeKind === 'users'
-          ? { branchCode: record.assignmentsByFacility?.[key]?.branchCode || '', roleIds: [...(record.assignmentsByFacility?.[key]?.roleIds || [])] }
+          ? { branchCode: record.assignmentsByFacility?.[key]?.branchCode || record.assignmentsByFacility?.[key]?.branchCodes?.[0] || '', branchCodes: (Array.isArray(record.assignmentsByFacility?.[key]?.branchCodes) ? record.assignmentsByFacility[key].branchCodes : record.assignmentsByFacility?.[key]?.branchCode ? [record.assignmentsByFacility[key].branchCode] : []).map(String), roleIds: [...(record.assignmentsByFacility?.[key]?.roleIds || [])] }
           : {};
     });
     return result;
@@ -140,7 +140,13 @@
         rows = current ? rows.map((row) => row.id === current.id ? result : row) : [...rows, result];
       } else if (activeKind === 'users') {
         if (rows.some((row) => row.username === data.username && row.id !== modalRecordId)) { form.elements.username.setCustomValidity('User Name already exists in the organization.'); form.reportValidity(); form.elements.username.setCustomValidity(''); return; }
-        const assignmentsByFacility = Object.fromEntries(assignedIds.map((id) => [id, { branchCode: selected[id]?.branchCode || '', roleIds: current?.assignmentsByFacility?.[id]?.roleIds || [] }]));
+        const assignmentsByFacility = Object.fromEntries(assignedIds.map((id) => {
+          const branchCode = selected[id]?.branchCode || '';
+          const existing = current?.assignmentsByFacility?.[id];
+          const existingCodes = (Array.isArray(existing?.branchCodes) ? existing.branchCodes : existing?.branchCode ? [existing.branchCode] : []).map(String);
+          const branchCodes = branchCode && existingCodes[0] === String(branchCode) ? existingCodes : branchCode ? [String(branchCode)] : [];
+          return [id, { branchCode: branchCodes[0] || '', branchCodes, roleIds: existing?.roleIds || [] }];
+        }));
         const result = { ...(current || {}), ...data, facilityIds: assignedIds, assignmentsByFacility, active: current?.active ?? true, id: current?.id || store.nextId('user') };
         rows = current ? rows.map((row) => row.id === current.id ? result : row) : [...rows, result];
       } else {

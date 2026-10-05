@@ -6,11 +6,11 @@
   const storageKey = `rcm-facility-users:v1:${facilityId}`;
   const branchKey = `rcm-facility-branches:v1:${facilityId}`;
   const usersSeed = [
-    { username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', branchCode: '1', notes: '', active: true, roleIds: [] },
-    { username: 'k.alharbi', englishName: 'Khalid Alharbi', arabicName: 'خالد الحربي', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', branchCode: '2', notes: '', active: true, roleIds: [] },
-    { username: 'n.aldosari', englishName: 'Noura Aldosari', arabicName: 'نورة الدوسري', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', branchCode: '1', notes: '', active: true, roleIds: [] },
-    { username: 'f.alqahtani', englishName: 'Faisal Alqahtani', arabicName: 'فيصل القحطاني', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', branchCode: '3', notes: '', active: false, roleIds: [] },
-    { username: 's.alshammari', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', branchCode: '4', notes: '', active: true, roleIds: [] },
+    { username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', branchCode: '1', branchCodes: ['1'], notes: '', active: true, roleIds: [] },
+    { username: 'k.alharbi', englishName: 'Khalid Alharbi', arabicName: 'خالد الحربي', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', branchCode: '2', branchCodes: ['2'], notes: '', active: true, roleIds: [] },
+    { username: 'n.aldosari', englishName: 'Noura Aldosari', arabicName: 'نورة الدوسري', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', branchCode: '1', branchCodes: ['1'], notes: '', active: true, roleIds: [] },
+    { username: 'f.alqahtani', englishName: 'Faisal Alqahtani', arabicName: 'فيصل القحطاني', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', branchCode: '3', branchCodes: ['3'], notes: '', active: false, roleIds: [] },
+    { username: 's.alshammari', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', branchCode: '4', branchCodes: ['4'], notes: '', active: true, roleIds: [] },
   ].map((record) => ({ ...record, facilityId }));
   const userTypes = ['Business Center', 'Overtimer', 'System Administrator', 'Employee'];
   const icons = {
@@ -30,6 +30,7 @@
   let mode = 'new';
   let currentUsername = null;
   let selectedRoleIds = [];
+  let selectedBranchCodes = [];
   let returnFocus = null;
   let toastTimer;
   let appliedFilters = {};
@@ -60,9 +61,7 @@
         <label class="form-field"><span>User Type <b>*</b></span><select name="userType" required><option value="">Select user type</option>${userTypes.map((item) => `<option>${escapeHtml(item)}</option>`).join('')}</select></label>
         <label class="form-field user-notes"><span>Notes</span><textarea name="notes" rows="3"></textarea></label>
       </div></fieldset>
-      <fieldset class="patient-form-section user-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="patient-form-grid user-form-grid">
-        <label class="form-field"><span>Branch</span><select name="branchCode"><option value="">No branch assigned</option>${branches.map((item) => `<option value="${escapeHtml(item.code)}">(${escapeHtml(item.code)}) ${escapeHtml(item.englishName)}</option>`).join('')}</select></label>
-      </div></fieldset>
+      <fieldset class="patient-form-section user-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="user-role-assignment" data-user-branch-assignment><div class="user-role-chips" data-user-branch-chips aria-live="polite"></div><label class="facility-filter user-role-search"><span>Search branches</span><input type="search" data-user-branch-search placeholder="Search branches"></label><div class="user-role-options" data-user-branch-options role="group" aria-label="Branches available to this facility"></div><p class="user-role-help" data-user-branch-help>Choose any branches assigned to this user; branch assignment is optional.</p></div></fieldset>
       <fieldset class="patient-form-section user-section"><legend class="sr-only">Role Assignment</legend><div class="facility-form-section-heading">Role Assignment</div><div class="user-role-assignment" data-user-role-assignment><div class="user-role-chips" data-user-role-chips aria-live="polite"></div><label class="facility-filter user-role-search"><span>Search roles</span><input type="search" data-user-role-search placeholder="Search available roles"></label><div class="user-role-options" data-user-role-options role="group" aria-label="Roles available to this facility"></div><p class="user-role-help" data-user-role-help>Select one or more active roles for this user.</p></div></fieldset>
     </div><footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-user-cancel>Cancel</button><button type="submit" class="button button-primary" data-user-save>Create</button></div></footer></form></section>`;
   document.body.append(userModal);
@@ -100,7 +99,7 @@
 
   function loadUsers() {
     const shared = window.RcmOrganizationStaffStore?.forFacility('users', facilityId);
-    if (shared?.length) return shared;
+    if (shared?.length) return shared.map((user) => ({ ...user, branchCodes: (Array.isArray(user.branchCodes) ? user.branchCodes : user.branchCode ? [user.branchCode] : []).map(String) }));
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored !== null) {
@@ -110,7 +109,8 @@
           const records = parsed.map((record) => {
             const { badgeNumber, permissionIds, ...cleanRecord } = record;
             if (badgeNumber !== undefined || permissionIds !== undefined || !Array.isArray(record.roleIds)) migrated = true;
-            return { ...cleanRecord, facilityId, roleIds: Array.isArray(record.roleIds) ? record.roleIds : [] };
+            const branchCodes = (Array.isArray(record.branchCodes) ? record.branchCodes : record.branchCode ? [record.branchCode] : []).map(String);
+            return { ...cleanRecord, facilityId, branchCodes, branchCode: branchCodes[0] || '', roleIds: Array.isArray(record.roleIds) ? record.roleIds : [] };
           });
           if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
           return records;
@@ -119,7 +119,7 @@
       localStorage.setItem(storageKey, JSON.stringify(usersSeed));
       window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, usersSeed);
     } catch { /* Keep mock state usable if browser storage is unavailable. */ }
-    return usersSeed.map((record) => ({ ...record, roleIds: [...record.roleIds] }));
+    return usersSeed.map((record) => ({ ...record, branchCodes: (record.branchCodes || (record.branchCode ? [record.branchCode] : [])).map(String), roleIds: [...record.roleIds] }));
   }
 
   function save() {
@@ -128,6 +128,8 @@
   }
 
   function branchName(code) { return branches.find((item) => String(item.code) === String(code))?.englishName || '—'; }
+  function userBranchCodes(user) { return (Array.isArray(user.branchCodes) ? user.branchCodes : user.branchCode ? [user.branchCode] : []).map(String); }
+  function userBranchNames(user) { const names = userBranchCodes(user).map(branchName).filter((name) => name !== '—'); return names.join(', ') || '—'; }
   function showToast(message) {
     toast.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2400);
@@ -143,7 +145,7 @@
   function matchesFilters(user) {
     for (const key of ['username', 'englishName', 'arabicName', 'email']) if (appliedFilters[key] && !String(user[key] || '').toLocaleLowerCase().includes(appliedFilters[key])) return false;
     if (appliedFilters.userType && user.userType.toLocaleLowerCase() !== appliedFilters.userType) return false;
-    if (appliedFilters.branchCode && String(user.branchCode || '') !== appliedFilters.branchCode) return false;
+    if (appliedFilters.branchCode && !userBranchCodes(user).includes(appliedFilters.branchCode)) return false;
     if (appliedFilters.status && (user.active ? 'active' : 'inactive') !== appliedFilters.status) return false;
     return true;
   }
@@ -153,7 +155,7 @@
     const visible = matching.slice((page - 1) * pageSize, page * pageSize);
     rows.innerHTML = visible.map((user) => `<tr>
       <td><span class="facility-name-en">${escapeHtml(user.englishName)}</span><small class="practitioner-arabic-name" dir="rtl">${escapeHtml(user.arabicName || '')}</small></td><td class="branch-code">${escapeHtml(user.username)}</td>
-      <td>${escapeHtml(user.email)}</td><td>${escapeHtml(`${user.mobileCode || '+966'} ${user.mobile || ''}`.trim())}</td><td>${escapeHtml(user.userType)}</td><td>${escapeHtml(branchName(user.branchCode))}</td>
+      <td>${escapeHtml(user.email)}</td><td>${escapeHtml(`${user.mobileCode || '+966'} ${user.mobile || ''}`.trim())}</td><td>${escapeHtml(user.userType)}</td><td>${escapeHtml(userBranchNames(user))}</td>
       <td><span class="facility-status ${user.active ? 'is-active' : 'is-inactive'}"><span></span>${user.active ? 'Active' : 'Inactive'}</span></td>
       <td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-user-row-menu aria-label="Actions for ${escapeHtml(user.englishName)}" aria-haspopup="menu" aria-expanded="false" data-username="${escapeHtml(user.username)}">${icons.more}</button>
         <div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-user-action="view" data-username="${escapeHtml(user.username)}">${icons.eye}View</button><button type="button" role="menuitem" data-user-action="edit" data-username="${escapeHtml(user.username)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-user-action="status" data-username="${escapeHtml(user.username)}">${icons.status}${user.active ? 'Deactivate' : 'Activate'}</button><button type="button" role="menuitem" data-user-action="password" data-username="${escapeHtml(user.username)}">${icons.key}Set Password</button><button type="button" role="menuitem" data-user-action="permissions" data-username="${escapeHtml(user.username)}">${icons.shield}Assign Roles</button></div></div></td>
@@ -165,6 +167,9 @@
   }
   function setFormReadOnly(readOnly) {
     [...userForm.elements].forEach((field) => { if (field.name) field.disabled = readOnly; });
+    userModal.querySelector('[data-user-branch-search]').closest('label').hidden = readOnly;
+    userModal.querySelector('[data-user-branch-options]').hidden = readOnly;
+    userModal.querySelector('[data-user-branch-help]').hidden = readOnly;
     userModal.querySelector('[data-user-role-search]').closest('label').hidden = readOnly;
     userModal.querySelector('[data-user-role-options]').hidden = readOnly;
     userModal.querySelector('[data-user-role-help]').hidden = readOnly;
@@ -180,13 +185,16 @@
     userModal.querySelector('[data-user-save]').textContent = isNew ? 'Create' : 'Save changes';
     selectedRoleIds = (user?.roleIds || []).map(String);
     userModal.querySelector('[data-user-role-search]').value = '';
+    selectedBranchCodes = user ? userBranchCodes(user) : [];
+    userModal.querySelector('[data-user-branch-search]').value = '';
     if (user) {
-      for (const name of ['arabicName', 'englishName', 'username', 'email', 'mobile', 'userType', 'notes', 'branchCode']) {
+      for (const name of ['arabicName', 'englishName', 'username', 'email', 'mobile', 'userType', 'notes']) {
         const field = userForm.elements.namedItem(name);
         if (field) field.value = user[name] || '';
       }
       userForm.elements.namedItem('mobileCode').value = user.mobileCode || '+966';
     } else userForm.elements.namedItem('mobileCode').value = '+966';
+    renderUserBranchAssignment(nextMode === 'view');
     renderUserRoleAssignment(nextMode === 'view');
     if (nextMode === 'view') setFormReadOnly(true);
     userModal.hidden = false; document.body.classList.add('patient-modal-open'); userModal.querySelector('[data-user-close]').focus();
@@ -212,19 +220,48 @@
   function renderUserRoleAssignment(readOnly = mode === 'view') {
     const roleList = window.RcmFacilityRoles?.list?.() || [];
     const selected = new Set(selectedRoleIds.map(String));
+    const searchInput = userModal.querySelector('[data-user-role-search]');
+    const focused = document.activeElement;
+    const restoreSearch = focused === searchInput;
+    const focusedChoice = focused.matches?.('[data-user-role-choice]') ? focused.value : null;
+    const cursor = restoreSearch ? searchInput.selectionStart : null;
     const chosen = roleList.filter((role) => selected.has(String(role.id)));
     const chips = userModal.querySelector('[data-user-role-chips]');
     chips.innerHTML = chosen.length
       ? chosen.map((role) => `<span class="user-role-chip">${escapeHtml(role.englishName)}${!role.active ? ' · Inactive' : ''}${readOnly || !role.active ? '' : `<button type="button" data-user-role-remove="${escapeHtml(role.id)}" aria-label="Remove ${escapeHtml(role.englishName)} role">×</button>`}</span>`).join('')
       : '<span class="user-role-empty">No roles assigned.</span>';
     const options = roleList.filter((role) => role.active || selected.has(String(role.id)));
-    const query = userModal.querySelector('[data-user-role-search]').value.trim().toLocaleLowerCase();
+    const query = searchInput.value.trim().toLocaleLowerCase();
     const list = userModal.querySelector('[data-user-role-options]');
     list.innerHTML = options.length ? options.map((role) => {
       const isSelected = selected.has(String(role.id));
       const searchable = `${role.englishName} ${role.arabicName || ''}`.toLocaleLowerCase();
       return `<label class="user-role-option"${query && !searchable.includes(query) ? ' hidden' : ''}><input type="checkbox" data-user-role-choice value="${escapeHtml(role.id)}" ${isSelected ? 'checked' : ''} ${!role.active && isSelected ? 'disabled' : ''}><span>${escapeHtml(role.englishName)}${!role.active ? ' · Inactive' : ''}${role.arabicName ? `<small lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</small>` : ''}</span></label>`;
     }).join('') : '<p class="user-role-empty">No active roles are available. Add or activate a role in Settings first.</p>';
+    if (restoreSearch) { searchInput.focus(); searchInput.setSelectionRange(cursor, cursor); }
+    else if (focusedChoice !== null) [...list.querySelectorAll('[data-user-role-choice]')].find((input) => input.value === focusedChoice)?.focus();
+  }
+  function renderUserBranchAssignment(readOnly = mode === 'view') {
+    const selected = new Set(selectedBranchCodes.map(String));
+    const searchInput = userModal.querySelector('[data-user-branch-search]');
+    const focused = document.activeElement;
+    const restoreSearch = focused === searchInput;
+    const focusedChoice = focused.matches?.('[data-user-branch-choice]') ? focused.value : null;
+    const cursor = restoreSearch ? searchInput.selectionStart : null;
+    const chips = userModal.querySelector('[data-user-branch-chips]');
+    const chosen = branches.filter((branch) => selected.has(String(branch.code)));
+    chips.innerHTML = chosen.length
+      ? chosen.map((branch) => `<span class="user-role-chip">${escapeHtml(branch.englishName)}${readOnly ? '' : `<button type="button" data-user-branch-remove="${escapeHtml(branch.code)}" aria-label="Remove ${escapeHtml(branch.englishName)} branch">×</button>`}</span>`).join('')
+      : '<span class="user-role-empty">No branches assigned.</span>';
+    const query = searchInput.value.trim().toLocaleLowerCase();
+    const list = userModal.querySelector('[data-user-branch-options]');
+    list.innerHTML = branches.length ? branches.map((branch) => {
+      const code = String(branch.code), isSelected = selected.has(code);
+      const searchable = `${branch.englishName} ${branch.arabicName || ''} ${branch.code}`.toLocaleLowerCase();
+      return `<label class="user-role-option"${query && !searchable.includes(query) ? ' hidden' : ''}><input type="checkbox" data-user-branch-choice value="${escapeHtml(code)}" ${isSelected ? 'checked' : ''}><span>${escapeHtml(branch.englishName)}${branch.arabicName ? `<small lang="ar" dir="rtl">${escapeHtml(branch.arabicName)}</small>` : ''}</span></label>`;
+    }).join('') : '<p class="user-role-empty">No branches are available for this facility.</p>';
+    if (restoreSearch) { searchInput.focus(); searchInput.setSelectionRange(cursor, cursor); }
+    else if (focusedChoice !== null) [...list.querySelectorAll('[data-user-branch-choice]')].find((input) => input.value === focusedChoice)?.focus();
   }
   function openPermissionsModal(user, trigger) {
     currentUsername = user.username; returnFocus = trigger; renderRoleChoices(user);
@@ -258,9 +295,18 @@
 
   userForm.addEventListener('input', (event) => {
     if (event.target.name === 'username') event.target.setCustomValidity('');
+    if (event.target.matches('[data-user-branch-search]')) renderUserBranchAssignment();
     if (event.target.matches('[data-user-role-search]')) renderUserRoleAssignment();
   });
   userForm.addEventListener('change', (event) => {
+    if (event.target.matches('[data-user-branch-choice]')) {
+      const branchCode = String(event.target.value);
+      selectedBranchCodes = event.target.checked
+        ? [...new Set([...selectedBranchCodes.map(String), branchCode])]
+        : selectedBranchCodes.filter((code) => String(code) !== branchCode);
+      renderUserBranchAssignment();
+      return;
+    }
     if (!event.target.matches('[data-user-role-choice]')) return;
     const roleId = String(event.target.value);
     selectedRoleIds = event.target.checked
@@ -269,10 +315,18 @@
     renderUserRoleAssignment();
   });
   userForm.addEventListener('click', (event) => {
+    const removeBranch = event.target.closest('[data-user-branch-remove]');
+    if (removeBranch) {
+      selectedBranchCodes = selectedBranchCodes.filter((code) => String(code) !== String(removeBranch.dataset.userBranchRemove));
+      renderUserBranchAssignment();
+      userModal.querySelector('[data-user-branch-search]').focus();
+      return;
+    }
     const remove = event.target.closest('[data-user-role-remove]');
     if (!remove) return;
     selectedRoleIds = selectedRoleIds.filter((id) => String(id) !== String(remove.dataset.userRoleRemove));
     renderUserRoleAssignment();
+    userModal.querySelector('[data-user-role-search]').focus();
   });
   userForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -288,7 +342,7 @@
       email: userForm.elements.namedItem('email').value.trim(), mobileCode: userForm.elements.namedItem('mobileCode').value,
       mobile: userForm.elements.namedItem('mobile').value.trim(), userType: userForm.elements.namedItem('userType').value,
       notes: userForm.elements.namedItem('notes').value.trim(),
-      branchCode: userForm.elements.namedItem('branchCode').value, facilityId, roleIds: [...selectedRoleIds],
+      branchCode: selectedBranchCodes[0] || '', branchCodes: [...selectedBranchCodes], facilityId, roleIds: [...selectedRoleIds],
     };
     if (mode === 'new') {
       const record = { ...values, active: true }; users.push(record); save();

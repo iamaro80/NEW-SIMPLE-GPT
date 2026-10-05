@@ -44,7 +44,7 @@
     })));
     if (missing.users) legacyByFacility.forEach(({ fid, oldUsers }) => oldUsers.forEach((row, i) => users.push({
       ...row, id: `org-user-${fid}-${i + 1}`, facilityIds: [fid],
-      assignmentsByFacility: { [fid]: { branchCode: row.branchCode || '', roleIds: (row.roleIds || []).map((id) => roleIdMap.get(`${fid}:${id}`)).filter(Boolean) } },
+      assignmentsByFacility: { [fid]: { branchCode: row.branchCode || '', branchCodes: (Array.isArray(row.branchCodes) ? row.branchCodes : row.branchCode ? [row.branchCode] : []).map(String), roleIds: (row.roleIds || []).map((id) => roleIdMap.get(`${fid}:${id}`)).filter(Boolean) } },
     })));
     Object.entries(missing).forEach(([kind, wasMissing]) => { if (wasMissing) write(kind, kind === 'practitioners' ? practitioners : kind === 'users' ? users : roles); });
   }
@@ -57,7 +57,7 @@
       ...clone(row), facilityId: fid, departmentCodes: [...(row.departmentsByFacility?.[fid] || [])],
     }));
     if (kind === 'users') return users.filter((row) => row.facilityIds?.map(String).includes(fid)).map((row) => ({
-      ...clone(row), facilityId: fid, branchCode: row.assignmentsByFacility?.[fid]?.branchCode || '', roleIds: [...(row.assignmentsByFacility?.[fid]?.roleIds || [])],
+      ...clone(row), facilityId: fid, branchCode: row.assignmentsByFacility?.[fid]?.branchCode || row.assignmentsByFacility?.[fid]?.branchCodes?.[0] || '', branchCodes: (Array.isArray(row.assignmentsByFacility?.[fid]?.branchCodes) ? row.assignmentsByFacility[fid].branchCodes : row.assignmentsByFacility?.[fid]?.branchCode ? [row.assignmentsByFacility[fid].branchCode] : []).map(String), roleIds: [...(row.assignmentsByFacility?.[fid]?.roleIds || [])],
     }));
     if (kind === 'roles') return roles.filter((row) => row.facilityIds?.map(String).includes(fid)).map((row) => clone(row));
     return [];
@@ -76,10 +76,11 @@
       } else if (kind === 'users') {
         record = users.find((row) => row.id === projection.id) || users.find((row) => row.facilityIds?.map(String).includes(fid) && row.username === projection.username);
         if (!record) { record = { ...projection, id: projection.id || idFor('user'), facilityIds: [fid], assignmentsByFacility: {} }; users.push(record); }
-        Object.assign(record, projection, { id: record.id, facilityId: undefined, branchCode: undefined, roleIds: undefined });
+        Object.assign(record, projection, { id: record.id, facilityId: undefined, branchCode: undefined, branchCodes: undefined, roleIds: undefined });
         record.facilityIds = [...new Set([...(record.facilityIds || []).map(String), fid])];
-        record.assignmentsByFacility = { ...(record.assignmentsByFacility || {}), [fid]: { branchCode: projection.branchCode || '', roleIds: [...(projection.roleIds || [])] } };
-        delete record.facilityId; delete record.branchCode; delete record.roleIds;
+        const branchCodes = (Array.isArray(projection.branchCodes) ? projection.branchCodes : projection.branchCode ? [projection.branchCode] : []).map(String);
+        record.assignmentsByFacility = { ...(record.assignmentsByFacility || {}), [fid]: { branchCode: branchCodes[0] || '', branchCodes, roleIds: [...(projection.roleIds || [])] } };
+        delete record.facilityId; delete record.branchCode; delete record.branchCodes; delete record.roleIds;
       } else if (kind === 'roles') {
         record = roles.find((row) => row.id === projection.id) || roles.find((row) => row.facilityIds?.map(String).includes(fid) && row.englishName === projection.englishName && row.arabicName === projection.arabicName);
         if (!record) { record = { ...projection, id: projection.id || idFor('role'), facilityIds: [fid] }; roles.push(record); }
