@@ -30,6 +30,9 @@
 .organization-focus-link:hover { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 3px; }
 .organization-name-ar { min-width: 180px; font-size: 12px !important; }
 .organization-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+.organization-status-select { width: max-content; max-width: 245px; min-height: 30px; padding: 4px 26px 4px 9px; border: 1px solid hsl(var(--border)); border-radius: 999px; background-color: hsl(var(--background)); color: hsl(var(--foreground)); font: inherit; font-size: 10px; font-weight: 650; cursor: pointer; }
+.organization-status-select:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.organization-status-select option { background: hsl(var(--card)); color: hsl(var(--foreground)); }
 .organization-status > span { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .organization-status.status-active { background: hsl(154 54% 93%); color: hsl(154 55% 30%); }
 .organization-status.status-onboarding { background: hsl(44 100% 92%); color: hsl(31 83% 33%); }

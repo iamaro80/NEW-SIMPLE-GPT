@@ -29,6 +29,18 @@
   }).join('');
 
   const links = [...navigation.querySelectorAll('[data-control-route]')];
+  const organizationStatuses = [
+    'Pending Approval',
+    'Provisioning',
+    'Trial / Trialing',
+    'Onboarding',
+    'Active',
+    'Past Due / Payment Failed',
+    'Inactive',
+    'Suspended',
+    'Cancelled / Churned',
+    'Archived / Pending Deletion',
+  ];
   const seedOrganizations = [
     { id: 'org-1', en: 'Al Noor Healthcare Group', ar: 'مجموعة النور للرعاية الصحية', plan: 'Custom', status: 'Active' },
     { id: 'org-2', en: 'Riyadh Medical Network', ar: 'شبكة الرياض الطبية', plan: 'Advance', status: 'Active' },
@@ -37,7 +49,8 @@
     { id: 'org-5', en: 'Amana Health Services', ar: 'خدمات أمانة الصحية', plan: 'Advance', status: 'Suspended' },
   ];
   const normalizeOrganization = (organization) => {
-    const status = ({ Onboarding: 'Pending Approval', Deleted: 'Suspended' })[organization.status] || organization.status || 'Pending Approval';
+    const status = ({ Deleted: 'Archived / Pending Deletion' })[organization.status]
+      || (organizationStatuses.includes(organization.status) ? organization.status : 'Pending Approval');
     const onboardingStatus = organization.onboardingStatus || (status === 'Pending Approval' ? (organization.id === 'org-3' ? 'In Progress' : 'Not Started') : '');
     const onboardingWizard = organization.onboardingWizard || (onboardingStatus === 'In Progress' ? { current: 0, saved: { 0: { englishName: organization.en || '' } }, completed: [] } : undefined);
     return {
@@ -94,16 +107,31 @@
         && (!values.plan || organization.plan.toLocaleLowerCase() === values.plan)
         && (!values.status || organization.status.toLocaleLowerCase() === values.status);
     });
-    organizationRows.innerHTML = filtered.map((organization) => `<tr><td class="organization-name-en"><a class="organization-focus-link" href="#organizations/${encodeURIComponent(organization.id)}/profile">${escapeHtml(organization.en)}</a></td><td class="organization-name-ar" lang="ar" dir="rtl">${escapeHtml(organization.ar || '—')}</td><td>${escapeHtml(organization.plan || '—')}</td><td><span class="organization-status status-${escapeHtml(organization.status.toLowerCase().replace(/\s+/g, '-'))}"><span aria-hidden="true"></span>${escapeHtml(organization.status)}</span></td></tr>`).join('');
+    organizationRows.innerHTML = filtered.map((organization) => {
+      const statusOptions = organizationStatuses.map((status) => `<option value="${escapeHtml(status)}"${status === organization.status ? ' selected' : ''}>${escapeHtml(status)}</option>`).join('');
+      return `<tr><td class="organization-name-en"><a class="organization-focus-link" href="#organizations/${encodeURIComponent(organization.id)}/profile">${escapeHtml(organization.en)}</a></td><td class="organization-name-ar" lang="ar" dir="rtl">${escapeHtml(organization.ar || '—')}</td><td>${escapeHtml(organization.plan || '—')}</td><td><select class="organization-status-select" data-organization-status="${escapeHtml(organization.id)}" aria-label="Change status for ${escapeHtml(organization.en)}">${statusOptions}</select></td></tr>`;
+    }).join('');
     organizationsGrid.querySelector('[data-control-org-empty]').hidden = filtered.length > 0;
     organizationCount.textContent = `${filtered.length} of ${organizations.length} organizations`;
   };
   if (organizationsGrid) {
-    organizationsGrid.innerHTML = `<div class="organization-toolbar"><button class="button button-primary" type="button" data-control-add-organization><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Organization</button></div><div class="facility-filter-grid organization-filter-grid" aria-label="Organization filters"><label class="facility-filter"><span>Organization Name (en)</span><input type="search" data-control-org-filter="en" placeholder="Search English name"></label><label class="facility-filter"><span>Organization Name (ar)</span><input type="search" data-control-org-filter="ar" placeholder="Search Arabic name"></label><label class="facility-filter"><span>Subscription Plan</span><select data-control-org-filter="plan"><option value="">All plans</option><option>Basic</option><option>Advance</option><option>Custom</option></select></label><label class="facility-filter"><span>Status</span><select data-control-org-filter="status"><option value="">All statuses</option><option>Active</option><option>Pending Approval</option><option>Suspended</option></select></label></div><div class="organization-grid-card"><div class="organization-grid-heading"><p data-control-org-count></p></div><div class="organization-grid-scroll"><table class="organization-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Status</th></tr></thead><tbody data-control-org-rows></tbody></table><div class="organization-grid-empty" data-control-org-empty hidden>No organizations match these filters.</div></div></div>`;
+    const statusFilterOptions = organizationStatuses.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(status)}</option>`).join('');
+    organizationsGrid.innerHTML = `<div class="organization-toolbar"><button class="button button-primary" type="button" data-control-add-organization><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Organization</button></div><div class="facility-filter-grid organization-filter-grid" aria-label="Organization filters"><label class="facility-filter"><span>Organization Name (en)</span><input type="search" data-control-org-filter="en" placeholder="Search English name"></label><label class="facility-filter"><span>Organization Name (ar)</span><input type="search" data-control-org-filter="ar" placeholder="Search Arabic name"></label><label class="facility-filter"><span>Subscription Plan</span><select data-control-org-filter="plan"><option value="">All plans</option><option>Basic</option><option>Advance</option><option>Custom</option></select></label><label class="facility-filter"><span>Status</span><select data-control-org-filter="status"><option value="">All statuses</option>${statusFilterOptions}</select></label></div><div class="organization-grid-card"><div class="organization-grid-heading"><p data-control-org-count></p></div><div class="organization-grid-scroll"><table class="organization-table"><thead><tr><th scope="col">Organization Name (en)</th><th scope="col">Organization Name (ar)</th><th scope="col">Subscription Plan</th><th scope="col">Status</th></tr></thead><tbody data-control-org-rows></tbody></table><div class="organization-grid-empty" data-control-org-empty hidden>No organizations match these filters.</div></div></div>`;
     organizationRows = organizationsGrid.querySelector('[data-control-org-rows]');
     organizationCount = organizationsGrid.querySelector('[data-control-org-count]');
     organizationsGrid.addEventListener('input', (event) => { if (event.target.matches('[data-control-org-filter]')) renderOrganizationRows(); });
     organizationsGrid.addEventListener('change', (event) => { if (event.target.matches('[data-control-org-filter]')) renderOrganizationRows(); });
+    organizationsGrid.addEventListener('change', (event) => {
+      const selector = event.target.closest('[data-organization-status]');
+      if (!selector) return;
+      const organization = organizations.find((item) => item.id === selector.dataset.organizationStatus);
+      if (!organization || !organizationStatuses.includes(selector.value)) return;
+      organization.status = selector.value;
+      persistOrganizations();
+      renderOrganizationRows();
+      organizationsGrid.querySelector(`[data-organization-status="${CSS.escape(organization.id)}"]`)?.focus();
+      showOrganizationToast(`${organization.en} status updated to ${organization.status}.`);
+    });
     organizationsGrid.addEventListener('click', (event) => {
       if (!event.target.closest('[data-control-add-organization]')) return;
       organizationModal.hidden = false;
