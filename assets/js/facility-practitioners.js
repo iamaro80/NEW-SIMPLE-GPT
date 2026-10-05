@@ -95,8 +95,8 @@
   modal.innerHTML = `<section class="patient-modal practitioner-modal" role="dialog" aria-modal="true" aria-labelledby="practitioner-modal-title" aria-describedby="practitioner-modal-description"><header class="patient-modal-header"><div><p class="eyebrow">PRACTITIONER RECORD</p><h2 id="practitioner-modal-title">Add Practitioner</h2><p id="practitioner-modal-description">Enter practitioner information.</p></div><button class="icon-button" type="button" data-practitioner-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
     <form data-practitioner-form><div class="patient-modal-body">
       <fieldset class="patient-form-section practitioner-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="patient-form-grid practitioner-form-grid">
-        <label class="form-field"><span>Facility</span><input name="facilityDisplay" readonly aria-readonly="true" value="${escapeHtml(currentFacility.englishName || `Facility ${facilityId}`)}"><input type="hidden" name="facilityId" value="${escapeHtml(facilityId)}"></label>
-        <div class="form-field practitioner-department-field"><span>Departments <b>*</b></span><input type="search" data-department-search placeholder="Search departments" aria-label="Search departments"><div class="practitioner-department-options" data-department-options role="group" aria-label="Select departments"></div><small>Select one or more departments from the chosen facility.</small></div>
+        <input type="hidden" name="facilityId" value="${escapeHtml(facilityId)}">
+        <div class="form-field practitioner-department-field"><span>Departments <b>*</b></span><div class="practitioner-department-picker" data-department-picker><div class="practitioner-department-control" data-department-control><div class="practitioner-department-chips" data-department-chips></div><input type="search" data-department-search placeholder="Select departments..." aria-label="Search departments" aria-haspopup="listbox" aria-expanded="false" aria-controls="practitioner-department-options" aria-required="true"><button class="practitioner-department-toggle" type="button" data-department-toggle aria-label="Show departments" aria-expanded="false">⌄</button></div><div class="practitioner-department-options" id="practitioner-department-options" data-department-options role="group" aria-label="Departments" hidden></div></div><small>Select one or more departments for this facility.</small></div>
       </div></fieldset>
       <fieldset class="patient-form-section practitioner-section"><legend class="sr-only">Practitioner Data</legend><div class="facility-form-section-heading">Practitioner Data</div><div class="patient-form-grid practitioner-form-grid">
         <label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required autocomplete="off"></label>
@@ -131,6 +131,10 @@
   const rows = grid.querySelector('[data-practitioner-rows]');
   const searchDepartment = form.querySelector('[data-department-search]');
   const departmentOptions = form.querySelector('[data-department-options]');
+  const departmentChips = form.querySelector('[data-department-chips]');
+  const departmentToggle = form.querySelector('[data-department-toggle]');
+  let selectedDepartmentCodes = [];
+  let departmentPickerOpen = false;
   const valuesToSave = ['facilityId','documentId','englishName','arabicName','email','mobileCode','mobile','phoneCode','phone','extension','role','documentType','prefix','degree','licenseNumber','licenseStart','licenseEnd','user','consultationItem','followUp','lastDesignationUpdate','specialty','designation'];
   const scfhsFields = ['scfhsCategoryCode','scfhsCategoryNameEn','scfhsSpecialityCode','scfhsSpecialityNameEn','scfhsCategoryNameAr','scfhsSpecialityNameAr'];
   const allFields = [...valuesToSave, ...scfhsFields];
@@ -140,18 +144,27 @@
     window.RcmOrganizationStaffStore?.saveFacility('practitioners', facilityId, records);
   }
   function showToast(message) { if (!toast) return; toast.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2300); }
-  function facilityName(id) { return facilityCache.get(String(id))?.englishName || `Facility ${id}`; }
   function departmentName(code, targetFacilityId = selectedFormFacilityId) {
     const source = departmentRecordsFor(targetFacilityId);
     return source.find((item) => String(item.code) === String(code))?.name || source.find((item) => String(item.code) === String(code))?.englishName || `Department ${code}`;
   }
-  function selectedDepartments() { return [...departmentOptions.querySelectorAll('input:checked')].map((input) => input.value); }
+  function selectedDepartments() { return [...new Set(selectedDepartmentCodes.map(String))]; }
+  function renderDepartmentChips() {
+    const readOnly = mode === 'view';
+    departmentChips.innerHTML = selectedDepartments().map((code) => `<span class="practitioner-department-chip"><span>${escapeHtml(departmentName(code, selectedFormFacilityId))}</span>${readOnly ? '' : `<button type="button" data-department-remove="${escapeHtml(code)}" aria-label="Remove ${escapeHtml(departmentName(code, selectedFormFacilityId))}">×</button>`}</span>`).join('') || '<span class="practitioner-department-placeholder">No departments selected</span>';
+  }
   function drawDepartmentChoices(selected = selectedDepartments()) {
     const query = searchDepartment.value.trim().toLocaleLowerCase();
     const filtered = departments.filter((department) => departmentName(department.code, selectedFormFacilityId).toLocaleLowerCase().includes(query));
-    departmentOptions.innerHTML = filtered.length ? filtered.map((department) => `<label class="form-check"><input type="checkbox" value="${escapeHtml(department.code)}" ${selected.includes(String(department.code)) ? 'checked' : ''}><span>${escapeHtml(departmentName(department.code, selectedFormFacilityId))}</span></label>`).join('') : `<span class="practitioner-no-departments">${facilityRecordsFor(selectedFormFacilityId).length ? 'No departments are configured for this facility.' : 'No departments found.'}</span>`;
-    departmentOptions.querySelectorAll('input').forEach((input) => input.addEventListener('change', validateDepartmentSelection));
+    departmentOptions.innerHTML = filtered.length ? filtered.map((department) => `<label class="form-check practitioner-department-option"><input type="checkbox" value="${escapeHtml(department.code)}" ${selected.includes(String(department.code)) ? 'checked' : ''}><span>${escapeHtml(departmentName(department.code, selectedFormFacilityId))}</span></label>`).join('') : `<span class="practitioner-no-departments">${query ? 'No matching departments.' : 'No departments are configured for this facility.'}</span>`;
+    renderDepartmentChips();
     validateDepartmentSelection();
+  }
+  function setDepartmentPickerOpen(open) {
+    departmentPickerOpen = open && mode !== 'view';
+    departmentOptions.hidden = !departmentPickerOpen;
+    searchDepartment.setAttribute('aria-expanded', String(departmentPickerOpen));
+    departmentToggle.setAttribute('aria-expanded', String(departmentPickerOpen));
   }
   function validateDepartmentSelection() { searchDepartment.setCustomValidity(selectedDepartments().length ? '' : 'Select at least one department.'); }
   function readFilters() { return Object.fromEntries([...grid.querySelectorAll('[data-practitioner-filter]')].map((field) => [field.dataset.practitionerFilter, field.value.trim().toLocaleLowerCase()])); }
@@ -184,25 +197,26 @@
     else field.value = '';
   }
   function facilityRecordsFor(id) { return facilities.filter((facility) => String(facility.id) === String(id)); }
-  function setFormFacility(id, selected = []) {
+  function setFormFacility(selected = []) {
     selectedFormFacilityId = String(facilityId);
     form.elements.namedItem('facilityId').value = selectedFormFacilityId;
-    form.elements.namedItem('facilityDisplay').value = facilityName(facilityId);
     departments = departmentRecordsFor(selectedFormFacilityId);
     searchDepartment.value = '';
-    drawDepartmentChoices(selected);
+    selectedDepartmentCodes = [...selected].map(String);
+    setDepartmentPickerOpen(false);
+    drawDepartmentChoices();
   }
   function refreshFacilityOptions() {
     facilities = loadFacilities();
     facilityCache.clear(); facilities.forEach((facility) => facilityCache.set(String(facility.id), facility));
     facilityCache.set(String(facilityId), facilities.find((facility) => String(facility.id) === String(facilityId)) || currentFacility);
-    form.elements.namedItem('facilityDisplay').value = facilityName(facilityId);
     departments = departmentRecordsFor(facilityId);
     selectedFormFacilityId = String(facilityId);
     updateFilterDepartments();
   }
   function setReadOnly(readonly) {
     form.querySelectorAll('input,select').forEach((field) => { if (!field.readOnly) field.disabled = readonly; });
+    departmentToggle.disabled = readonly;
     form.querySelector('[data-practitioner-save]').hidden = readonly;
     form.querySelector('[data-practitioner-cancel]').textContent = readonly ? 'Back' : 'Cancel';
   }
@@ -225,7 +239,7 @@
       }
       field.value = value;
     });
-    setFormFacility(isNew ? String(facilityId) : record.facilityId || facilityId, isNew ? [] : record.departmentCodes || []);
+    setFormFacility(isNew ? [] : record.departmentCodes || []);
     if (nextMode === 'view') setReadOnly(true);
     modal.hidden = false; document.body.classList.add('patient-modal-open'); modal.querySelector('[data-practitioner-close]').focus();
   }
@@ -238,7 +252,34 @@
   grid.querySelector('[data-practitioner-add]').addEventListener('click', (event) => openModal('new', null, event.currentTarget));
   grid.querySelectorAll('[data-practitioner-page]').forEach((button) => button.addEventListener('click', () => { const pages = Math.max(1, Math.ceil(filteredRecords().length / pageSize)); if (button.dataset.practitionerPage === 'first') currentPage = 1; if (button.dataset.practitionerPage === 'previous') currentPage = Math.max(1, currentPage - 1); if (button.dataset.practitionerPage === 'next') currentPage = Math.min(pages, currentPage + 1); if (button.dataset.practitionerPage === 'last') currentPage = pages; closeMenus(); render(); }));
   searchDepartment.addEventListener('input', () => drawDepartmentChoices());
-  departmentOptions.addEventListener('change', validateDepartmentSelection);
+  searchDepartment.addEventListener('focus', () => { if (mode !== 'view') setDepartmentPickerOpen(true); });
+  searchDepartment.addEventListener('click', () => { if (mode !== 'view') setDepartmentPickerOpen(true); });
+  departmentToggle.addEventListener('click', () => {
+    if (mode === 'view') return;
+    setDepartmentPickerOpen(!departmentPickerOpen);
+    if (departmentPickerOpen) { drawDepartmentChoices(); searchDepartment.focus(); }
+  });
+  departmentOptions.addEventListener('change', (event) => {
+    const checkbox = event.target.closest('input[type="checkbox"]');
+    if (!checkbox) return;
+    const code = String(checkbox.value);
+    selectedDepartmentCodes = checkbox.checked
+      ? [...new Set([...selectedDepartments(), code])]
+      : selectedDepartments().filter((item) => item !== code);
+    renderDepartmentChips();
+    validateDepartmentSelection();
+  });
+  departmentChips.addEventListener('click', (event) => {
+    const remove = event.target.closest('[data-department-remove]');
+    if (!remove) return;
+    const code = remove.dataset.departmentRemove;
+    selectedDepartmentCodes = selectedDepartments().filter((item) => item !== code);
+    const option = [...departmentOptions.querySelectorAll('input[type="checkbox"]')].find((input) => input.value === code);
+    if (option) option.checked = false;
+    renderDepartmentChips();
+    validateDepartmentSelection();
+    searchDepartment.focus();
+  });
   rows.addEventListener('click', (event) => {
     const trigger = event.target.closest('[data-practitioner-row-menu]');
     if (trigger) { const menu = trigger.parentElement.querySelector('.facility-row-menu'); const opening = menu.hidden; closeMenus(menu); menu.hidden = !opening; trigger.setAttribute('aria-expanded', String(opening)); return; }
@@ -260,8 +301,8 @@
   modal.querySelector('[data-practitioner-close]').addEventListener('click', closeModal);
   modal.querySelector('[data-practitioner-cancel]').addEventListener('click', closeModal);
   modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
-  document.addEventListener('click', (event) => { if (!event.target.closest('.facility-row-action')) closeMenus(); });
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { if (!modal.hidden) closeModal(); else closeMenus(); } if (modal.hidden || event.key !== 'Tab') return; const focusable = [...modal.querySelectorAll('button:not([hidden]):not(:disabled),input:not(:disabled),select:not(:disabled)')]; if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1).focus(); } else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); } });
+  document.addEventListener('click', (event) => { if (!event.target.closest('.facility-row-action')) closeMenus(); if (departmentPickerOpen && !event.target.closest('[data-department-picker]')) setDepartmentPickerOpen(false); });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && departmentPickerOpen) { event.preventDefault(); setDepartmentPickerOpen(false); searchDepartment.focus(); return; } if (event.key === 'Escape') { if (!modal.hidden) closeModal(); else closeMenus(); } if (modal.hidden || event.key !== 'Tab') return; const focusable = [...modal.querySelectorAll('button:not([hidden]):not(:disabled),input:not(:disabled),select:not(:disabled)')].filter((control) => control.getClientRects().length > 0); if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1).focus(); } else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); } });
   function updateDepartments(targetFacilityId, nextDepartments) {
     if (!Array.isArray(nextDepartments)) return;
     departmentCache.set(String(targetFacilityId), nextDepartments);

@@ -520,20 +520,35 @@ button { color: inherit; }
 .practitioners-table { min-width: 1260px; }
 .practitioner-modal { width: min(980px, 100%); }
 .practitioner-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.practitioner-section { overflow: hidden; margin: 0 0 15px; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
+.practitioner-section { position: relative; overflow: visible; margin: 0 0 15px; padding: 0; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }
 .practitioner-section:last-child { margin-bottom: 0; }
 .practitioner-section .patient-form-grid { padding: 15px; }
-.practitioner-department-field { align-self: stretch; grid-row: span 2; }
+.practitioner-department-field { position: relative; grid-column: 1 / -1; }
 .practitioner-department-field > span:first-child { font-size: 10px; }
-.practitioner-department-field > input { flex: 0 0 35px; }
-.practitioner-department-options { min-height: 72px; max-height: 145px; overflow: auto; padding: 5px 8px; border: 1px solid hsl(var(--input)); border-radius: 6px; background: hsl(var(--background)); }
-.practitioner-department-options .form-check { min-height: 27px; font-size: 10px; }
+.practitioner-department-picker { position: relative; }
+.practitioner-department-control { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; min-height: 40px; padding: 5px 8px; border: 1px solid hsl(var(--input)); border-radius: 6px; background: hsl(var(--background)); }
+.practitioner-department-control:focus-within { border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / .18); }
+.practitioner-department-control > input[data-department-search] { flex: 1 1 150px; width: auto; min-width: 120px; min-height: 26px; padding: 3px 2px; border: 0; outline: 0; background: transparent; box-shadow: none; }
+.practitioner-department-control > input[data-department-search]:focus { border: 0; box-shadow: none; }
+.practitioner-department-chips { display: contents; }
+.practitioner-department-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; margin: 0; padding: 4px 7px; border-radius: 999px; background: hsl(var(--muted)); color: hsl(var(--foreground)); font-size: 10px; white-space: normal; }
+.practitioner-department-chip > span { overflow-wrap: anywhere; }
+.practitioner-department-chip button { display: inline-grid; flex: 0 0 16px; width: 16px; height: 16px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: hsl(var(--muted-foreground)); font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
+.practitioner-department-chip button:hover { background: hsl(var(--background)); color: hsl(var(--foreground)); }
+.practitioner-department-placeholder { padding: 3px; color: hsl(var(--muted-foreground)); font-size: 10px; }
+.practitioner-department-toggle { display: inline-grid; flex: 0 0 26px; width: 26px; height: 26px; place-items: center; padding: 0; border: 0; border-radius: 5px; background: transparent; color: hsl(var(--muted-foreground)); font: inherit; cursor: pointer; }
+.practitioner-department-toggle:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+.practitioner-department-options { position: absolute; z-index: 8; top: calc(100% + 4px); right: 0; left: 0; max-height: 210px; overflow: auto; padding: 5px 8px; border: 1px solid hsl(var(--border)); border-radius: 7px; background: hsl(var(--popover)); color: hsl(var(--popover-foreground)); box-shadow: 0 8px 24px hsl(222 25% 10% / .16); }
+.practitioner-department-options[hidden] { display: none; }
+.practitioner-department-options .form-check { min-height: 32px; font-size: 10px; }
+.practitioner-department-options .form-check input { flex: 0 0 15px; width: 15px; height: 15px; }
 .practitioner-department-field small, .practitioner-arabic-name { color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 400; }
 .practitioner-arabic-name { display: block; margin-top: 3px; text-align: left; }
 .practitioner-department-chip { display: inline-flex; margin: 2px 2px 2px 0; padding: 3px 6px; border-radius: 999px; background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); font-size: 9px; white-space: nowrap; }
+.practitioner-department-chips .practitioner-department-chip { align-items: center; gap: 5px; max-width: 100%; margin: 0; padding: 4px 7px; color: hsl(var(--foreground)); font-size: 10px; white-space: normal; }
 .practitioner-no-departments { display: block; padding: 8px 2px; color: hsl(var(--muted-foreground)); font-size: 10px; }
 @media (max-width: 900px) { .practitioner-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .practitioner-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 580px) { .practitioner-filter-grid, .practitioner-form-grid { grid-template-columns: 1fr; } .practitioner-department-field { grid-row: auto; } }
+@media (max-width: 580px) { .practitioner-filter-grid, .practitioner-form-grid { grid-template-columns: 1fr; } .practitioner-department-field { grid-column: 1 / -1; } }
 .phone-control { display: flex; align-items: center; gap: 7px; padding: 0 7px; }
 .phone-control select { flex: 0 0 55px; width: 55px; min-height: 29px; padding: 0 2px; border: 0; border-right: 1px solid hsl(var(--border)); border-radius: 0; background: transparent; color: hsl(var(--foreground)); font: inherit; font-size: 10px; }
 .phone-control input { min-height: 29px; padding: 0; border: 0; box-shadow: none !important; }
