@@ -119,6 +119,14 @@
     }, window.location.origin);
   }
 
+  window.addEventListener('message', (event) => {
+    if (event.origin !== window.location.origin || event.source !== facilityFrame.contentWindow) return;
+    if (event.data?.type !== 'rcm:facility-embed-size') return;
+    const height = Number(event.data.height);
+    if (!Number.isFinite(height) || height < 1) return;
+    facilityFrame.style.height = `${Math.min(Math.max(Math.ceil(height), 1), 20000)}px`;
+  });
+
   function renderContextSidebar(facility, activeRoute) {
     contextSidebar.innerHTML = `<div class="facility-context-brand">${icon}<div><strong>${escapeHtml(facility.englishName)}</strong><small>Facility Setup</small></div></div><nav class="side-scroll" aria-label="Facility setup menu"><div class="nav-caption">Facility Setup</div>${sections.map((section) => `<a class="nav-link${section.route === activeRoute ? ' active' : ''}" href="#facilities/${facility.id}/${section.route}"${section.route === activeRoute ? ' aria-current="page"' : ''}><span class="nav-icon" aria-hidden="true"></span><span>${section.label}</span></a>`).join('')}</nav>`;
     contextSidebar.hidden = false;

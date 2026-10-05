@@ -12,4 +12,28 @@
     if (event.data.theme !== 'light' && event.data.theme !== 'dark') return;
     document.documentElement.classList.toggle('dark', event.data.theme === 'dark');
   });
+
+  const reportPageHeight = () => {
+    const height = Math.ceil(Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight,
+      document.documentElement.getBoundingClientRect().height,
+    ));
+    window.parent.postMessage({ type: 'rcm:facility-embed-size', height }, window.location.origin);
+  };
+
+  let resizeFrame = 0;
+  const scheduleHeightReport = () => {
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(reportPageHeight);
+  };
+
+  window.addEventListener('resize', scheduleHeightReport);
+  window.addEventListener('load', scheduleHeightReport, { once: true });
+  document.addEventListener('DOMContentLoaded', () => {
+    const heightObserver = new ResizeObserver(scheduleHeightReport);
+    heightObserver.observe(document.documentElement);
+    heightObserver.observe(document.body);
+    scheduleHeightReport();
+  }, { once: true });
 })();
