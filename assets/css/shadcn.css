@@ -952,20 +952,12 @@ body.patient-modal-open { overflow: hidden; }
 .discount-section > .discount-fields { padding: 15px; }
 .discount-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .discount-fields .form-field { min-width: 0; }
-.discount-basic-lookup { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: 6px; }
-.discount-basic-lookup input[readonly] { min-width: 0; }
-.discount-basic-lookup .button { min-height: 36px; white-space: nowrap; }
 .discount-subsection { padding: 13px 15px 15px; border-top: 1px solid hsl(var(--border) / .75); }
 .discount-subsection h3, .discount-rule-editor h3 { margin: 0; font-size: 12px; font-weight: 700; }
 .discount-lookup-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 11px; }
 .discount-lookup { min-width: 0; }
-.discount-lookup-label { display: block; margin-bottom: 5px; color: hsl(var(--foreground)); font-size: 10px; font-weight: 650; }
-.discount-lookup-control { display: grid; gap: 6px; }
-.discount-chip-list { display: flex; min-height: 20px; flex-wrap: wrap; gap: 5px; }
-.discount-chip { display: inline-flex; max-width: 100%; align-items: center; gap: 6px; padding: 3px 7px; border: 1px solid hsl(var(--border)); border-radius: 999px; background: hsl(var(--muted) / .35); color: hsl(var(--foreground)); font-size: 10px; }
-.discount-chip button { padding: 0; border: 0; background: transparent; color: hsl(var(--muted-foreground)); cursor: pointer; font-size: 14px; line-height: 1; }
-.discount-lookup-empty { color: hsl(var(--muted-foreground)); font-size: 10px; }
-.discount-lookup-trigger { display: flex; width: 100%; min-height: 35px; justify-content: space-between; gap: 8px; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.discount-lookup select { width: 100%; min-width: 0; }
+.discount-lookup small { display: block; margin-top: 4px; color: hsl(var(--muted-foreground)); font-size: 9px; }
 .discount-rule-editor { margin: 0 15px 14px; padding: 14px; border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--muted) / .16); }
 .discount-rule-editor-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .discount-rule-editor-heading p { margin: 4px 0 0; color: hsl(var(--muted-foreground)); font-size: 10px; }
@@ -980,16 +972,6 @@ body.patient-modal-open { overflow: hidden; }
 .discount-spec-grid > div { min-width: 0; padding: 9px 10px; border: 1px solid hsl(var(--border)); border-radius: 7px; background: hsl(var(--muted) / .16); }
 .discount-spec-grid span { display: block; margin-bottom: 4px; color: hsl(var(--muted-foreground)); font-size: 9px; }
 .discount-spec-grid strong { display: block; overflow-wrap: anywhere; font-size: 11px; font-weight: 600; }
-.discount-lov-backdrop { z-index: 62; }
-.discount-lov-modal { width: min(620px, 100%); max-height: 85vh; }
-.discount-lov-modal .patient-modal-body { display: grid; gap: 12px; overflow: hidden; }
-.discount-lov-options { max-height: min(45vh, 390px); overflow: auto; border: 1px solid hsl(var(--border)); border-radius: 8px; }
-.discount-lov-option { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-bottom: 1px solid hsl(var(--border) / .65); cursor: pointer; font-size: 11px; }
-.discount-lov-option:last-child { border-bottom: 0; }
-.discount-lov-option:hover { background: hsl(var(--muted) / .35); }
-.discount-lov-option input { width: 15px; height: 15px; flex: 0 0 auto; accent-color: hsl(var(--primary)); }
-.discount-lov-option span { min-width: 0; overflow-wrap: anywhere; }
-.discount-lov-empty { padding: 16px; color: hsl(var(--muted-foreground)); text-align: center; font-size: 11px; }
 .discount-rules-section .facility-empty { padding: 17px; }
 @media (max-width: 900px) { .discount-filter-grid, .discount-lookup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .discount-filter-grid, .discount-fields, .discount-rule-editor > .discount-fields, .discount-lookup-grid, .discount-spec-grid { grid-template-columns: 1fr; } .discount-rule-editor-heading { flex-direction: column; } .discount-rule-editor-heading .button { align-self: flex-start; } .discount-modal .patient-modal-header { padding: 16px; } .discount-modal .patient-modal-body { padding: 12px; } .discount-modal .patient-modal-footer { align-items: stretch; flex-direction: column; } .discount-modal .patient-modal-footer > div { display: flex; width: 100%; gap: 8px; } .discount-modal .patient-modal-footer .button { flex: 1; } }
