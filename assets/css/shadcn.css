@@ -545,7 +545,9 @@ button { color: inherit; }
 .practitioner-department-field small, .practitioner-arabic-name { color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 400; }
 .practitioner-arabic-name { display: block; margin-top: 3px; text-align: left; }
 .practitioner-department-chip { display: inline-flex; margin: 2px 2px 2px 0; padding: 3px 6px; border-radius: 999px; background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); font-size: 9px; white-space: nowrap; }
-.practitioner-department-chips .practitioner-department-chip { align-items: center; gap: 5px; max-width: 100%; margin: 0; padding: 4px 7px; color: hsl(var(--foreground)); font-size: 10px; white-space: normal; }
+.practitioner-department-chips .practitioner-department-chip { align-items: center; gap: 5px; max-width: 100%; margin: 0; padding: 4px 7px; background: hsl(154 54% 93%); color: hsl(154 55% 30%); font-size: 10px; white-space: normal; }
+.practitioner-department-chips .practitioner-department-chip button { color: hsl(154 55% 30%); }
+.practitioner-department-chips .practitioner-department-chip button:hover { background: hsl(154 55% 30% / .12); color: hsl(154 55% 30%); }
 .practitioner-no-departments { display: block; padding: 8px 2px; color: hsl(var(--muted-foreground)); font-size: 10px; }
 @media (max-width: 900px) { .practitioner-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .practitioner-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .practitioner-filter-grid, .practitioner-form-grid { grid-template-columns: 1fr; } .practitioner-department-field { grid-column: 1 / -1; } }
@@ -591,9 +593,9 @@ body.modal-open { overflow: hidden; }
 .user-multiselect-control > input[data-user-branch-search]:focus, .user-multiselect-control > input[data-user-role-search]:focus { border: 0; box-shadow: none; }
 .user-multiselect-control > input[hidden], .user-multiselect-toggle[hidden] { display: none; }
 .user-role-chips { display: contents; }
-.user-assignment-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; margin: 0; padding: 4px 7px; border-radius: 999px; background: hsl(var(--muted)); color: hsl(var(--foreground)); font-size: 10px; white-space: normal; }
-.user-assignment-chip button { display: inline-grid; flex: 0 0 16px; width: 16px; height: 16px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: hsl(var(--muted-foreground)); font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
-.user-assignment-chip button:hover { background: hsl(var(--background)); color: hsl(var(--foreground)); }
+.user-assignment-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; margin: 0; padding: 4px 7px; border-radius: 999px; background: hsl(154 54% 93%); color: hsl(154 55% 30%); font-size: 10px; white-space: normal; }
+.user-assignment-chip button { display: inline-grid; flex: 0 0 16px; width: 16px; height: 16px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: hsl(154 55% 30%); font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
+.user-assignment-chip button:hover { background: hsl(154 55% 30% / .12); color: hsl(154 55% 30%); }
 .user-assignment-placeholder { padding: 3px; color: hsl(var(--muted-foreground)); font-size: 10px; }
 .user-multiselect-toggle { display: inline-grid; flex: 0 0 26px; width: 26px; height: 26px; place-items: center; padding: 0; border: 0; border-radius: 5px; background: transparent; color: hsl(var(--muted-foreground)); font: inherit; cursor: pointer; }
 .user-multiselect-toggle:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
