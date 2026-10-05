@@ -80,7 +80,7 @@
 
   function setSectionContent(facility, section) {
     const isProfile = section.route === 'facility-profile';
-    const embeddedRoutes = new Set(['branches', 'departments', 'locations', 'billing-period', 'cost-centers', 'consultation-rules']);
+    const embeddedRoutes = new Set(['branches', 'departments', 'divisions', 'locations', 'billing-period', 'cost-centers', 'consultation-rules']);
     const useEmbeddedPage = embeddedRoutes.has(section.route);
     detail.hidden = !isProfile;
     placeholder.hidden = isProfile || useEmbeddedPage;
