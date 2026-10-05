@@ -4,7 +4,6 @@
 
   const facilityId = String(document.body.dataset.currentFacilityId || '1');
   const storageKey = `rcm-facility-users:v1:${facilityId}`;
-  const facility = (window.RcmFacilityStore?.list?.() || []).find((item) => String(item.id) === facilityId) || { id: facilityId, englishName: 'Current Facility' };
   const branchKey = `rcm-facility-branches:v1:${facilityId}`;
   const usersSeed = [
     { username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', branchCode: '1', notes: '', active: true, roleIds: [] },
@@ -30,6 +29,7 @@
   let pageSize = 8;
   let mode = 'new';
   let currentUsername = null;
+  let selectedRoleIds = [];
   let returnFocus = null;
   let toastTimer;
   let appliedFilters = {};
@@ -49,7 +49,7 @@
 
   const userModal = document.createElement('div');
   userModal.className = 'patient-modal-backdrop'; userModal.id = 'user-modal'; userModal.hidden = true;
-  userModal.innerHTML = `<section class="patient-modal user-modal" role="dialog" aria-modal="true" aria-labelledby="user-modal-title" aria-describedby="user-modal-description"><header class="patient-modal-header"><div><p class="eyebrow">USER RECORD</p><h2 id="user-modal-title">Add User</h2><p id="user-modal-description">Enter user information and facility assignment.</p></div><button class="icon-button" type="button" data-user-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+  userModal.innerHTML = `<section class="patient-modal user-modal" role="dialog" aria-modal="true" aria-labelledby="user-modal-title" aria-describedby="user-modal-description"><header class="patient-modal-header"><div><p class="eyebrow">USER RECORD</p><h2 id="user-modal-title">Add User</h2><p id="user-modal-description">Enter user information, branch, and roles.</p></div><button class="icon-button" type="button" data-user-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
     <form data-user-form><div class="patient-modal-body">
       <fieldset class="patient-form-section user-section"><legend class="sr-only">User Information</legend><div class="facility-form-section-heading">User Information</div><div class="patient-form-grid user-form-grid">
         <label class="form-field"><span>Arabic Name <b>*</b></span><input name="arabicName" dir="rtl" required autocomplete="off"></label>
@@ -61,9 +61,9 @@
         <label class="form-field user-notes"><span>Notes</span><textarea name="notes" rows="3"></textarea></label>
       </div></fieldset>
       <fieldset class="patient-form-section user-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="patient-form-grid user-form-grid">
-        <label class="form-field"><span>Facility</span><input name="facilityName" readonly value="${escapeHtml(facility.englishName || 'Current Facility')}" aria-readonly="true"></label>
         <label class="form-field"><span>Branch</span><select name="branchCode"><option value="">No branch assigned</option>${branches.map((item) => `<option value="${escapeHtml(item.code)}">(${escapeHtml(item.code)}) ${escapeHtml(item.englishName)}</option>`).join('')}</select></label>
       </div></fieldset>
+      <fieldset class="patient-form-section user-section"><legend class="sr-only">Role Assignment</legend><div class="facility-form-section-heading">Role Assignment</div><div class="user-role-assignment" data-user-role-assignment><div class="user-role-chips" data-user-role-chips aria-live="polite"></div><label class="facility-filter user-role-search"><span>Search roles</span><input type="search" data-user-role-search placeholder="Search available roles"></label><div class="user-role-options" data-user-role-options role="group" aria-label="Roles available to this facility"></div><p class="user-role-help" data-user-role-help>Select one or more active roles for this user.</p></div></fieldset>
     </div><footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-user-cancel>Cancel</button><button type="submit" class="button button-primary" data-user-save>Create</button></div></footer></form></section>`;
   document.body.append(userModal);
 
@@ -164,7 +164,10 @@
     grid.querySelectorAll('[data-user-page]').forEach((button) => { button.disabled = !matching.length || (['first', 'previous'].includes(button.dataset.userPage) ? page === 1 : page === pages); });
   }
   function setFormReadOnly(readOnly) {
-    [...userForm.elements].forEach((field) => { if (field.name && field.name !== 'facilityName') field.disabled = readOnly; });
+    [...userForm.elements].forEach((field) => { if (field.name) field.disabled = readOnly; });
+    userModal.querySelector('[data-user-role-search]').closest('label').hidden = readOnly;
+    userModal.querySelector('[data-user-role-options]').hidden = readOnly;
+    userModal.querySelector('[data-user-role-help]').hidden = readOnly;
     userModal.querySelector('[data-user-save]').hidden = readOnly;
     userModal.querySelector('[data-user-cancel]').textContent = readOnly ? 'Back' : 'Cancel';
   }
@@ -173,9 +176,10 @@
     userForm.reset(); setFormReadOnly(false);
     const isNew = nextMode === 'new';
     userModal.querySelector('#user-modal-title').textContent = isNew ? 'Add User' : nextMode === 'view' ? 'User Details' : 'Edit User';
-    userModal.querySelector('#user-modal-description').textContent = isNew ? 'Enter user information and facility assignment.' : nextMode === 'view' ? 'Review user information and facility assignment.' : 'Update user information and facility assignment.';
+    userModal.querySelector('#user-modal-description').textContent = isNew ? 'Enter user information, branch, and roles.' : nextMode === 'view' ? 'Review user information, branch, and assigned roles.' : 'Update user information, branch, and roles.';
     userModal.querySelector('[data-user-save]').textContent = isNew ? 'Create' : 'Save changes';
-    userForm.elements.namedItem('facilityName').value = facility.englishName || 'Current Facility';
+    selectedRoleIds = (user?.roleIds || []).map(String);
+    userModal.querySelector('[data-user-role-search]').value = '';
     if (user) {
       for (const name of ['arabicName', 'englishName', 'username', 'email', 'mobile', 'userType', 'notes', 'branchCode']) {
         const field = userForm.elements.namedItem(name);
@@ -183,6 +187,7 @@
       }
       userForm.elements.namedItem('mobileCode').value = user.mobileCode || '+966';
     } else userForm.elements.namedItem('mobileCode').value = '+966';
+    renderUserRoleAssignment(nextMode === 'view');
     if (nextMode === 'view') setFormReadOnly(true);
     userModal.hidden = false; document.body.classList.add('patient-modal-open'); userModal.querySelector('[data-user-close]').focus();
   }
@@ -203,6 +208,23 @@
     list.innerHTML = selectableRoles.length ? selectableRoles.map((role) => `<label class="form-check"><input type="checkbox" name="roleIds" value="${escapeHtml(role.id)}" ${user.roleIds.includes(role.id) ? 'checked' : ''} ${role.active ? '' : 'disabled'}><span><strong>${escapeHtml(role.englishName)}${role.active ? '' : ' · Inactive'}</strong><small lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</small></span></label>`).join('') : '<p class="user-permission-empty">No active roles are available. Add or activate a role in Settings first.</p>';
     permissionsModal.querySelector('[data-permission-search]').value = '';
     list.querySelectorAll('.form-check').forEach((item) => { item.hidden = false; });
+  }
+  function renderUserRoleAssignment(readOnly = mode === 'view') {
+    const roleList = window.RcmFacilityRoles?.list?.() || [];
+    const selected = new Set(selectedRoleIds.map(String));
+    const chosen = roleList.filter((role) => selected.has(String(role.id)));
+    const chips = userModal.querySelector('[data-user-role-chips]');
+    chips.innerHTML = chosen.length
+      ? chosen.map((role) => `<span class="user-role-chip">${escapeHtml(role.englishName)}${!role.active ? ' · Inactive' : ''}${readOnly || !role.active ? '' : `<button type="button" data-user-role-remove="${escapeHtml(role.id)}" aria-label="Remove ${escapeHtml(role.englishName)} role">×</button>`}</span>`).join('')
+      : '<span class="user-role-empty">No roles assigned.</span>';
+    const options = roleList.filter((role) => role.active || selected.has(String(role.id)));
+    const query = userModal.querySelector('[data-user-role-search]').value.trim().toLocaleLowerCase();
+    const list = userModal.querySelector('[data-user-role-options]');
+    list.innerHTML = options.length ? options.map((role) => {
+      const isSelected = selected.has(String(role.id));
+      const searchable = `${role.englishName} ${role.arabicName || ''}`.toLocaleLowerCase();
+      return `<label class="user-role-option"${query && !searchable.includes(query) ? ' hidden' : ''}><input type="checkbox" data-user-role-choice value="${escapeHtml(role.id)}" ${isSelected ? 'checked' : ''} ${!role.active && isSelected ? 'disabled' : ''}><span>${escapeHtml(role.englishName)}${!role.active ? ' · Inactive' : ''}${role.arabicName ? `<small lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</small>` : ''}</span></label>`;
+    }).join('') : '<p class="user-role-empty">No active roles are available. Add or activate a role in Settings first.</p>';
   }
   function openPermissionsModal(user, trigger) {
     currentUsername = user.username; returnFocus = trigger; renderRoleChoices(user);
@@ -236,6 +258,21 @@
 
   userForm.addEventListener('input', (event) => {
     if (event.target.name === 'username') event.target.setCustomValidity('');
+    if (event.target.matches('[data-user-role-search]')) renderUserRoleAssignment();
+  });
+  userForm.addEventListener('change', (event) => {
+    if (!event.target.matches('[data-user-role-choice]')) return;
+    const roleId = String(event.target.value);
+    selectedRoleIds = event.target.checked
+      ? [...new Set([...selectedRoleIds.map(String), roleId])]
+      : selectedRoleIds.filter((id) => String(id) !== roleId);
+    renderUserRoleAssignment();
+  });
+  userForm.addEventListener('click', (event) => {
+    const remove = event.target.closest('[data-user-role-remove]');
+    if (!remove) return;
+    selectedRoleIds = selectedRoleIds.filter((id) => String(id) !== String(remove.dataset.userRoleRemove));
+    renderUserRoleAssignment();
   });
   userForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -251,10 +288,10 @@
       email: userForm.elements.namedItem('email').value.trim(), mobileCode: userForm.elements.namedItem('mobileCode').value,
       mobile: userForm.elements.namedItem('mobile').value.trim(), userType: userForm.elements.namedItem('userType').value,
       notes: userForm.elements.namedItem('notes').value.trim(),
-      branchCode: userForm.elements.namedItem('branchCode').value, facilityId,
+      branchCode: userForm.elements.namedItem('branchCode').value, facilityId, roleIds: [...selectedRoleIds],
     };
     if (mode === 'new') {
-      const record = { ...values, active: true, roleIds: [] }; users.push(record); save();
+      const record = { ...values, active: true }; users.push(record); save();
       grid.querySelectorAll('[data-user-filter]').forEach((field) => { field.value = ''; }); appliedFilters = {}; page = Math.ceil(users.length / pageSize);
       closeModal(userModal, false); render(); showToast(`${record.englishName} was created successfully.`);
     } else {
@@ -282,6 +319,7 @@
   window.addEventListener('rcm:roles-changed', () => {
     const user = userByName(currentUsername);
     if (user && !permissionsModal.hidden) renderRoleChoices(user);
+    if (!userModal.hidden) renderUserRoleAssignment();
   });
 
   for (const modal of [userModal, passwordModal, permissionsModal]) {
