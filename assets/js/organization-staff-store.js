@@ -22,9 +22,16 @@
   const facilities = window.RcmFacilityStore?.list?.() || [{ id: 1, englishName: 'King Abdullah Specialized Hospital- Alqassim', active: true }];
   const facilityName = (id) => facilities.find((item) => String(item.id) === String(id))?.englishName || `Facility ${id}`;
   const facilityKey = (kind, id) => `rcm-facility-${kind}:v1:${id}`;
-  const missing = { practitioners: !practitioners, users: !users, roles: !roles };
+  // An empty array can be left behind when this page was opened before the
+  // Facility Settings pages had initialized their sample records. Treat that
+  // state as recoverable so legacy facility records can be imported later.
+  const recover = {
+    practitioners: !practitioners?.length,
+    users: !users?.length,
+    roles: !roles?.length,
+  };
   practitioners ||= []; users ||= []; roles ||= [];
-  if (Object.values(missing).some(Boolean)) {
+  if (Object.values(recover).some(Boolean)) {
     const legacyByFacility = facilities.map((facility) => {
       const fid = String(facility.id);
       return { fid, oldRoles: read(facilityKey('roles', fid)) || [], oldPractitioners: read(facilityKey('practitioners', fid)) || [], oldUsers: read(facilityKey('users', fid)) || [] };
@@ -32,22 +39,68 @@
     const roleIdMap = new Map();
     legacyByFacility.forEach(({ fid, oldRoles }) => oldRoles.forEach((role, i) => {
       let target = roles.find((item) => String(item.legacyFacilityId) === fid && String(item.legacyRoleId) === String(role.id));
-      if (!target && missing.roles) {
+      if (!target && recover.roles) {
         target = { ...role, id: `org-role-${fid}-${role.id || i + 1}`, facilityIds: [fid], legacyFacilityId: fid, legacyRoleId: String(role.id || i + 1) };
         roles.push(target);
       }
       if (target) roleIdMap.set(`${fid}:${role.id}`, target.id);
     }));
-    if (missing.practitioners) legacyByFacility.forEach(({ fid, oldPractitioners }) => oldPractitioners.forEach((row, i) => practitioners.push({
+    if (recover.practitioners) legacyByFacility.forEach(({ fid, oldPractitioners }) => oldPractitioners.forEach((row, i) => practitioners.push({
       ...row, id: `org-practitioner-${fid}-${i + 1}`, facilityIds: [fid],
       departmentsByFacility: { [fid]: Array.isArray(row.departmentCodes) ? row.departmentCodes : [] },
     })));
-    if (missing.users) legacyByFacility.forEach(({ fid, oldUsers }) => oldUsers.forEach((row, i) => users.push({
+    if (recover.users) legacyByFacility.forEach(({ fid, oldUsers }) => oldUsers.forEach((row, i) => users.push({
       ...row, id: `org-user-${fid}-${i + 1}`, facilityIds: [fid],
       assignmentsByFacility: { [fid]: { branchCode: row.branchCode || '', branchCodes: (Array.isArray(row.branchCodes) ? row.branchCodes : row.branchCode ? [row.branchCode] : []).map(String), roleIds: (row.roleIds || []).map((id) => roleIdMap.get(`${fid}:${id}`)).filter(Boolean) } },
     })));
-    Object.entries(missing).forEach(([kind, wasMissing]) => { if (wasMissing) write(kind, kind === 'practitioners' ? practitioners : kind === 'users' ? users : roles); });
+    // If the browser has no facility seeds either, initialize realistic
+    // organization sample data for the primary facility so the grids are not
+    // blank on first use. Existing nonempty lists are never replaced.
+    const primaryFacilityId = String(facilities[0]?.id ?? 1);
+    if (recover.practitioners && !practitioners.length) {
+      practitioners = [
+        { id: 'org-practitioner-seed-001', documentId: '1093847562', englishName: 'Lina Alharbi', arabicName: 'لينا الحربي', role: 'Doctor', documentType: 'National ID', specialty: 'Community Health', designation: 'Consultant', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-001'] } },
+        { id: 'org-practitioner-seed-002', documentId: '1082763451', englishName: 'Omar Alotaibi', arabicName: 'عمر العتيبي', role: 'Doctor', documentType: 'National ID', specialty: 'Emergency Medicine Specialty', designation: 'Emergency Consultant', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-002', 'DPT-006'] } },
+        { id: 'org-practitioner-seed-003', documentId: '1071654328', englishName: 'Maha Alqahtani', arabicName: 'مها القحطاني', role: 'Nurse', documentType: 'National ID', specialty: 'Community Health', designation: 'Clinical Scientist', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-003'] } },
+        { id: 'org-practitioner-seed-004', documentId: '1069382714', englishName: 'Yousef Almutairi', arabicName: 'يوسف المطيري', role: 'Pharmacist', documentType: 'National ID', specialty: 'Community Medicine Specialty', designation: 'Associate Consultant', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-004'] } },
+        { id: 'org-practitioner-seed-005', documentId: '1058273649', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', role: 'Doctor', documentType: 'National ID', specialty: 'Adult Emergency Medicine', designation: 'Assistant Consultant', active: false, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-005', 'DPT-006'] } },
+        { id: 'org-practitioner-seed-006', documentId: '1047162538', englishName: 'Khalid Alzahrani', arabicName: 'خالد الزهراني', role: 'Physiotherapist', documentType: 'National ID', specialty: 'Community Medicine Specialty', designation: 'Clinical Scientist', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-001', 'DPT-003'] } },
+      ];
+    }
+    if (recover.roles && !roles.length) {
+      roles = [
+        { id: 'org-role-seed-001', arabicName: 'مدير المنشأة', englishName: 'Facility Administrator', permissionIds: permissions.map((item) => item.id), active: true, facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
+        { id: 'org-role-seed-002', arabicName: 'منسق وصول المرضى', englishName: 'Patient Access Coordinator', permissionIds: ['PERM-001', 'PERM-002', 'PERM-003', 'PERM-004', 'PERM-005', 'PERM-006', 'PERM-007'], active: true, facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
+        { id: 'org-role-seed-003', arabicName: 'أخصائي الفوترة', englishName: 'Billing Specialist', permissionIds: ['PERM-004', 'PERM-008'], active: true, facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
+        { id: 'org-role-seed-004', arabicName: 'مدقق سريري', englishName: 'Clinical Auditor', permissionIds: ['PERM-004', 'PERM-005', 'PERM-008'], active: true, facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
+      ];
+    }
+  if (recover.users && !users.length) {
+      const seedRoleIds = roles.slice(0, 3).map((role) => role.id);
+      users = [
+        { id: 'org-user-seed-001', username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '1', branchCodes: ['1'], roleIds: [seedRoleIds[1]] } } },
+        { id: 'org-user-seed-002', username: 'k.alharbi', englishName: 'Khalid Alharbi', arabicName: 'خالد الحربي', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '2', branchCodes: ['2'], roleIds: [seedRoleIds[2]] } } },
+        { id: 'org-user-seed-003', username: 'n.aldosari', englishName: 'Noura Aldosari', arabicName: 'نورة الدوسري', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '1', branchCodes: ['1'], roleIds: [seedRoleIds[0]] } } },
+        { id: 'org-user-seed-004', username: 'f.alqahtani', englishName: 'Faisal Alqahtani', arabicName: 'فيصل القحطاني', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', active: false, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '3', branchCodes: ['3'], roleIds: [] } } },
+        { id: 'org-user-seed-005', username: 's.alshammari', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '4', branchCodes: ['4'], roleIds: [seedRoleIds[1]] } } },
+      ];
+    }
+    Object.entries(recover).forEach(([kind, shouldRecover]) => { if (shouldRecover) write(kind, kind === 'practitioners' ? practitioners : kind === 'users' ? users : roles); });
   }
+
+  // Resolve legacy practitioner usernames to stable IDs after either side has
+  // been loaded or recovered. Keep the old text value for audit/display.
+  let linksMigrated = false;
+  practitioners.forEach((practitioner) => {
+    if (practitioner.userId || !practitioner.user) return;
+    const matches = users.filter((user) => String(user.username || '').toLocaleLowerCase() === String(practitioner.user).toLocaleLowerCase());
+    if (matches.length !== 1 || (matches[0].practitionerId && matches[0].practitionerId !== practitioner.id)) return;
+    const user = matches[0];
+    const practitionerFacilities = (practitioner.facilityIds || []).map(String);
+    if (!practitionerFacilities.some((id) => (user.facilityIds || []).map(String).includes(id))) return;
+    practitioner.userId = user.id; user.practitionerId = practitioner.id; linksMigrated = true;
+  });
+  if (linksMigrated) { write('practitioners', practitioners); write('users', users); }
 
   // Organization roles are globally available; user assignments remain facility-specific.
   const organizationFacilityIds = facilities.map((facility) => String(facility.id));
@@ -121,12 +174,55 @@
       }
     });
     write(kind, kind === 'practitioners' ? practitioners : kind === 'users' ? users : roles);
+    return facilityRows(kind, fid);
+  };
+  const saveLinkedRecords = (nextPractitioners, nextUsers) => {
+    practitioners = clone(nextPractitioners);
+    users = clone(nextUsers);
+    write('practitioners', practitioners);
+    write('users', users);
+  };
+  const linkRecords = (kind, recordId, counterpartId = '') => {
+    const practitionerRows = clone(practitioners), userRows = clone(users);
+    const user = kind === 'users' ? userRows.find((row) => String(row.id) === String(recordId)) : userRows.find((row) => String(row.id) === String(counterpartId));
+    const oldPractitionerId = user?.practitionerId || practitionerRows.find((row) => String(row.userId || '') === String(user?.id || ''))?.id || '';
+    const practitioner = kind === 'practitioners' ? practitionerRows.find((row) => String(row.id) === String(recordId)) : practitionerRows.find((row) => String(row.id) === String(counterpartId || oldPractitionerId));
+    if ((kind === 'practitioners' && !practitioner) || (kind === 'users' && !user) || (counterpartId && (!practitioner || !user))) return { ok: false, reason: 'missing-record' };
+    if (!practitioner && kind === 'users') { user.practitionerId = ''; saveLinkedRecords(practitionerRows, userRows); return { ok: true }; }
+    const desiredPractitionerId = counterpartId ? practitioner.id : '';
+    const desiredUserId = counterpartId ? user.id : '';
+    if (desiredUserId && user?.practitionerId && String(user.practitionerId) !== String(desiredPractitionerId)) return { ok: false, reason: 'already-linked' };
+    if (desiredPractitionerId && practitioner.userId && String(practitioner.userId) !== String(desiredUserId)) {
+      const currentUser = userRows.find((row) => String(row.id) === String(practitioner.userId));
+      if (currentUser?.practitionerId && String(currentUser.practitionerId) === String(practitioner.id)) return { ok: false, reason: 'already-linked' };
+    }
+    if (desiredUserId && !((practitioner.facilityIds || []).map(String).some((id) => (user.facilityIds || []).map(String).includes(id)))) return { ok: false, reason: 'facility-mismatch' };
+    // Clear either side's previous backlink as well as any stale reciprocal
+    // reference left by legacy or partially migrated records.
+    if (practitioner) userRows.forEach((row) => {
+      if (String(row.practitionerId || '') === String(practitioner.id) && String(row.id) !== String(desiredUserId)) row.practitionerId = '';
+    });
+    if (user) practitionerRows.forEach((row) => {
+      if (String(row.userId || '') === String(user.id) && String(row.id) !== String(desiredPractitionerId)) row.userId = '';
+    });
+    if (practitioner) practitioner.userId = desiredUserId || '';
+    if (user) user.practitionerId = desiredPractitionerId || '';
+    saveLinkedRecords(practitionerRows, userRows);
+    return { ok: true };
   };
   const store = {
     keys, permissions, facilities: () => clone(facilities), facilityName,
     list: (kind) => clone(kind === 'practitioners' ? practitioners : kind === 'users' ? users : roles),
     forFacility: facilityRows, saveFacility: saveFacilityRows,
-    save: (kind, rows) => write(kind, rows),
+    save: (kind, rows) => {
+      const copy = clone(rows);
+      if (kind === 'practitioners') practitioners = copy;
+      if (kind === 'users') users = copy;
+      if (kind === 'roles') roles = copy;
+      write(kind, copy);
+    },
+    saveLinkedRecords,
+    link: linkRecords,
     nextId: idFor,
   };
   window.RcmOrganizationStaffStore = store;

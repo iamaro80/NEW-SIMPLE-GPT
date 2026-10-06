@@ -1,6 +1,6 @@
 .control-panel-content { width: 100%; }
 .control-panel-content .breadcrumbs { justify-content: center; margin-bottom: 26px; }
-.minimal-view.organization-page { width: min(1320px, calc(100% - 64px)); }
+.minimal-view.organization-page { width: min(var(--content-max-width), calc(100% - var(--content-gutter-total))); }
 .organization-page .minimal-content { display: block; text-align: left; }
 .organization-page .control-panel-content .breadcrumbs { justify-content: flex-start; }
 .organization-page .control-panel-content > .eyebrow,
@@ -42,8 +42,8 @@
 [data-theme="dark"] .organization-status.status-onboarding { background: hsl(35 50% 22%); color: hsl(40 90% 76%); }
 [data-theme="dark"] .organization-status.status-suspended { background: hsl(0 45% 23%); color: hsl(0 85% 80%); }
 @media (max-width: 900px) { .organization-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 900px) { .minimal-view.organization-page { width: calc(100% - 40px); } }
-@media (max-width: 580px) { .minimal-view.organization-page { width: calc(100% - 28px); } }
+@media (max-width: 900px) { .minimal-view.organization-page { width: min(var(--content-max-width), calc(100% - var(--content-gutter-total))); } }
+@media (max-width: 580px) { .minimal-view.organization-page { width: min(var(--content-max-width), calc(100% - var(--content-gutter-total))); } }
 .organization-modal { width: min(920px, 100%); }
 .organization-modal-body { display: grid; gap: 14px; }
 .organization-form-section { margin: 0; padding: 14px; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); }

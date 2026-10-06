@@ -62,6 +62,7 @@
         <label class="form-field"><span>Mobile Number <b>*</b></span><span class="phone-control"><select name="mobileCode" aria-label="Mobile country code"><option selected>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="mobile" type="tel" required autocomplete="tel-national"></span></label>
         <label class="form-field"><span>User Type <b>*</b></span><select name="userType" required><option value="">Select user type</option>${userTypes.map((item) => `<option>${escapeHtml(item)}</option>`).join('')}</select></label>
         <label class="form-field user-notes"><span>Notes</span><textarea name="notes" rows="3"></textarea></label>
+        <label class="form-field user-practitioner-link"><span>Practitioner</span><select name="practitionerId" data-user-practitioner-select><option value="">No practitioner linked</option><option value="__create__">+ Create New Practitioner</option></select><small>Link a practitioner assigned to this facility or create one here.</small></label>
       </div></fieldset>
       <fieldset class="patient-form-section user-section user-assignment-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="user-multiselect" data-user-branch-assignment><div class="user-multiselect-control" data-user-branch-control><div class="user-role-chips" data-user-branch-chips aria-live="polite"></div><input type="search" data-user-branch-search placeholder="Select branches..." aria-label="Search branches" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-branch-options"><button class="user-multiselect-toggle" type="button" data-user-branch-toggle aria-label="Show branches" aria-expanded="false">⌄</button></div><div class="user-multiselect-options" id="user-branch-options" data-user-branch-options role="group" aria-label="Branches available to this facility" hidden></div><p class="user-role-help" data-user-branch-help>Choose any branches assigned to this user; branch assignment is optional.</p></div></fieldset>
       <fieldset class="patient-form-section user-section user-assignment-section"><legend class="sr-only">Role Assignment</legend><div class="facility-form-section-heading">Role Assignment</div><div class="user-multiselect" data-user-role-assignment><div class="user-multiselect-control" data-user-role-control><div class="user-role-chips" data-user-role-chips aria-live="polite"></div><input type="search" data-user-role-search placeholder="Select roles..." aria-label="Search roles" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-role-options"><button class="user-multiselect-toggle" type="button" data-user-role-toggle aria-label="Show roles" aria-expanded="false">⌄</button></div><div class="user-multiselect-options" id="user-role-options" data-user-role-options role="group" aria-label="Roles available to this facility" hidden></div><p class="user-role-help" data-user-role-help>Select one or more active roles for this user.</p></div></fieldset>
@@ -74,6 +75,39 @@
   const toast = document.createElement('div');
   toast.className = 'facility-toast'; toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); document.body.append(toast);
   const userForm = userModal.querySelector('[data-user-form]');
+
+  function practitionerChoices(currentId = '') {
+    return (window.RcmOrganizationStaffStore?.forFacility('practitioners', facilityId) || []).filter((row) => !row.userId || String(row.id) === String(currentId));
+  }
+  function renderPractitionerChoices(selectedId = '') {
+    const select = userForm.elements.namedItem('practitionerId'); if (!select) return;
+    select.innerHTML = `<option value="">No practitioner linked</option>${practitionerChoices(selectedId).map((row) => `<option value="${escapeHtml(row.id)}" ${String(row.id) === String(selectedId) ? 'selected' : ''}>${escapeHtml(row.englishName)} · ${escapeHtml(row.documentId)}</option>`).join('')}<option value="__create__">+ Create New Practitioner</option>`;
+  }
+  function openCreatePractitioner() {
+    const user = Object.fromEntries(['englishName','arabicName','email','mobileCode','mobile'].map((name) => [name, userForm.elements.namedItem(name).value.trim()]));
+    let departments = [];
+    try { departments = JSON.parse(localStorage.getItem(`rcm-facility-departments:v1:${facilityId}`) || '[]'); } catch { departments = []; }
+    if (!departments.length) departments = [{ code: 'DPT-001', name: 'Ambulatory Care Clinic' }, { code: 'DPT-002', name: 'Emergency Department' }, { code: 'DPT-003', name: 'Internal Medicine Ward' }];
+    const child = document.createElement('div'); child.className = 'patient-modal-backdrop practitioner-child-backdrop';
+    const consultationItems = ['(90487-002) ANTENATAL C.T.G. (30 MIN)', '(182519) MYELIN OLIGODENDROCYTE GLYCOPROTEIN ABS TO BIO', '(182476) CENTO ARRAY CYTO HD TO CENTOGENE', '(182453) MSI BY PCR (MICROSATELLITE INSTABILITY BY PCR)', '(182436) CASPR 2 AB', '(182411) MYELOPROLIFERATIVE NEOPLASM (CALR)', '(182407) BRAF (SEND OUT TO UNILABS)', '(182402) NRAS (SEND OUT TO UNILABS)', '(182343) ONCOTYPE DX TEST', '(182264) BRAF-PCR', '(181809) DNA EXTRACTION FOR BANKING', '(132137) KAPPA'];
+    child.innerHTML = `<section class="patient-modal practitioner-child-modal" role="dialog" aria-modal="true"><header class="patient-modal-header"><div><p class="eyebrow">PRACTITIONER RECORD</p><h2>Create Practitioner</h2><p>Saved immediately. It will link when you save this user.</p></div><button class="icon-button" type="button" data-child-close aria-label="Close">×</button></header><form><div class="patient-modal-body"><fieldset class="patient-form-section"><legend class="sr-only">Practitioner Information</legend><div class="facility-form-section-heading">Practitioner Information</div><div class="patient-form-grid"><label class="form-field"><span>Document ID <b>*</b></span><input name="documentId" required></label><label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required value="${escapeHtml(user.englishName)}"></label><label class="form-field"><span>Arabic Name</span><input name="arabicName" dir="rtl" value="${escapeHtml(user.arabicName)}"></label><label class="form-field"><span>Email</span><input name="email" type="email" value="${escapeHtml(user.email)}"></label><label class="form-field"><span>Mobile Number</span><span class="phone-control"><select name="mobileCode"><option ${user.mobileCode === '+966' || !user.mobileCode ? 'selected' : ''}>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="mobile" type="tel" value="${escapeHtml(user.mobile)}"></span></label><label class="form-field"><span>Phone Number</span><span class="phone-control"><select name="phoneCode"><option selected>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="phone" type="tel"></span></label><label class="form-field"><span>Ext.</span><input name="extension"></label><label class="form-field"><span>Practitioner Role <b>*</b></span><select name="role" required><option value="">Select role</option>${['Doctor','Nurse','Pharmacist','Researcher','Teacher/educator','Dentist','Physiotherapist','Speechtherapist','ICT professional'].map((value) => `<option>${value}</option>`).join('')}</select></label><label class="form-field"><span>Document Type <b>*</b></span><select name="documentType" required><option value="">Select document type</option>${['National ID','Permanent Resident Card Number','Passport number','Visitor Permit','Medical record number','Border Number','Displaced person'].map((value) => `<option>${value}</option>`).join('')}</select></label><label class="form-field"><span>Prefix</span><input name="prefix"></label><label class="form-field"><span>Degree</span><input name="degree"></label><label class="form-field"><span>License Number</span><input name="licenseNumber"></label><label class="form-field"><span>License Start</span><input name="licenseStart" type="date"></label><label class="form-field"><span>License End</span><input name="licenseEnd" type="date"></label><label class="form-field"><span>Practitioner Specialty <b>*</b></span><select name="specialty" required><option value="">Select specialty</option>${['Anesthesiology Specialty','Ambulatory Anesthesia','Neuro-Anesthesia','Community Health','Dermatology Specialty','Emergency Medicine Specialty','Adult Emergency Medicine'].map((value) => `<option>${value}</option>`).join('')}</select></label><label class="form-field"><span>Designation <b>*</b></span><select name="designation" required><option value="">Select designation</option>${['Assistant Consultant','Associate Consultant','Board Certified Physician','Consultant','Dental Hygienist','Dentist','Division Head','Emergency Consultant'].map((value) => `<option>${value}</option>`).join('')}</select></label><label class="form-field"><span>Consultation Item</span><select name="consultationItem"><option value="">Select consultation item</option>${consultationItems.map((item) => `<option>${escapeHtml(item)}</option>`).join('')}</select></label><label class="form-field"><span>Follow Up</span><select name="followUp"><option value="">Select follow up</option>${consultationItems.slice(0, 6).map((item) => `<option>${escapeHtml(item)}</option>`).join('')}</select></label></div></fieldset><fieldset class="patient-form-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><p class="muted">${escapeHtml(window.RcmFacilityStore?.list?.().find((item) => String(item.id) === String(facilityId))?.englishName || 'Current Facility')}</p><div class="form-field"><span>Departments <b>*</b></span><div class="practitioner-child-checklist">${departments.map((item) => `<label class="form-check"><input type="checkbox" name="departmentCodes" value="${escapeHtml(item.code)}"><span>${escapeHtml(item.name || item.englishName || item.code)}</span></label>`).join('')}</div></div></fieldset></div><footer class="patient-modal-footer"><span><small><b>*</b> Required fields</small></span><div><button type="button" class="button button-secondary" data-child-cancel>Cancel</button><button type="submit" class="button button-primary">Create Practitioner</button></div></footer></form></section>`;
+    document.body.append(child); child.querySelector('[name="documentId"]').focus();
+    const close = () => child.remove();
+    child.querySelectorAll('[data-child-close],[data-child-cancel]').forEach((button) => button.addEventListener('click', close));
+    child.addEventListener('click', (event) => { if (event.target === child) close(); });
+    child.querySelector('form').addEventListener('submit', (event) => {
+      event.preventDefault(); const childForm = event.currentTarget; if (!childForm.reportValidity()) return;
+      const documentId = childForm.elements.documentId.value.trim();
+      const all = window.RcmOrganizationStaffStore?.list('practitioners') || [];
+      if (all.some((item) => String(item.documentId) === documentId)) { childForm.elements.documentId.setCustomValidity('Document ID already exists.'); childForm.reportValidity(); return; }
+      const departmentCodes = [...childForm.querySelectorAll('[name="departmentCodes"]:checked')].map((input) => input.value);
+      if (!departmentCodes.length) { window.alert('Select at least one department.'); return; }
+      const record = { id: window.RcmOrganizationStaffStore?.nextId('practitioner') || `practitioner-${Date.now()}`, facilityId, facilityIds: [facilityId], departmentCodes, documentId, englishName: childForm.elements.englishName.value.trim(), arabicName: childForm.elements.arabicName.value.trim(), email: childForm.elements.email.value.trim(), mobileCode: childForm.elements.mobileCode.value, mobile: childForm.elements.mobile.value.trim(), phoneCode: childForm.elements.phoneCode.value, phone: childForm.elements.phone.value.trim(), extension: childForm.elements.extension.value.trim(), role: childForm.elements.role.value, documentType: childForm.elements.documentType.value, prefix: childForm.elements.prefix.value.trim(), degree: childForm.elements.degree.value.trim(), licenseNumber: childForm.elements.licenseNumber.value.trim(), licenseStart: childForm.elements.licenseStart.value, licenseEnd: childForm.elements.licenseEnd.value, consultationItem: childForm.elements.consultationItem.value, followUp: childForm.elements.followUp.value, specialty: childForm.elements.specialty.value, designation: childForm.elements.designation.value, lastDesignationUpdate: '—', active: true, userId: '' };
+      window.RcmOrganizationStaffStore?.saveFacility('practitioners', facilityId, [...(window.RcmOrganizationStaffStore?.forFacility('practitioners', facilityId) || []), record]);
+      renderPractitionerChoices(record.id); userForm.elements.namedItem('practitionerId').value = record.id;
+      close(); showToast(`${record.englishName} was created. Save the user to link this practitioner.`);
+    });
+  }
 
   function createSimpleModal(type, title, description, fields) {
     const backdrop = document.createElement('div');
@@ -114,19 +148,23 @@
             const branchCodes = (Array.isArray(record.branchCodes) ? record.branchCodes : record.branchCode ? [record.branchCode] : []).map(String);
             return { ...cleanRecord, facilityId, branchCodes, branchCode: branchCodes[0] || '', roleIds: Array.isArray(record.roleIds) ? record.roleIds : [] };
           });
-          if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
-          return records;
+          const sharedRows = window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, records);
+          const result = sharedRows?.length ? sharedRows : records;
+          if (migrated || sharedRows?.length) localStorage.setItem(storageKey, JSON.stringify(result));
+          return result;
         }
       }
       localStorage.setItem(storageKey, JSON.stringify(usersSeed));
-      window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, usersSeed);
+      const sharedRows = window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, usersSeed);
+      if (sharedRows?.length) { localStorage.setItem(storageKey, JSON.stringify(sharedRows)); return sharedRows; }
     } catch { /* Keep mock state usable if browser storage is unavailable. */ }
     return usersSeed.map((record) => ({ ...record, branchCodes: (record.branchCodes || (record.branchCode ? [record.branchCode] : [])).map(String), roleIds: [...record.roleIds] }));
   }
 
   function save() {
+    const shared = window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, users);
+    if (shared?.length) users = shared;
     try { localStorage.setItem(storageKey, JSON.stringify(users)); } catch { /* Continue with in-memory state. */ }
-    window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, users);
   }
 
   function branchName(code) { return branches.find((item) => String(item.code) === String(code))?.englishName || '—'; }
@@ -190,6 +228,7 @@
     selectedRoleIds = (user?.roleIds || []).map(String);
     assignmentPickerOpen.branch = false; assignmentPickerOpen.role = false;
     userModal.querySelector('[data-user-role-search]').value = '';
+    renderPractitionerChoices(user?.practitionerId || '');
     selectedBranchCodes = user ? userBranchCodes(user) : [];
     userModal.querySelector('[data-user-branch-search]').value = '';
     if (user) {
@@ -347,6 +386,11 @@
     }
   });
   userForm.addEventListener('change', (event) => {
+    const practitionerSelect = event.target.closest('[data-user-practitioner-select]');
+    if (practitionerSelect) {
+      if (practitionerSelect.value === '__create__') { practitionerSelect.value = ''; openCreatePractitioner(); }
+      return;
+    }
     if (event.target.matches('[data-user-branch-choice]')) {
       const branchCode = String(event.target.value);
       selectedBranchCodes = event.target.checked
@@ -391,14 +435,21 @@
       mobile: userForm.elements.namedItem('mobile').value.trim(), userType: userForm.elements.namedItem('userType').value,
       notes: userForm.elements.namedItem('notes').value.trim(),
       branchCode: selectedBranchCodes[0] || '', branchCodes: [...selectedBranchCodes], facilityId, roleIds: [...selectedRoleIds],
+      practitionerId: userForm.elements.namedItem('practitionerId').value || '',
     };
+    const linkedPractitioner = values.practitionerId && (window.RcmOrganizationStaffStore?.list('practitioners') || []).find((item) => String(item.id) === String(values.practitionerId));
+    if (values.practitionerId && (!linkedPractitioner || !(linkedPractitioner.facilityIds || []).map(String).includes(String(facilityId)))) { window.alert('The linked practitioner must be assigned to this facility.'); return; }
+    const currentUser = mode === 'edit' ? userByName(currentUsername) : null;
+    if (linkedPractitioner?.userId && String(linkedPractitioner.userId) !== String(currentUser?.id || '')) { window.alert('This practitioner is already linked to another user. Clear that link first.'); return; }
     if (mode === 'new') {
-      const record = { ...values, active: true }; users.push(record); save();
+      const record = { ...values, id: window.RcmOrganizationStaffStore?.nextId('user') || `user-${Date.now()}`, active: true }; users.push(record); save();
+      window.RcmOrganizationStaffStore?.link('users', record.id, values.practitionerId);
       grid.querySelectorAll('[data-user-filter]').forEach((field) => { field.value = ''; }); appliedFilters = {}; page = Math.ceil(users.length / pageSize);
       closeModal(userModal, false); render(); showToast(`${record.englishName} was created successfully.`);
     } else {
       const record = userByName(currentUsername); if (!record) return;
       Object.assign(record, values); save(); closeModal(userModal, false); render(); showToast(`${record.englishName} was updated successfully.`);
+      window.RcmOrganizationStaffStore?.link('users', record.id, values.practitionerId);
     }
   });
   passwordModal.querySelector('form').addEventListener('submit', (event) => {

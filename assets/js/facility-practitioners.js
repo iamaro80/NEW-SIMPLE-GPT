@@ -10,7 +10,6 @@
   const documentTypes = ['National ID', 'Permanent Resident Card Number', 'Passport number', 'Visitor Permit', 'Medical record number', 'Border Number', 'Displaced person'];
   const specialties = ['Anesthesiology Specialty', 'Ambulatory Anesthesia', 'Anesthesia Cardiology', 'Neuro-Anesthesia', 'Obstetrics Anesthesia', 'Pediatrics Anesthesia', 'Pediatrics Cardiac Anesthesia', 'Regional Anesthesia', 'Vascular / Thoracic Anesthesia', 'Community Medicine Specialty', 'Community Health', 'Dermatology Specialty', 'Dermatology Surgery', 'Hair Implant Dermatology', 'Pediatrics Dermatology', 'Emergency Medicine Specialty', 'Adult Emergency Medicine'];
   const designations = ['Assistant Consultant', 'Assistant Family Therapist II', 'Assistant Psychologist', 'Associate Consultant', 'Board Certified Physician', 'Chairman Medical Imaging', 'Chairman Pediatrics', 'Chief of Medical Staff', 'Clinical Psychologist I', 'Clinical Psychologist II', 'Clinical Scientist', 'Consultant', 'Cytologist', 'PhD', 'IAC', 'Dental Hygienist', 'Dentist', 'Division Head', 'Emergency Consultant'];
-  const users = ['admin', 'test22', 'service-account-realm-admin'];
   const consultationItems = ['(90487-002) ANTENATAL C.T.G. (30 MIN)', '(182519) MYELIN OLIGODENDROCYTE GLYCOPROTEIN ABS TO BIO', '(182476) CENTO ARRAY CYTO HD TO CENTOGENE', '(182453) MSI BY PCR (MICROSATELLITE INSTABILITY BY PCR)', '(182436) CASPR 2 AB', '(182411) MYELOPROLIFERATIVE NEOPLASM (CALR)', '(182407) BRAF (SEND OUT TO UNILABS)', '(182402) NRAS (SEND OUT TO UNILABS)', '(182343) ONCOTYPE DX TEST', '(182264) BRAF-PCR', '(181809) DNA EXTRACTION FOR BANKING', '(132137) KAPPA'];
   const seed = [
     { documentId: '1093847562', englishName: 'Lina Alharbi', arabicName: 'لينا الحربي', departmentCodes: ['DPT-001'], role: 'Doctor', documentType: 'National ID', mobileCode: '+966', mobile: '550123456', phoneCode: '+966', phone: '112345678', prefix: 'Dr.', degree: 'MBBS', licenseNumber: 'SCFHS-48271', licenseStart: '2024-01-01', licenseEnd: '2027-12-31', specialty: 'Community Health', designation: 'Consultant', user: 'admin', followUp: '', lastDesignationUpdate: '2025-06-12', active: true },
@@ -59,14 +58,18 @@
       const data = JSON.parse(localStorage.getItem(storageKey) || 'null');
       if (Array.isArray(data)) {
         const migrated = data.map((record) => ({ ...record, facilityId: String(facilityId), departmentCodes: Array.isArray(record.departmentCodes) ? record.departmentCodes : [] }));
-        if (migrated.some((record, index) => record.facilityId !== String(data[index].facilityId || ''))) localStorage.setItem(storageKey, JSON.stringify(migrated));
-        return migrated;
+        const sharedRows = window.RcmOrganizationStaffStore?.saveFacility('practitioners', facilityId, migrated);
+        const result = sharedRows?.length ? sharedRows : migrated;
+        localStorage.setItem(storageKey, JSON.stringify(result));
+        return result;
       }
     } catch { /* Seed below. */ }
     const initial = seed.map((record) => ({ ...record, departmentCodes: [...record.departmentCodes] }));
     try { localStorage.setItem(storageKey, JSON.stringify(initial)); } catch { /* Keep seed in memory. */ }
-    window.RcmOrganizationStaffStore?.saveFacility('practitioners', facilityId, initial);
-    return initial;
+    const sharedRows = window.RcmOrganizationStaffStore?.saveFacility('practitioners', facilityId, initial);
+    const result = sharedRows?.length ? sharedRows : initial;
+    try { localStorage.setItem(storageKey, JSON.stringify(result)); } catch { /* Store memory rows when local storage is unavailable. */ }
+    return result;
   }
   let departments = departmentRecordsFor(facilityId);
   let selectedFormFacilityId = String(facilityId);
@@ -78,18 +81,27 @@
   let toastTimer;
   let appliedFilters = {};
   const toast = document.querySelector('[data-facility-toast]');
+  function linkedUsers(currentUserId = '') {
+    return (window.RcmOrganizationStaffStore?.forFacility('users', facilityId) || [])
+      .filter((user) => !user.practitionerId || String(user.id) === String(currentUserId || ''));
+  }
+  function renderUserChoices(selectedId = '') {
+    const select = form.elements.namedItem('userId'); if (!select) return;
+    const available = linkedUsers(selectedId);
+    select.innerHTML = `<option value="">No user linked</option>${available.map((user) => `<option value="${escapeHtml(user.id)}" ${String(user.id) === String(selectedId) ? 'selected' : ''}>${escapeHtml(user.englishName || user.username)} · ${escapeHtml(user.username || '')}</option>`).join('')}<option value="__create__">+ Create New User</option>`;
+  }
 
   grid.innerHTML = `<div class="branches-toolbar"><div class="branches-add-row"><button class="button button-primary" type="button" data-practitioner-add>${icons.add}Add Practitioner</button></div>
     <div class="branches-filter-grid practitioner-filter-grid" role="search" aria-label="Filter practitioners">
       <label class="facility-filter"><span>Document ID</span><input type="search" data-practitioner-filter="documentId" placeholder="Search document ID"></label>
-      <label class="facility-filter"><span>English Name</span><input type="search" data-practitioner-filter="englishName" placeholder="Search name"></label>
+      <label class="facility-filter"><span>Name</span><input type="search" data-practitioner-filter="englishName" placeholder="Search name"></label>
       <label class="facility-filter"><span>Department</span><select data-practitioner-filter="department"><option value="">All departments</option></select></label>
       <label class="facility-filter"><span>Practitioner Role</span><select data-practitioner-filter="role">${selectOptions(roles, 'All roles')}</select></label>
       <label class="facility-filter"><span>Specialty</span><input type="search" data-practitioner-filter="specialty" placeholder="Search specialty"></label>
       <label class="facility-filter"><span>Designation</span><input type="search" data-practitioner-filter="designation" placeholder="Search designation"></label>
       <label class="facility-filter"><span>Status</span><select data-practitioner-filter="status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
     </div></div>
-    <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table practitioners-table"><thead><tr><th>Document ID</th><th>English Name</th><th>Department(s)</th><th>Practitioner Role</th><th>Specialty</th><th>Designation</th><th>Status</th><th>Actions</th></tr></thead><tbody data-practitioner-rows></tbody></table></div><div class="facility-empty" data-practitioner-empty hidden>No practitioners match your filters.</div><footer class="facility-pagination"><span data-practitioner-result-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-practitioner-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-practitioner-page="previous" aria-label="Previous page">‹</button><span data-practitioner-page-label></span><button class="icon-button" type="button" data-practitioner-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-practitioner-page="last" aria-label="Last page">»</button></div></footer></div>`;
+    <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table practitioners-table"><thead><tr><th>Document ID</th><th>Name</th><th>Department(s)</th><th>Practitioner Role</th><th>Specialty</th><th>Designation</th><th>Status</th><th>Actions</th></tr></thead><tbody data-practitioner-rows></tbody></table></div><div class="facility-empty" data-practitioner-empty hidden>No practitioners match your filters.</div><footer class="facility-pagination"><span data-practitioner-result-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-practitioner-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-practitioner-page="previous" aria-label="Previous page">‹</button><span data-practitioner-page-label></span><button class="icon-button" type="button" data-practitioner-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-practitioner-page="last" aria-label="Last page">»</button></div></footer></div>`;
   const modal = document.createElement('div');
   modal.className = 'patient-modal-backdrop'; modal.id = 'practitioner-modal'; modal.hidden = true;
   modal.innerHTML = `<section class="patient-modal practitioner-modal" role="dialog" aria-modal="true" aria-labelledby="practitioner-modal-title" aria-describedby="practitioner-modal-description"><header class="patient-modal-header"><div><p class="eyebrow">PRACTITIONER RECORD</p><h2 id="practitioner-modal-title">Add Practitioner</h2><p id="practitioner-modal-description">Enter practitioner information.</p></div><button class="icon-button" type="button" data-practitioner-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
@@ -110,7 +122,7 @@
         <label class="form-field"><span>License Number</span><input name="licenseNumber"></label>
         <label class="form-field"><span>License Start</span><input name="licenseStart" type="date"></label>
         <label class="form-field"><span>License End</span><input name="licenseEnd" type="date"></label>
-        <label class="form-field"><span>User</span><select name="user">${selectOptions(users, 'Select user')}</select></label>
+        <label class="form-field practitioner-linked-field"><span>User</span><select name="userId" data-practitioner-user-select><option value="">No user linked</option><option value="__create__">+ Create New User</option></select><small>Link an existing user or create one from this form.</small></label>
         <label class="form-field"><span>Consultation Item</span><select name="consultationItem">${selectOptions(consultationItems, 'Search or select consultation item')}</select></label>
         <label class="form-field"><span>Follow Up</span><select name="followUp">${selectOptions(consultationItems.slice(0, 6), 'Select follow up item')}</select></label>
         <label class="form-field"><span>Last Designation Update On</span><input name="lastDesignationUpdate" readonly value="—"></label>
@@ -135,15 +147,39 @@
   const departmentToggle = form.querySelector('[data-department-toggle]');
   let selectedDepartmentCodes = [];
   let departmentPickerOpen = false;
-  const valuesToSave = ['facilityId','documentId','englishName','arabicName','email','mobileCode','mobile','phoneCode','phone','extension','role','documentType','prefix','degree','licenseNumber','licenseStart','licenseEnd','user','consultationItem','followUp','lastDesignationUpdate','specialty','designation'];
+  const valuesToSave = ['facilityId','documentId','englishName','arabicName','email','mobileCode','mobile','phoneCode','phone','extension','role','documentType','prefix','degree','licenseNumber','licenseStart','licenseEnd','userId','consultationItem','followUp','lastDesignationUpdate','specialty','designation'];
   const scfhsFields = ['scfhsCategoryCode','scfhsCategoryNameEn','scfhsSpecialityCode','scfhsSpecialityNameEn','scfhsCategoryNameAr','scfhsSpecialityNameAr'];
   const allFields = [...valuesToSave, ...scfhsFields];
 
   function persist() {
+    const sharedRows = window.RcmOrganizationStaffStore?.saveFacility('practitioners', facilityId, records);
+    if (sharedRows?.length) records = sharedRows;
     try { localStorage.setItem(storageKey, JSON.stringify(records)); } catch { /* Keep changes in memory if storage is unavailable. */ }
-    window.RcmOrganizationStaffStore?.saveFacility('practitioners', facilityId, records);
   }
   function showToast(message) { if (!toast) return; toast.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2300); }
+  function openCreateUser() {
+    const practitioner = Object.fromEntries(['englishName','arabicName','email','mobileCode','mobile'].map((name) => [name, form.elements.namedItem(name).value.trim()]));
+    const branchKey = `rcm-facility-branches:v1:${facilityId}`;
+    let branches = []; try { branches = JSON.parse(localStorage.getItem(branchKey) || '[]'); } catch { branches = []; }
+    const roles = window.RcmOrganizationStaffStore?.forFacility('roles', facilityId) || [];
+    const child = document.createElement('div'); child.className = 'patient-modal-backdrop practitioner-child-backdrop';
+    child.innerHTML = `<section class="patient-modal practitioner-child-modal" role="dialog" aria-modal="true"><header class="patient-modal-header"><div><p class="eyebrow">USER RECORD</p><h2>Create User</h2><p>Saved immediately. It will link when you save this practitioner.</p></div><button class="icon-button" type="button" data-child-close aria-label="Close">×</button></header><form><div class="patient-modal-body"><fieldset class="patient-form-section"><legend class="sr-only">User Information</legend><div class="facility-form-section-heading">User Information</div><div class="patient-form-grid"><label class="form-field"><span>Arabic Name <b>*</b></span><input name="arabicName" dir="rtl" required value="${escapeHtml(practitioner.arabicName)}"></label><label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required value="${escapeHtml(practitioner.englishName)}"></label><label class="form-field"><span>User Name <b>*</b></span><input name="username" required autocomplete="off"></label><label class="form-field"><span>Email <b>*</b></span><input name="email" type="email" required value="${escapeHtml(practitioner.email)}"></label><label class="form-field"><span>Mobile Number <b>*</b></span><span class="phone-control"><select name="mobileCode"><option ${practitioner.mobileCode === '+966' || !practitioner.mobileCode ? 'selected' : ''}>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="mobile" type="tel" required value="${escapeHtml(practitioner.mobile)}"></span></label><label class="form-field"><span>User Type <b>*</b></span><select name="userType" required><option>Employee</option><option>Business Center</option><option>Overtimer</option><option>System Administrator</option></select></label><label class="form-field"><span>Notes</span><textarea name="notes" rows="3"></textarea></label></div></fieldset><fieldset class="patient-form-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><p class="muted">${escapeHtml(currentFacility.englishName || 'Current Facility')}</p><div class="patient-form-grid"><div class="form-field"><span>Branches</span><div class="practitioner-child-checklist">${branches.map((item) => `<label class="form-check"><input type="checkbox" name="branchCodes" value="${escapeHtml(item.code)}"><span>${escapeHtml(item.englishName || item.name || item.code)}</span></label>`).join('') || '<small>No branches available.</small>'}</div></div><div class="form-field"><span>Roles</span><div class="practitioner-child-checklist">${roles.filter((role) => role.active).map((role) => `<label class="form-check"><input type="checkbox" name="roleIds" value="${escapeHtml(role.id)}"><span>${escapeHtml(role.englishName)}</span></label>`).join('') || '<small>No active roles available.</small>'}</div></div></div></fieldset></div><footer class="patient-modal-footer"><span><small><b>*</b> Required fields</small></span><div><button type="button" class="button button-secondary" data-child-cancel>Cancel</button><button type="submit" class="button button-primary">Create User</button></div></footer></form></section>`;
+    document.body.append(child); child.querySelector('input[name="username"]').focus();
+    const close = () => child.remove();
+    child.querySelectorAll('[data-child-close],[data-child-cancel]').forEach((button) => button.addEventListener('click', close));
+    child.addEventListener('click', (event) => { if (event.target === child) close(); });
+    child.querySelector('form').addEventListener('submit', (event) => {
+      event.preventDefault(); const childForm = event.currentTarget; if (!childForm.reportValidity()) return;
+      const username = childForm.elements.username.value.trim();
+      const existing = window.RcmOrganizationStaffStore?.list('users') || [];
+      if (existing.some((user) => String(user.username || '').toLocaleLowerCase() === username.toLocaleLowerCase())) { childForm.elements.username.setCustomValidity('User Name already exists.'); childForm.reportValidity(); return; }
+      const user = { id: window.RcmOrganizationStaffStore?.nextId('user') || `user-${Date.now()}`, arabicName: childForm.elements.arabicName.value.trim(), englishName: childForm.elements.englishName.value.trim(), username, email: childForm.elements.email.value.trim(), mobileCode: childForm.elements.mobileCode.value, mobile: childForm.elements.mobile.value.trim(), userType: childForm.elements.userType.value, notes: childForm.elements.notes.value.trim(), active: true, facilityIds: [String(facilityId)], branchCodes: [...childForm.querySelectorAll('[name="branchCodes"]:checked')].map((input) => input.value), roleIds: [...childForm.querySelectorAll('[name="roleIds"]:checked')].map((input) => input.value), branchCode: '', facilityId: String(facilityId) };
+      user.branchCode = user.branchCodes[0] || '';
+      window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, [...(window.RcmOrganizationStaffStore?.forFacility('users', facilityId) || []), user]);
+      const select = form.elements.namedItem('userId'); renderUserChoices(user.id); select.value = user.id;
+      close(); showToast(`${user.englishName} was created. Save the practitioner to link this user.`);
+    });
+  }
   function departmentName(code, targetFacilityId = selectedFormFacilityId) {
     const source = departmentRecordsFor(targetFacilityId);
     return source.find((item) => String(item.code) === String(code))?.name || source.find((item) => String(item.code) === String(code))?.englishName || `Department ${code}`;
@@ -239,6 +275,7 @@
       }
       field.value = value;
     });
+    renderUserChoices(isNew ? '' : record?.userId || '');
     setFormFacility(isNew ? [] : record.departmentCodes || []);
     if (nextMode === 'view') setReadOnly(true);
     modal.hidden = false; document.body.classList.add('patient-modal-open'); modal.querySelector('[data-practitioner-close]').focus();
@@ -250,6 +287,11 @@
     currentPage = 1; closeMenus(); render();
   }));
   grid.querySelector('[data-practitioner-add]').addEventListener('click', (event) => openModal('new', null, event.currentTarget));
+  form.elements.namedItem('userId').addEventListener('change', (event) => {
+    if (event.currentTarget.value !== '__create__') return;
+    event.currentTarget.value = '';
+    openCreateUser();
+  });
   grid.querySelectorAll('[data-practitioner-page]').forEach((button) => button.addEventListener('click', () => { const pages = Math.max(1, Math.ceil(filteredRecords().length / pageSize)); if (button.dataset.practitionerPage === 'first') currentPage = 1; if (button.dataset.practitionerPage === 'previous') currentPage = Math.max(1, currentPage - 1); if (button.dataset.practitionerPage === 'next') currentPage = Math.min(pages, currentPage + 1); if (button.dataset.practitionerPage === 'last') currentPage = pages; closeMenus(); render(); }));
   searchDepartment.addEventListener('input', () => drawDepartmentChoices());
   searchDepartment.addEventListener('focus', () => { if (mode !== 'view') setDepartmentPickerOpen(true); });
@@ -293,9 +335,18 @@
     event.preventDefault(); validateDepartmentSelection(); if (!form.reportValidity()) return;
     const values = Object.fromEntries(allFields.map((name) => [name, form.elements.namedItem(name).value.trim()]));
     values.departmentCodes = selectedDepartments();
-    if (mode === 'new') { if (records.some((record) => record.documentId === values.documentId)) { form.elements.namedItem('documentId').setCustomValidity('A practitioner with this Document ID already exists.'); form.reportValidity(); return; } values.active = true; records.push(values); }
-    else { const record = records.find((item) => item.documentId === activeDocumentId); if (!record) return; if (records.some((item) => item !== record && item.documentId === values.documentId)) { form.elements.namedItem('documentId').setCustomValidity('A practitioner with this Document ID already exists.'); form.reportValidity(); return; } Object.assign(record, values); }
-    persist(); grid.querySelectorAll('[data-practitioner-filter]').forEach((field) => { field.value = ''; }); appliedFilters = {}; currentPage = Math.ceil(records.length / pageSize); closeModal(); render(); showToast(`${values.englishName} was ${mode === 'new' ? 'created' : 'updated'} successfully.`);
+    const selectedUser = values.userId && (window.RcmOrganizationStaffStore?.list('users') || []).find((user) => String(user.id) === String(values.userId));
+    if (values.userId && (!selectedUser || !(selectedUser.facilityIds || []).map(String).includes(String(facilityId)))) { window.alert('The linked user must be assigned to this facility.'); return; }
+    if (selectedUser?.practitionerId && String(selectedUser.practitionerId) !== String(records.find((item) => item.documentId === activeDocumentId)?.id || '')) { window.alert('This user is already linked to another practitioner. Clear that link first.'); return; }
+    let savedRecord;
+    if (mode === 'new') { if (records.some((record) => record.documentId === values.documentId)) { form.elements.namedItem('documentId').setCustomValidity('A practitioner with this Document ID already exists.'); form.reportValidity(); return; } values.id = window.RcmOrganizationStaffStore?.nextId('practitioner') || `practitioner-${Date.now()}`; values.active = true; records.push(values); savedRecord = values; }
+    else { const record = records.find((item) => item.documentId === activeDocumentId); if (!record) return; if (records.some((item) => item !== record && item.documentId === values.documentId)) { form.elements.namedItem('documentId').setCustomValidity('A practitioner with this Document ID already exists.'); form.reportValidity(); return; } Object.assign(record, values); savedRecord = record; }
+    persist();
+    if (savedRecord.id) {
+      const linked = window.RcmOrganizationStaffStore?.link('practitioners', savedRecord.id, values.userId || '');
+      if (linked && !linked.ok) { window.alert(linked.reason === 'facility-mismatch' ? 'The linked records must share a facility.' : 'The selected user is already linked elsewhere.'); return; }
+    }
+    grid.querySelectorAll('[data-practitioner-filter]').forEach((field) => { field.value = ''; }); appliedFilters = {}; currentPage = Math.ceil(records.length / pageSize); closeModal(); render(); showToast(`${values.englishName} was ${mode === 'new' ? 'created' : 'updated'} successfully.`);
   });
   form.elements.namedItem('documentId').addEventListener('input', (event) => event.currentTarget.setCustomValidity(''));
   modal.querySelector('[data-practitioner-close]').addEventListener('click', closeModal);
