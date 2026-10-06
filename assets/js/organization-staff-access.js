@@ -34,6 +34,7 @@
     return roleChoices(selectedIds).map((role) => ({ value: String(role.id), label: role.englishName, detail: role.arabicName, inactive: !role.active }));
   };
   const assignmentPickerState = {};
+  const practitionerAssignmentView = { facilityQuery: '', activeFacilityId: '', departmentQueries: {}, mobileStep: 'facilities' };
   const assignmentLabel = { department: 'Departments', branch: 'Branches', role: 'Roles' };
   function renderAssignmentPicker(kind, id, selectedIds, readOnly) {
     const key = `${kind}:${id}`, state = assignmentPickerState[key] || { open: false, query: '' };
@@ -72,17 +73,18 @@
           ? { branchCodes: (Array.isArray(record.assignmentsByFacility?.[key]?.branchCodes) ? record.assignmentsByFacility[key].branchCodes : record.assignmentsByFacility?.[key]?.branchCode ? [record.assignmentsByFacility[key].branchCode] : []).map(String), roleIds: [...(record.assignmentsByFacility?.[key]?.roleIds || [])] }
           : {};
     });
+    if (activeKind === 'practitioners' && mode === 'new') {
+      const focused = document.body.dataset.organizationFacilityId || window.location.hash.match(/^#facilities\/(\d+)\//)?.[1];
+      if (focused && facilities.some((facility) => String(facility.id) === String(focused))) result[String(focused)] ||= { departmentCodes: [] };
+    }
     return result;
   }
   function renderAssignments(selected, readOnly) {
+    if (activeKind === 'practitioners') return renderPractitionerAssignments(selected, readOnly);
     const ids = Object.keys(selected);
     const selector = `<div class="facility-assignment-picks">${facilities.map((f) => `<label class="form-check"><input type="checkbox" data-org-facility="${esc(f.id)}" ${ids.includes(String(f.id)) ? 'checked' : ''} ${readOnly ? 'disabled' : ''}><span>${esc(f.englishName)}</span></label>`).join('')}</div>`;
     const panels = ids.map((id) => {
       const name = facilityName(id);
-      if (activeKind === 'practitioners') {
-        const list = departments(id), chosen = selected[id]?.departmentCodes || [];
-        return `<div class="organization-assignment-panel"><strong>${esc(name)} · Departments <b>*</b></strong>${renderAssignmentPicker('department', id, chosen, readOnly)}<small class="organization-assignment-help">Select at least one department for this facility.</small></div>`;
-      }
       if (activeKind === 'users') {
         const branchCodes = selected[id]?.branchCodes || [], roleIds = selected[id]?.roleIds || [];
         return `<div class="organization-assignment-panel"><strong>${esc(name)}</strong><div class="organization-assignment-subfield"><span>Branches <small>(optional)</small></span>${renderAssignmentPicker('branch', id, branchCodes, readOnly)}</div><div class="organization-assignment-subfield"><span>Roles <small>(optional)</small></span>${renderAssignmentPicker('role', id, roleIds, readOnly)}</div></div>`;
@@ -90,6 +92,54 @@
       return '';
     }).join('');
     return `${selector}${panels}`;
+  }
+  function practitionerFacilityChoices() {
+    const match = window.location.hash.match(/^#facilities\/(\d+)\//);
+    const focusedId = document.body.dataset.organizationFacilityId || match?.[1];
+    return focusedId ? facilities.filter((facility) => String(facility.id) === String(focusedId)) : facilities;
+  }
+  function renderPractitionerAssignments(selected, readOnly) {
+    const choices = practitionerFacilityChoices();
+    const ids = Object.keys(selected).map(String);
+    const activeId = choices.some((facility) => String(facility.id) === String(practitionerAssignmentView.activeFacilityId))
+      ? String(practitionerAssignmentView.activeFacilityId)
+      : choices.find((facility) => ids.includes(String(facility.id)))?.id?.toString() || String(choices[0]?.id || '');
+    practitionerAssignmentView.activeFacilityId = activeId;
+    const activeFacility = choices.find((facility) => String(facility.id) === activeId);
+    const activeDepartments = activeFacility ? departments(activeId) : [];
+    const chosen = selected[activeId]?.departmentCodes || [];
+    const departmentQuery = practitionerAssignmentView.departmentQueries[activeId] || '';
+    const departmentNeedle = departmentQuery.trim().toLocaleLowerCase();
+    const filteredDepartments = activeDepartments.filter((department) => `${department.name} ${department.code}`.toLocaleLowerCase().includes(departmentNeedle));
+    const facilityNeedle = practitionerAssignmentView.facilityQuery.trim().toLocaleLowerCase();
+    const facilityRows = choices.filter((facility) => facility.englishName.toLocaleLowerCase().includes(facilityNeedle)).map((facility) => {
+      const id = String(facility.id), assignedCodes = selected[id]?.departmentCodes || [], isActive = id === activeId;
+      return `<div class="organization-facility-choice ${isActive ? 'is-inspected' : ''}" role="listitem"><input type="checkbox" data-org-facility="${esc(id)}" aria-label="Assign ${esc(facility.englishName)}" ${ids.includes(id) ? 'checked' : ''} ${readOnly ? 'disabled' : ''}><button type="button" class="organization-facility-inspect" data-inspect-facility="${esc(id)}" aria-current="${isActive ? 'true' : 'false'}"><span class="organization-facility-choice-name">${esc(facility.englishName)}</span><span class="organization-facility-choice-meta">${assignedCodes.length} ${assignedCodes.length === 1 ? 'department' : 'departments'} selected</span><span class="organization-facility-choice-chevron" aria-hidden="true">›</span></button></div>`;
+    }).join('') || '<div class="organization-assignment-empty">No facilities match your search.</div>';
+    const departmentRows = filteredDepartments.map((department) => {
+      const isSelected = chosen.map(String).includes(String(department.code));
+      return `<label class="organization-department-choice"><input type="checkbox" data-practitioner-department value="${esc(department.code)}" ${isSelected ? 'checked' : ''} ${readOnly ? 'disabled' : ''}><span>${esc(department.name)}</span><small>${esc(department.code)}</small></label>`;
+    }).join('') || `<div class="organization-assignment-empty">${activeDepartments.length ? 'No departments match your search.' : 'No departments are available for this facility. Add departments in Facility Setup first.'}</div>`;
+    const selectedFacilityCount = ids.length;
+    const selectedDepartmentCount = Object.values(selected).reduce((total, assignment) => total + (assignment.departmentCodes || []).length, 0);
+    const visibleCodes = filteredDepartments.map((department) => String(department.code));
+    const selectedVisible = visibleCodes.filter((code) => chosen.map(String).includes(code)).length;
+    const selectAllLabel = departmentNeedle ? 'Select all results' : 'Select all';
+    const controls = readOnly ? '' : `<div class="organization-department-actions"><button type="button" data-departments-select-all ${filteredDepartments.length ? '' : 'disabled'}>${selectAllLabel}</button><button type="button" data-departments-clear ${selectedVisible ? '' : 'disabled'}>Clear all</button></div>`;
+    const backButton = `<button type="button" class="organization-assignment-back" data-assignment-back>‹ Back to facilities</button>`;
+    return `<div class="organization-practitioner-picker ${practitionerAssignmentView.mobileStep === 'departments' ? 'is-mobile-detail' : ''}" data-practitioner-picker>
+      <div class="organization-facility-pane" aria-label="Facilities">
+        <div class="organization-assignment-pane-heading"><strong>Facilities</strong><span>${selectedFacilityCount} assigned</span></div>
+        ${readOnly ? '' : `<label class="organization-assignment-search"><span class="sr-only">Search facilities</span><input type="search" data-facility-assignment-search placeholder="Search facilities..." value="${esc(practitionerAssignmentView.facilityQuery)}"></label>`}
+        <div class="organization-facility-list" role="list">${facilityRows}</div>
+      </div>
+      <section class="organization-department-pane" aria-label="Departments for ${esc(activeFacility?.englishName || 'selected facility')}">
+        ${backButton}
+        ${activeFacility ? `<div class="organization-assignment-pane-heading organization-department-heading"><div><span class="organization-department-context">Current facility</span><strong>${esc(activeFacility.englishName)}</strong></div><span>${chosen.length} selected</span></div>` : '<div class="organization-assignment-empty">Select a facility to see its departments.</div>'}
+        ${activeFacility ? `<label class="organization-assignment-search"><span class="sr-only">Search departments</span><input type="search" data-department-assignment-search="${esc(activeId)}" placeholder="Search departments..." value="${esc(departmentQuery)}" ${readOnly ? 'disabled' : ''}></label>${controls}<div class="organization-department-list" role="group" aria-label="Departments in ${esc(activeFacility.englishName)}">${departmentRows}</div>` : ''}
+      </section>
+      <footer class="organization-assignment-summary"><span><strong>${selectedFacilityCount}</strong> ${selectedFacilityCount === 1 ? 'facility' : 'facilities'} · <strong>${selectedDepartmentCount}</strong> ${selectedDepartmentCount === 1 ? 'department' : 'departments'} selected</span><small>At least one department is required for each assigned facility.</small></footer>
+    </div>`;
   }
   function formMarkup(record) {
     const selected = assignmentState(record), readOnly = mode === 'view';
@@ -112,6 +162,10 @@
     const eventOptions = { signal: dialogEventsController.signal };
     mode = nextMode; modalRecordId = record?.id || null;
     Object.keys(assignmentPickerState).forEach((key) => { delete assignmentPickerState[key]; });
+    practitionerAssignmentView.facilityQuery = '';
+    practitionerAssignmentView.departmentQueries = {};
+    practitionerAssignmentView.activeFacilityId = '';
+    practitionerAssignmentView.mobileStep = 'facilities';
     const title = `${mode === 'new' ? 'Add' : mode === 'edit' ? 'Edit' : 'View'} ${activeKind === 'roles' ? 'Role' : activeKind === 'users' ? 'User' : 'Practitioner'}`;
     dialog.className = 'patient-modal facility-modal organization-staff-modal';
     const description = mode === 'view' ? 'Read-only record details.' : activeKind === 'roles' ? 'Manage this organization-wide role and its permissions.' : 'Manage this record and its facility assignments.';
@@ -129,13 +183,30 @@
     dialog.addEventListener('change', (event) => {
       const checkbox = event.target.closest('[data-org-facility]');
       if (checkbox) {
-      const id = String(checkbox.dataset.orgFacility);
-      if (checkbox.checked) selected[id] ||= activeKind === 'practitioners' ? { departmentCodes: [] } : { branchCodes: [], roleIds: [] };
-      else {
-        delete selected[id];
-        Object.keys(assignmentPickerState).filter((key) => key.endsWith(`:${id}`)).forEach((key) => { delete assignmentPickerState[key]; });
+        const id = String(checkbox.dataset.orgFacility);
+        if (checkbox.checked) selected[id] ||= activeKind === 'practitioners' ? { departmentCodes: [] } : { branchCodes: [], roleIds: [] };
+        else {
+          const assignedDepartments = selected[id]?.departmentCodes || [];
+          if (activeKind === 'practitioners' && assignedDepartments.length && !window.confirm(`Unassigning ${facilityName(id)} will remove its ${assignedDepartments.length} department ${assignedDepartments.length === 1 ? 'assignment' : 'assignments'}. Continue?`)) {
+            refreshAssignments();
+            return;
+          }
+          delete selected[id];
+          Object.keys(assignmentPickerState).filter((key) => key.endsWith(`:${id}`)).forEach((key) => { delete assignmentPickerState[key]; });
+        }
+        refreshAssignments();
+        return;
       }
-      refreshAssignments();
+      const department = event.target.closest('[data-practitioner-department]');
+      if (department) {
+        const id = String(practitionerAssignmentView.activeFacilityId), codes = new Set((selected[id]?.departmentCodes || []).map(String));
+        if (department.checked) {
+          selected[id] ||= { departmentCodes: [] };
+          codes.add(String(department.value));
+        } else codes.delete(String(department.value));
+        selected[id] ||= { departmentCodes: [] };
+        selected[id].departmentCodes = [...codes];
+        refreshAssignments();
         return;
       }
       const option = event.target.closest('[data-assignment-option]');
@@ -150,6 +221,25 @@
       refreshAssignments();
     }, eventOptions);
     dialog.addEventListener('input', (event) => {
+      const facilitySearch = event.target.closest('[data-facility-assignment-search]');
+      if (facilitySearch) {
+        practitionerAssignmentView.facilityQuery = facilitySearch.value;
+        const cursor = facilitySearch.selectionStart;
+        refreshAssignments();
+        const next = dialog.querySelector('[data-facility-assignment-search]');
+        next?.focus(); next?.setSelectionRange(cursor, cursor);
+        return;
+      }
+      const departmentSearch = event.target.closest('[data-department-assignment-search]');
+      if (departmentSearch) {
+        const id = String(departmentSearch.dataset.departmentAssignmentSearch);
+        practitionerAssignmentView.departmentQueries[id] = departmentSearch.value;
+        const cursor = departmentSearch.selectionStart;
+        refreshAssignments();
+        const next = dialog.querySelector(`[data-department-assignment-search="${CSS.escape(id)}"]`);
+        next?.focus(); next?.setSelectionRange(cursor, cursor);
+        return;
+      }
       const input = event.target.closest('[data-assignment-search]');
       if (!input) return;
       const kind = input.dataset.assignmentSearch, id = String(input.dataset.facilityId), key = `${kind}:${id}`;
@@ -160,6 +250,40 @@
       next?.focus(); next?.setSelectionRange(cursor, cursor);
     }, eventOptions);
     dialog.addEventListener('click', (event) => {
+      const inspector = event.target.closest('[data-inspect-facility]');
+      if (inspector) {
+        practitionerAssignmentView.activeFacilityId = String(inspector.dataset.inspectFacility);
+        practitionerAssignmentView.mobileStep = 'departments';
+        refreshAssignments();
+        return;
+      }
+      if (event.target.closest('[data-assignment-back]')) {
+        practitionerAssignmentView.mobileStep = 'facilities';
+        refreshAssignments();
+        dialog.querySelector('[data-facility-assignment-search]')?.focus();
+        return;
+      }
+      if (event.target.closest('[data-departments-select-all]')) {
+        const id = String(practitionerAssignmentView.activeFacilityId), query = practitionerAssignmentView.departmentQueries[id] || '';
+        const visibleCodes = departments(id).filter((department) => `${department.name} ${department.code}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())).map((department) => String(department.code));
+        if (visibleCodes.length) {
+          selected[id] ||= { departmentCodes: [] };
+          selected[id].departmentCodes = [...new Set([...(selected[id].departmentCodes || []).map(String), ...visibleCodes])];
+        }
+        refreshAssignments();
+        return;
+      }
+      if (event.target.closest('[data-departments-clear]')) {
+        const id = String(practitionerAssignmentView.activeFacilityId), query = (practitionerAssignmentView.departmentQueries[id] || '').trim().toLocaleLowerCase();
+        const visibleCodes = departments(id).filter((department) => `${department.name} ${department.code}`.toLocaleLowerCase().includes(query)).map((department) => String(department.code));
+        const selectedCodes = selected[id]?.departmentCodes || [];
+        const remaining = selectedCodes.filter((code) => !visibleCodes.includes(String(code)));
+        if (!remaining.length && selectedCodes.length && !window.confirm(`Clearing these departments will unassign ${facilityName(id)}. Continue?`)) return;
+        if (remaining.length) selected[id].departmentCodes = remaining;
+        else delete selected[id];
+        refreshAssignments();
+        return;
+      }
       const remove = event.target.closest('[data-assignment-remove]');
       if (remove) {
         const id = String(remove.dataset.facilityId), kind = remove.dataset.assignmentKind;
