@@ -49,6 +49,38 @@
     Object.entries(missing).forEach(([kind, wasMissing]) => { if (wasMissing) write(kind, kind === 'practitioners' ? practitioners : kind === 'users' ? users : roles); });
   }
 
+  // Organization roles are globally available; user assignments remain facility-specific.
+  const organizationFacilityIds = facilities.map((facility) => String(facility.id));
+  let rolesChanged = false, usersChanged = false;
+  const roleIdMap = new Map(), roleBySignature = new Map(), organizationRoles = [];
+  roles.forEach((role) => {
+    const permissionIds = [...new Set((role.permissionIds || []).map(String))].sort();
+    const signature = [String(role.englishName || '').trim().toLocaleLowerCase(), String(role.arabicName || '').trim(), Boolean(role.active), permissionIds.join('|')].join('::');
+    let canonical = roleBySignature.get(signature);
+    if (!canonical) {
+      canonical = { ...role, permissionIds };
+      roleBySignature.set(signature, canonical);
+      organizationRoles.push(canonical);
+    } else rolesChanged = true;
+    roleIdMap.set(String(role.id), canonical.id);
+  });
+  roles = organizationRoles.map((role) => {
+    const normalizedIds = [...organizationFacilityIds];
+    if (role.organizationWide !== true || JSON.stringify((role.facilityIds || []).map(String)) !== JSON.stringify(normalizedIds)) rolesChanged = true;
+    return { ...role, facilityIds: normalizedIds, organizationWide: true };
+  });
+  users = users.map((user) => {
+    const assignmentsByFacility = { ...(user.assignmentsByFacility || {}) };
+    Object.entries(assignmentsByFacility).forEach(([fid, assignment]) => {
+      const prior = (assignment.roleIds || []).map(String), roleIds = [...new Set(prior.map((id) => roleIdMap.get(id) || id))];
+      if (roleIds.length !== prior.length || roleIds.some((id, index) => id !== prior[index])) usersChanged = true;
+      assignmentsByFacility[fid] = { ...assignment, roleIds };
+    });
+    return { ...user, assignmentsByFacility };
+  });
+  if (rolesChanged) write('roles', roles);
+  if (usersChanged) write('users', users);
+
   const idFor = (kind) => `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const facilityRows = (kind, facilityId) => {
