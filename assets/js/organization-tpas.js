@@ -2,8 +2,11 @@
   const grid = document.querySelector('[data-tpas-grid]');
   if (!grid) return;
 
+  const organizationView = document.body.dataset.facilityContext === 'organization';
   const facilityId = String(document.body.dataset.currentFacilityId || '1');
+  const facilities = organizationView ? (window.RcmFacilityStore?.list?.() || []).map((facility) => ({ ...facility, id: String(facility.id) })) : [];
   const storageKey = `rcm-facility-tpas:v1:${facilityId}`;
+  const storageKeyFor = (id) => `rcm-facility-tpas:v1:${id}`;
   const providers = ['GlobeMed Saudi', 'Nextcare', 'Mednet', 'Totalcare', 'GFGq'];
   const countries = ['Saudi Arabia', 'Bahrain', 'Kuwait', 'United Arab Emirates'];
   const cities = ['Tabuk', 'Hail', 'Badr', 'Al Kharj', 'Ad Dilam', 'Al Marmuthah', 'Makkah', 'Riyadh', 'Dammam', 'Jeddah', 'At Taif', 'Buraidah', 'Al Hafuf', 'Madinah', 'Abha', 'Jazan', 'Al Khobar'];
@@ -30,6 +33,7 @@
   grid.innerHTML = `<div class="branches-toolbar">
     <div class="branches-add-row"><button class="button button-primary" type="button" data-tpa-add>${icons.add}Add TPA</button></div>
     <div class="branches-filter-grid tpa-filter-grid" role="search" aria-label="Filter TPAs">
+      ${organizationView ? `<label class="facility-filter"><span>Facility</span><select data-tpa-filter="facilityId"><option value="">All facilities</option>${facilities.map((facility) => `<option value="${escapeHtml(facility.id)}">${escapeHtml(facility.englishName)}</option>`).join('')}</select></label>` : ''}
       <label class="facility-filter"><span>TPA</span><select data-tpa-filter="provider">${options(providers, 'All TPAs')}</select></label>
       <label class="facility-filter"><span>NHIC Number</span><input type="search" data-tpa-filter="nhicNumber" placeholder="Search NHIC number"></label>
       <label class="facility-filter"><span>Unified Number</span><input type="search" data-tpa-filter="unifiedNumber" placeholder="Search unified number"></label>
@@ -39,10 +43,11 @@
       <label class="facility-filter"><span>Status</span><select data-tpa-filter="status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
     </div>
   </div>
-  <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table tpa-table"><thead><tr><th>TPA</th><th>NHIC Number</th><th>Unified Number</th><th>English Name</th><th>Country</th><th>City</th><th>Status</th><th>Actions</th></tr></thead><tbody data-tpa-rows></tbody></table></div><div class="facility-empty" data-tpa-empty hidden>No TPAs match your filters.</div><footer class="facility-pagination"><span data-tpa-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-tpa-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-tpa-page="previous" aria-label="Previous page">‹</button><span data-tpa-page-label></span><button class="icon-button" type="button" data-tpa-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-tpa-page="last" aria-label="Last page">»</button></div></footer></div>`;
+  <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table tpa-table"><thead><tr>${organizationView ? '<th>Facility</th>' : ''}<th>TPA</th><th>NHIC Number</th><th>Unified Number</th><th>English Name</th><th>Country</th><th>City</th><th>Status</th><th>Actions</th></tr></thead><tbody data-tpa-rows></tbody></table></div><div class="facility-empty" data-tpa-empty hidden>No TPAs match your filters.</div><footer class="facility-pagination"><span data-tpa-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-tpa-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-tpa-page="previous" aria-label="Previous page">‹</button><span data-tpa-page-label></span><button class="icon-button" type="button" data-tpa-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-tpa-page="last" aria-label="Last page">»</button></div></footer></div>`;
 
   const modal = document.querySelector('#tpa-modal');
   modal.innerHTML = `<section class="patient-modal tpa-modal" role="dialog" aria-modal="true" aria-labelledby="tpa-modal-title" aria-describedby="tpa-modal-description"><header class="patient-modal-header"><div><p class="eyebrow">TPA RECORD</p><h2 id="tpa-modal-title">Add TPA</h2><p id="tpa-modal-description">Enter third party administrator information.</p></div><button type="button" class="icon-button" data-tpa-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><form data-tpa-form><div class="patient-modal-body">
+    ${organizationView ? `<fieldset class="patient-form-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="organization-assignment-facility-list" data-tpa-facilities>${facilities.map((facility) => `<label class="form-check"><input type="checkbox" value="${escapeHtml(facility.id)}"><span>${escapeHtml(facility.englishName)}</span></label>`).join('')}</div><p class="muted-text" data-tpa-facility-note>Select one or more facilities. A separate TPA record will be created in each.</p></fieldset>` : ''}
     <fieldset class="patient-form-section"><legend class="sr-only">TPA Information</legend><div class="facility-form-section-heading">TPA Information</div><div class="patient-form-grid tpa-form-grid">
       ${select('provider', 'TPA', providers, 'Select TPA', true)}${input('arabicName', 'Arabic Name', 'text', false, 'dir="rtl"')}${input('englishName', 'English Name')}${input('unifiedNumber', 'Unified Number')}${input('crNumber', 'CR Number')}${input('vatNumber', 'VAT Number')}${input('chiNumber', 'CHI Number')}${input('nhicNumber', 'NHIC Number', 'text', true)}
     </div></fieldset>
@@ -60,22 +65,28 @@
   let page = 1;
   let mode = 'new';
   let activeId = null;
+  let activeFacilityId = facilityId;
   let returnFocus = null;
   let toastTimer;
 
-  function load() {
+  function clone(value) { return JSON.parse(JSON.stringify(value)); }
+  function readFacility(fid) {
     try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved !== null) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-      localStorage.setItem(storageKey, JSON.stringify(seed));
-    } catch { /* Keep this page usable if browser storage is unavailable. */ }
-    return JSON.parse(JSON.stringify(seed));
+      const saved = localStorage.getItem(storageKeyFor(fid));
+      if (saved !== null) { const parsed = JSON.parse(saved); if (Array.isArray(parsed)) return parsed; }
+      localStorage.setItem(storageKeyFor(fid), JSON.stringify(seed));
+    } catch { /* Keep the page available when storage is unavailable. */ }
+    return clone(seed);
+  }
+  function load() {
+    if (!organizationView) return readFacility(facilityId);
+    return facilities.flatMap((facility) => readFacility(facility.id).map((record) => ({ ...record, __facilityId: facility.id })));
   }
   function persist() {
-    try { localStorage.setItem(storageKey, JSON.stringify(records)); } catch { /* Changes remain available for this page session. */ }
+    try {
+      if (!organizationView) localStorage.setItem(storageKey, JSON.stringify(records));
+      else facilities.forEach((facility) => localStorage.setItem(storageKeyFor(facility.id), JSON.stringify(records.filter((record) => record.__facilityId === facility.id).map(({ __facilityId, ...record }) => record))));
+    } catch { /* Keep changes in memory for this page session. */ }
   }
   function showToast(message) {
     toast.textContent = message;
@@ -87,6 +98,7 @@
     return records.filter((record) => Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
       if (key === 'status') return (record.active ? 'active' : 'inactive') === value;
+      if (key === 'facilityId') return record.__facilityId === value;
       return String(record[key] || '').toLocaleLowerCase().includes(value.toLocaleLowerCase());
     }));
   }
@@ -104,9 +116,9 @@
     page = Math.min(page, totalPages);
     const visible = matches.slice((page - 1) * pageSize, page * pageSize);
     rows.innerHTML = visible.map((record) => `<tr>
-      <td><span class="facility-name-en">${escapeHtml(record.provider)}</span></td><td>${escapeHtml(record.nhicNumber || '—')}</td><td>${escapeHtml(record.unifiedNumber || '—')}</td><td><span class="facility-name-en">${escapeHtml(record.englishName || '—')}</span></td><td>${escapeHtml(record.country || '—')}</td><td>${escapeHtml(record.city || '—')}</td>
+      ${organizationView ? `<td>${escapeHtml(facilities.find((facility) => facility.id === record.__facilityId)?.englishName || record.__facilityId)}</td>` : ''}<td><span class="facility-name-en">${escapeHtml(record.provider)}</span></td><td>${escapeHtml(record.nhicNumber || '—')}</td><td>${escapeHtml(record.unifiedNumber || '—')}</td><td><span class="facility-name-en">${escapeHtml(record.englishName || '—')}</span></td><td>${escapeHtml(record.country || '—')}</td><td>${escapeHtml(record.city || '—')}</td>
       <td><span class="facility-status ${record.active ? 'is-active' : 'is-inactive'}"><span></span>${record.active ? 'Active' : 'Inactive'}</span></td>
-      <td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-tpa-row-menu aria-label="Actions for ${escapeHtml(record.provider)}" aria-haspopup="menu" aria-expanded="false" data-id="${escapeHtml(record.id)}">${icons.more}</button><div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-tpa-action="view" data-id="${escapeHtml(record.id)}">${icons.eye}View</button><button type="button" role="menuitem" data-tpa-action="edit" data-id="${escapeHtml(record.id)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-tpa-action="toggle-status" data-id="${escapeHtml(record.id)}">${icons.status}${record.active ? 'Deactivate' : 'Activate'}</button></div></div></td>
+      <td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-tpa-row-menu aria-label="Actions for ${escapeHtml(record.provider)}" aria-haspopup="menu" aria-expanded="false" data-id="${escapeHtml(record.id)}" data-facility-id="${escapeHtml(record.__facilityId || facilityId)}">${icons.more}</button><div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-tpa-action="view" data-id="${escapeHtml(record.id)}" data-facility-id="${escapeHtml(record.__facilityId || facilityId)}">${icons.eye}View</button><button type="button" role="menuitem" data-tpa-action="edit" data-id="${escapeHtml(record.id)}" data-facility-id="${escapeHtml(record.__facilityId || facilityId)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-tpa-action="toggle-status" data-id="${escapeHtml(record.id)}" data-facility-id="${escapeHtml(record.__facilityId || facilityId)}">${icons.status}${record.active ? 'Deactivate' : 'Activate'}</button></div></div></td>
     </tr>`).join('');
     grid.querySelector('[data-tpa-empty]').hidden = matches.length > 0;
     grid.querySelector('[data-tpa-count]').textContent = `Total Results: ${matches.length}`;
@@ -127,6 +139,7 @@
   function openModal(nextMode, record = null, trigger = document.activeElement) {
     mode = nextMode;
     activeId = record?.id || null;
+    activeFacilityId = record?.__facilityId || facilityId;
     returnFocus = trigger;
     form.reset();
     setReadOnly(false);
@@ -134,6 +147,10 @@
     modal.querySelector('#tpa-modal-title').textContent = isNew ? 'Add TPA' : nextMode === 'view' ? 'TPA Details' : 'Edit TPA';
     modal.querySelector('#tpa-modal-description').textContent = isNew ? 'Enter third party administrator information.' : nextMode === 'view' ? 'Review third party administrator details.' : 'Update third party administrator information.';
     modal.querySelector('[data-tpa-save]').textContent = isNew ? 'Create' : 'Save changes';
+    if (organizationView) {
+      modal.querySelectorAll('[data-tpa-facilities] input').forEach((checkbox) => { checkbox.checked = Boolean(record && checkbox.value === activeFacilityId); checkbox.disabled = Boolean(record); });
+      modal.querySelector('[data-tpa-facility-note]').textContent = record ? 'This record belongs to one facility. Edit applies only to this facility copy.' : 'Select one or more facilities. A separate TPA record will be created in each.';
+    }
     const values = isNew ? { country: 'Saudi Arabia' } : record;
     Object.keys(values || {}).forEach((name) => {
       const field = form.elements.namedItem(name);
@@ -170,14 +187,15 @@
     }
     const action = event.target.closest('[data-tpa-action]');
     if (action) {
-      const record = records.find((item) => item.id === action.dataset.id);
+      const fid = action.dataset.facilityId || facilityId;
+      const record = records.find((item) => item.id === action.dataset.id && (!organizationView || item.__facilityId === fid));
       if (!record) return;
       closeMenus();
       if (action.dataset.tpaAction === 'toggle-status') {
         record.active = !record.active;
         persist(); render();
         showToast(`${record.provider} was ${record.active ? 'activated' : 'deactivated'}.`);
-      } else openModal(action.dataset.tpaAction, record, grid.querySelector(`[data-tpa-row-menu][data-id="${CSS.escape(record.id)}"]`));
+      } else openModal(action.dataset.tpaAction, record, grid.querySelector(`[data-tpa-row-menu][data-id="${CSS.escape(record.id)}"][data-facility-id="${CSS.escape(fid)}"]`));
       return;
     }
     if (!event.target.closest('.facility-row-action')) closeMenus();
@@ -202,16 +220,15 @@
     if (!form.reportValidity()) return;
     const values = Object.fromEntries(['provider', 'arabicName', 'englishName', 'unifiedNumber', 'crNumber', 'vatNumber', 'chiNumber', 'nhicNumber', 'country', 'city', 'district', 'buildingNumber', 'streetName', 'postalCode', 'additionalNumber'].map((key) => [key, String(form.elements.namedItem(key).value || '').trim()]));
     if (mode === 'new') {
-      const record = { ...values, id: nextId(), active: true };
-      records.push(record);
+      const assigned = organizationView ? [...modal.querySelectorAll('[data-tpa-facilities] input:checked')].map((checkbox) => checkbox.value) : [facilityId];
+      if (!assigned.length) { window.alert('Assign this TPA to at least one facility.'); return; }
+      assigned.forEach((fid) => records.push({ ...values, id: `tpa-${crypto.randomUUID()}`, active: true, ...(organizationView ? { __facilityId: fid } : {}) }));
       persist();
       grid.querySelectorAll('[data-tpa-filter]').forEach((field) => { field.value = ''; });
-      filters = {};
-      page = Math.ceil(records.length / pageSize);
-      closeModal(); render();
-      showToast(`${record.provider} was created successfully.`);
+      filters = {}; page = Math.ceil(records.length / pageSize); closeModal(); render();
+      showToast(`${values.provider} was created for ${assigned.length} ${assigned.length === 1 ? 'facility' : 'facilities'}.`);
     } else {
-      const record = records.find((item) => item.id === activeId);
+      const record = records.find((item) => item.id === activeId && (!organizationView || item.__facilityId === activeFacilityId));
       if (!record) return;
       Object.assign(record, values);
       persist(); closeModal(); render();

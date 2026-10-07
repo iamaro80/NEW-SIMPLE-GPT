@@ -107,6 +107,8 @@ button { color: inherit; }
 .nav-children { display: grid; gap: 1px; margin: 2px 0 5px 18px; padding-left: 12px; border-left: 1px solid hsl(var(--border)); }
 .nav-children[hidden] { display: none; }
 .nav-children .nav-link { min-height: 32px; padding-left: 9px; font-size: 12px; }
+.nav-subchildren { display: grid; gap: 1px; margin: 0 0 3px 12px; padding-left: 8px; border-left: 1px solid hsl(var(--border)); }
+.nav-subchildren .nav-link { min-height: 30px; padding-left: 8px; font-size: 11.5px; }
 .sidebar-bottom { margin-top: auto; padding: 12px; border-top: 1px solid hsl(var(--border)); }
 .sidebar-bottom .nav-link { color: hsl(var(--muted-foreground)); }
 .main-wrapper { min-height: 100vh; margin-left: var(--sidebar-width); }
@@ -297,6 +299,25 @@ button { color: inherit; }
 .branches-filter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; }
 .department-filter-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .departments-table { min-width: 1040px; }
+.department-branch-assignment { grid-column: 1 / -1; position: relative; min-width: 0; }
+.department-single-branch { margin: 0 0 7px; color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 400; }
+.department-branch-assignment > small { display: block; margin-top: 5px; color: hsl(var(--muted-foreground)); font-size: 10px; font-weight: 400; }
+.department-branch-assignment .practitioner-department-control > input[hidden], .department-branch-assignment .practitioner-department-toggle[hidden] { display: none; }
+.department-specialty-field { position: relative; min-width: 0; }
+.department-specialty-picker { position: relative; }
+.department-specialty-control { display: flex; align-items: center; gap: 4px; min-height: 38px; padding: 3px 5px 3px 9px; border: 1px solid hsl(var(--input)); border-radius: 6px; background: hsl(var(--background)); }
+.department-specialty-control:focus-within { border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / .18); }
+.department-specialty-control input[data-department-specialty-search] { flex: 1 1 auto; width: 100%; min-width: 0; min-height: 29px; padding: 2px; border: 0; outline: 0; background: transparent; box-shadow: none; }
+.department-specialty-control input[data-department-specialty-search]:focus { border: 0; box-shadow: none; }
+.department-specialty-control input[type="hidden"] { display: none; }
+.department-specialty-toggle { display: inline-grid; flex: 0 0 26px; width: 26px; height: 26px; place-items: center; padding: 0; border: 0; border-radius: 5px; background: transparent; color: hsl(var(--muted-foreground)); font: inherit; cursor: pointer; }
+.department-specialty-toggle:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+.department-specialty-options { position: absolute; z-index: 9; top: calc(100% + 4px); right: 0; left: 0; display: grid; max-height: 240px; overflow: auto; padding: 5px; border: 1px solid hsl(var(--border)); border-radius: 7px; background: hsl(var(--popover)); color: hsl(var(--popover-foreground)); box-shadow: 0 8px 24px hsl(222 25% 10% / .16); }
+.department-specialty-options[hidden] { display: none; }
+.department-specialty-options button { width: 100%; min-height: 31px; padding: 6px 8px; border: 0; border-radius: 5px; background: transparent; color: inherit; text-align: left; font: inherit; font-size: 10px; cursor: pointer; }
+.department-specialty-options button:hover, .department-specialty-options button[aria-selected="true"] { background: hsl(var(--muted)); }
+.department-specialty-options button small { color: hsl(var(--muted-foreground)); font-size: 9px; }
+.department-specialty-empty { padding: 9px 8px; color: hsl(var(--muted-foreground)); font-size: 10px; }
 .structure-filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .structure-table { min-width: 1080px; }
 .structure-modal { width: min(760px, 100%); }
@@ -399,6 +420,21 @@ button { color: inherit; }
 .service-picker-check { width: 42px; text-align: center !important; }
 .service-picker-shared { margin-top: 14px !important; }
 .service-picker-shared .patient-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.service-picker-footer-info { display: flex; align-items: center; gap: 14px; color: hsl(var(--muted-foreground)); font-size: 11px; }
+.service-picker-footer-info [data-picker-pages] { display: flex; align-items: center; gap: 6px; }
+.service-picker-footer-info .icon-button { width: 28px; height: 28px; }
+.org-service-assignment .organization-assignment-facility-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 14px; padding: 14px; }
+.org-service-assignment .form-check { min-width: 0; }
+.org-service-facility-card { min-width: 0; margin: 14px 0 0; padding: 12px; border: 1px solid hsl(var(--border)); border-radius: 8px; }
+.org-service-facility-card legend { padding: 0 7px; color: hsl(var(--foreground)); font-size: 12px; font-weight: 650; }
+.org-service-link-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 14px; max-height: 190px; overflow: auto; padding: 10px; border: 1px solid hsl(var(--border)); border-radius: 7px; }
+.org-service-link-options .form-check { align-items: flex-start; min-width: 0; }
+.org-service-link-options .form-check span { overflow-wrap: anywhere; }
+.org-service-record-context { display: flex; gap: 10px; margin-bottom: 14px; padding: 10px 12px; border: 1px solid hsl(var(--border)); border-radius: 7px; color: hsl(var(--muted-foreground)); font-size: 11px; }
+.org-service-record-context strong { color: hsl(var(--foreground)); }
+.catalog-items-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0 8px; }
+@media (max-width: 900px) { .org-service-assignment .organization-assignment-facility-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 580px) { .org-service-assignment .organization-assignment-facility-list, .org-service-link-options { grid-template-columns: 1fr; } .service-picker-footer-info { align-items: flex-start; flex-direction: column; gap: 5px; } }
 @media (max-width: 900px) { .service-items-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .service-item-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 580px) { .service-items-filter-grid, .service-item-form-grid, .service-picker-shared .patient-form-grid { grid-template-columns: 1fr; } .service-items-toolbar-spacer { display: none; } .service-items-actions .button { flex: 1 1 calc(50% - 8px); } .service-item-checks { align-items: flex-start; flex-direction: column; } }
 .categories-page, .categories-page > * { min-width: 0; max-width: 100%; }
@@ -759,6 +795,12 @@ body.modal-open { overflow: hidden; }
 .direct-billing-setting-card { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 23px 25px; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); }
 .direct-billing-setting-card h2 { margin: 4px 0 7px; font-size: 17px; }
 .direct-billing-setting-card p:not(.eyebrow) { margin: 0; color: hsl(var(--muted-foreground)); font-size: 12px; }
+.general-settings-card { margin-bottom: 14px; padding-bottom: 14px; }
+.general-setting-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 16px 10px; }
+.general-setting-row strong { display: block; font-size: 13px; font-weight: 650; }
+.general-setting-row p, .general-setting-context { display: block; margin: 5px 0 0; color: hsl(var(--muted-foreground)); font-size: 11px; }
+.general-setting-context { padding: 0 16px; }
+.general-settings-list { display: grid; gap: 2px; }
 .direct-billing-switch { position: relative; display: inline-flex; flex: 0 0 auto; align-items: center; gap: 11px; cursor: pointer; }
 .direct-billing-switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .direct-billing-switch-track { display: inline-flex; width: 39px; height: 22px; align-items: center; padding: 2px; border: 1px solid hsl(var(--border)); border-radius: 999px; background: hsl(var(--muted)); transition: background .16s ease, border-color .16s ease; }
@@ -805,6 +847,7 @@ body.modal-open { overflow: hidden; }
 .group-view-status { display: flex; justify-content: flex-end; padding: 10px 14px; }
 @media (max-width: 580px) { .group-form-grid { grid-template-columns: 1fr; } .group-item-option { grid-template-columns: 16px 78px minmax(0, 1fr); } .group-item-option small { display: none; } }
 @media (max-width: 580px) { .direct-billing-setting-card { align-items: flex-start; flex-direction: column; gap: 17px; padding: 18px; } }
+@media (max-width: 580px) { .general-setting-row { align-items: flex-start; flex-direction: column; gap: 14px; padding: 16px 14px 8px; } }
 /* Facility service catalogs */
 .service-catalog-page, .service-catalog-page > * { min-width: 0; max-width: 100%; }
 .catalog-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1047,6 +1090,10 @@ html.organization-embedded .settings-page-container { width: 100%; max-width: no
 .organization-facility-page-frame { width: 100%; margin: 0; overflow: visible; background: transparent; }
 .organization-facility-page-frame[hidden] { display: none; }
 .organization-facility-page-frame iframe { display: block; width: 100%; height: 1px; border: 0; background: transparent; }
+.organization-pricing-workspace { width: 100%; min-width: 0; }
+.organization-pricing-frame { display: block; width: 100%; min-height: 76vh; height: 1px; border: 0; background: transparent; }
+.organization-pricing-embedded-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 14px; color: hsl(var(--muted-foreground)); font-size: 13px; }
+.organization-pricing-workspace .facility-assignment-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 16px; max-height: 220px; overflow: auto; }
 .organization-staff-grid { width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr); }
 .organization-staff-grid > .branches-toolbar,
 .organization-staff-grid > .facility-table-card { width: 100%; min-width: 0; max-width: 100%; }
@@ -1059,6 +1106,15 @@ html.organization-embedded .settings-page-container { width: 100%; max-width: no
 .organization-staff-modal { width: min(1120px, 100%); height: min(92vh, 920px); max-height: min(92vh, 920px); }
 .organization-linked-child-backdrop, .practitioner-child-backdrop { z-index: 70; }
 .organization-linked-child-modal, .practitioner-child-modal { width: min(900px, 100%); max-height: min(90vh, 860px); }
+.organization-linked-child-modal .organization-assignment-summary { margin-top: 0; }
+.organization-linked-child-role-assignment { display: grid; gap: 9px; }
+.organization-linked-child-modal .organization-user-branch-pane { border-right: 0; }
+.organization-linked-child-role-panel { margin-top: 16px; padding-top: 13px; border-top: 1px solid hsl(var(--border)); }
+.organization-linked-child-role-heading { margin-bottom: 9px; font-size: 12px; font-weight: 650; }
+.organization-linked-child-role-assignment .organization-assignment-options { position: static; display: grid; max-height: 200px; overflow: auto; padding: 5px 8px; border: 1px solid hsl(var(--border)); border-radius: 7px; background: hsl(var(--background)); color: hsl(var(--foreground)); box-shadow: none; }
+.organization-linked-child-role-assignment .organization-assignment-empty { padding: 8px 2px; }
+.organization-linked-child-role-list { min-width: 0; }
+.organization-linked-child-modal .organization-assignment-search { margin-bottom: 8px; }
 .organization-linked-child-facility { min-width: 0; margin: 10px 0; padding: 12px; border: 1px solid hsl(var(--border)); border-radius: 9px; }
 .organization-linked-child-facility legend { padding: 0 6px; }
 .organization-linked-child-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }

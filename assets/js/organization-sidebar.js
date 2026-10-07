@@ -12,7 +12,7 @@
     { label: 'Payers Setup', icon: 'payers', items: ['Payers', 'TPAs', 'TAT Management'] },
     { label: 'Insurance Setup', icon: 'insurance', items: ['Policies', 'Plans', 'Benefits'] },
     { label: 'Payer Contracts', icon: 'contracts', items: ['Contracts', 'Direct Billing'] },
-    { label: 'Other Settings', icon: 'billing-rules', items: ['Consultation Rules', 'Cost Centers', 'Billing Period'] },
+    { label: 'Other Settings', icon: 'billing-rules', items: [{ label: 'General', route: 'general' }, 'Consultation Rules', 'Cost Centers', 'Billing Period'] },
     { label: 'Services and Pricing', icon: 'services', items: ['Service Items', 'Categories', 'Groups', 'Service Catalog', 'Master Price List', 'Price Lists', 'Premium Pricing', { label: 'Discounts', route: 'services-discounts' }] },
     { label: 'HIS Management', icon: 'his' },
     { label: 'Reference Data', icon: 'reference', items: [{ label: 'Discounts', route: 'reference-discounts' }] },
@@ -46,8 +46,11 @@
     const groupId = `organization-group-${index}`;
     const children = entry.items.map((item) => {
       const label = typeof item === 'string' ? item : item.label;
-      const route = typeof item === 'string' ? slug(label) : item.route;
-      return link(label, route);
+      const route = typeof item === 'string' ? slug(label) : item.route || slug(label);
+      const parent = link(label, route);
+      if (!item.children?.length) return parent;
+      const nested = item.children.map((child) => link(child.label, child.route || slug(child.label))).join('');
+      return `${parent}<div class="nav-subchildren">${nested}</div>`;
     }).join('');
     return `<section class="nav-group"><button class="nav-group-button" type="button" aria-expanded="false" aria-controls="${groupId}">${icon(entry.icon)}<span>${entry.label}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons.chevron}</svg></button><div class="nav-children" id="${groupId}" hidden>${children}</div></section>`;
   }).join('');
@@ -81,8 +84,24 @@
     });
 
     const isStaffRoute = ['practitioners', 'users', 'roles'].includes(route);
-    document.querySelector('[data-org-overview]')?.toggleAttribute('hidden', route === 'facilities' || isStaffRoute);
+    const isPayersRoute = route === 'payers';
+    const isTpasRoute = route === 'tpas';
+    const isTatRoute = route === 'tat-management';
+    const isContractsRoute = route === 'contracts';
+    const isDirectBillingRoute = route === 'direct-billing';
+    const isGeneralSettingsRoute = route === 'general';
+    const isServiceSetupRoute = ['service-items', 'categories', 'groups', 'service-catalog'].includes(route);
+    const isPricingRoute = ['master-price-list', 'price-lists', 'premium-pricing'].includes(route);
+    document.querySelector('[data-org-overview]')?.toggleAttribute('hidden', route === 'facilities' || isStaffRoute || isGeneralSettingsRoute || isPayersRoute || isTpasRoute || isTatRoute || isContractsRoute || isDirectBillingRoute || isServiceSetupRoute || isPricingRoute);
     document.querySelector('[data-organization-staff-workspace]')?.toggleAttribute('hidden', !isStaffRoute);
+    document.querySelector('[data-organization-payers-workspace]')?.toggleAttribute('hidden', !isPayersRoute);
+    document.querySelector('[data-organization-tpas-workspace]')?.toggleAttribute('hidden', !isTpasRoute);
+    document.querySelector('[data-organization-tat-workspace]')?.toggleAttribute('hidden', !isTatRoute);
+    document.querySelector('[data-organization-contracts-workspace]')?.toggleAttribute('hidden', !isContractsRoute);
+    document.querySelector('[data-organization-direct-billing-workspace]')?.toggleAttribute('hidden', !isDirectBillingRoute);
+    document.querySelector('[data-organization-general-settings]')?.toggleAttribute('hidden', !isGeneralSettingsRoute);
+    document.querySelectorAll('[data-organization-service-route]').forEach((workspace) => workspace.toggleAttribute('hidden', workspace.dataset.organizationServiceRoute !== route));
+    document.querySelectorAll('[data-organization-pricing-route]').forEach((workspace) => workspace.toggleAttribute('hidden', workspace.dataset.organizationPricingRoute !== route));
     document.querySelector('[data-facility-grid]')?.toggleAttribute('hidden', route !== 'facilities' || isFacilityFocusRoute);
 
     const label = activeLink.dataset.orgLabel;

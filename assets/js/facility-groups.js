@@ -15,17 +15,17 @@
     status: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v8M6.4 6.4a8 8 0 1 0 11.2 0"/></svg>',
   };
   const seed = [
-    { id: 'group-consultation', type: 'group', code: 'GRP-CONS', description: 'Consultation Services', alias: 'Clinical visits', tags: ['Outpatient', 'Professional'], itemIds: ['SV-1001', 'SV-1002'], active: true },
-    { id: 'subgroup-primary-care', type: 'subgroup', parentId: 'group-consultation', code: 'SUB-CONS-PRIMARY', description: 'Primary Care Visits', alias: 'Primary care', tags: ['Family medicine'], itemIds: ['SV-1001', 'SV-1002'], active: true },
-    { id: 'subgroup-specialty-consult', type: 'subgroup', parentId: 'group-consultation', code: 'SUB-CONS-SPECIALTY', description: 'Specialty Consultations', alias: 'Specialist visits', tags: ['Specialty'], itemIds: [], active: true },
-    { id: 'group-laboratory', type: 'group', code: 'GRP-LAB', description: 'Laboratory Diagnostics', alias: 'Lab services', tags: ['Diagnostics', 'Laboratory'], itemIds: ['SV-2001', 'SV-2011'], active: true },
-    { id: 'subgroup-core-lab', type: 'subgroup', parentId: 'group-laboratory', code: 'SUB-LAB-CORE', description: 'Core Laboratory Testing', alias: 'Core lab', tags: ['Hematology'], itemIds: ['SV-2001'], active: true },
-    { id: 'subgroup-microbiology', type: 'subgroup', parentId: 'group-laboratory', code: 'SUB-LAB-MICRO', description: 'Microbiology Testing', alias: 'Microbiology', tags: ['Culture'], itemIds: ['SV-2011'], active: true },
-    { id: 'group-imaging', type: 'group', code: 'GRP-IMG', description: 'Diagnostic Imaging', alias: 'Imaging', tags: ['Radiology'], itemIds: ['SV-3001'], active: true },
-    { id: 'subgroup-radiology', type: 'subgroup', parentId: 'group-imaging', code: 'SUB-IMG-RAD', description: 'Radiography and Imaging', alias: 'Radiology', tags: ['Diagnostic'], itemIds: ['SV-3001'], active: true },
-    { id: 'group-pharmacy', type: 'group', code: 'GRP-PHARM', description: 'Pharmacy Services', alias: 'Pharmacy', tags: ['Medication'], itemIds: ['SV-4001'], active: true },
-    { id: 'subgroup-outpatient-pharmacy', type: 'subgroup', parentId: 'group-pharmacy', code: 'SUB-PHARM-OP', description: 'Outpatient Pharmacy', alias: 'OP pharmacy', tags: ['Dispensing'], itemIds: ['SV-4001'], active: true },
-    { id: 'group-procedures', type: 'group', code: 'GRP-PROC', description: 'Clinical Procedures', alias: 'Procedures', tags: ['Clinical'], itemIds: [], active: true },
+    { id: 'group-consultation', type: 'group', code: 'GRP-CONS', description: 'Group 1', alias: 'Group 1 alias', tags: ['Tag 1', 'Tag 2'], itemIds: ['SV-1001', 'SV-1002'], active: true },
+    { id: 'subgroup-primary-care', type: 'subgroup', parentId: 'group-consultation', code: 'SUB-CONS-PRIMARY', description: 'Sub Group 1', alias: 'Sub Group 1 alias', tags: ['Tag 3'], itemIds: ['SV-1001', 'SV-1002'], active: true },
+    { id: 'subgroup-specialty-consult', type: 'subgroup', parentId: 'group-consultation', code: 'SUB-CONS-SPECIALTY', description: 'Sub Group 2', alias: 'Sub Group 2 alias', tags: ['Tag 4'], itemIds: [], active: true },
+    { id: 'group-laboratory', type: 'group', code: 'GRP-LAB', description: 'Group 2', alias: 'Group 2 alias', tags: ['Tag 5', 'Tag 6'], itemIds: ['SV-2001', 'SV-2011'], active: true },
+    { id: 'subgroup-core-lab', type: 'subgroup', parentId: 'group-laboratory', code: 'SUB-LAB-CORE', description: 'Sub Group 3', alias: 'Sub Group 3 alias', tags: ['Tag 7'], itemIds: ['SV-2001'], active: true },
+    { id: 'subgroup-microbiology', type: 'subgroup', parentId: 'group-laboratory', code: 'SUB-LAB-MICRO', description: 'Sub Group 4', alias: 'Sub Group 4 alias', tags: ['Tag 8'], itemIds: ['SV-2011'], active: true },
+    { id: 'group-imaging', type: 'group', code: 'GRP-IMG', description: 'Group 3', alias: 'Imaging', tags: ['Radiology'], itemIds: ['SV-3001'], active: true },
+    { id: 'subgroup-radiology', type: 'subgroup', parentId: 'group-imaging', code: 'SUB-IMG-RAD', description: 'Sub Group 5', alias: 'Sub Group 5 alias', tags: ['Tag 9'], itemIds: ['SV-3001'], active: true },
+    { id: 'group-pharmacy', type: 'group', code: 'GRP-PHARM', description: 'Group 4', alias: 'Group 4 alias', tags: ['Tag 10'], itemIds: ['SV-4001'], active: true },
+    { id: 'subgroup-outpatient-pharmacy', type: 'subgroup', parentId: 'group-pharmacy', code: 'SUB-PHARM-OP', description: 'Sub Group 6', alias: 'Sub Group 6 alias', tags: ['Tag 11'], itemIds: ['SV-4001'], active: true },
+    { id: 'group-procedures', type: 'group', code: 'GRP-PROC', description: 'Group 5', alias: 'Group 5 alias', tags: ['Tag 12'], itemIds: [], active: true },
   ];
   let serviceItems = [];
   try { serviceItems = JSON.parse(localStorage.getItem(serviceItemsKey) || '[]'); if (!Array.isArray(serviceItems)) serviceItems = []; } catch { serviceItems = []; }

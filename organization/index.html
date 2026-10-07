@@ -3,15 +3,23 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f8f7f3">
   <title>RCM SMB Organization</title>
-  <link rel="stylesheet" href="../assets/css/shadcn.css?v=organization-practitioner-right-gutter-1">
+  <link rel="stylesheet" href="../assets/css/shadcn.css?v=org-pricing-2">
   <script src="../assets/js/theme.js" data-theme-view="organization"></script>
-  <script src="../assets/js/organization-sidebar.js?v=organization-staff-1" defer></script>
+  <script src="../assets/js/organization-sidebar.js?v=org-pricing-2" defer></script>
   <script src="../assets/js/sidebar-collapse.js?v=facility-focus-2" defer></script>
-  <script src="../assets/js/facility-store.js?v=facility-focus-2" defer></script>
-  <script src="../assets/js/facility-grid.js?v=facility-record-workspace-1" defer></script>
-  <script src="../assets/js/organization-staff-store.js?v=practitioner-user-links-1" defer></script>
-  <script src="../assets/js/organization-facilities.js?v=organization-divisions-1" defer></script>
-  <script src="../assets/js/organization-staff-access.js?v=practitioner-user-links-1" defer></script>
+  <script src="../assets/js/facility-store.js?v=test-six-facilities-1" defer></script>
+  <script src="../assets/js/facility-test-data.js?v=test-six-facilities-1" defer></script>
+  <script src="../assets/js/facility-grid.js?v=test-six-facilities-1" defer></script>
+  <script src="../assets/js/organization-staff-store.js?v=branch-aware-2" defer></script>
+  <script src="../assets/js/organization-facilities.js?v=test-six-facilities-1" defer></script>
+  <script src="../assets/js/organization-staff-access.js?v=branch-aware-2" defer></script>
+  <script src="../assets/js/organization-payers.js?v=org-facility-setup-1" defer></script>
+  <script src="../assets/js/organization-tpas.js?v=org-facility-setup-1" defer></script>
+  <script src="../assets/js/organization-tat.js?v=org-facility-setup-1" defer></script>
+  <script src="../assets/js/organization-contracts.js?v=org-facility-contracts-1" defer></script>
+  <script src="../assets/js/organization-direct-billing.js?v=org-facility-contracts-1" defer></script>
+  <script src="../assets/js/organization-service-setup.js?v=org-service-setup-2" defer></script>
+  <script src="../assets/js/organization-pricing.js?v=org-pricing-2" defer></script>
 </head>
 <body data-facility-context="organization">
   <div class="app-shell">
@@ -26,7 +34,21 @@
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html">Launcher</a><svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span>Organization</span><svg class="breadcrumb-sep facility-context-crumb-separator" data-facility-context-crumb-separator hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span data-facility-context-crumb hidden></span><svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span data-org-breadcrumb aria-current="page">Overview</span></nav>
         <header class="page-header"><h1 class="page-title" data-org-title>Overview</h1><p class="page-subtitle" data-org-subtitle>Overview for your organization.</p></header>
         <section class="workspace" aria-label="Organization workspace" data-org-overview><div class="workspace-inner"><span class="workspace-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 20V8h8v12M3 10h18M10 12h1m2 0h1m-4 3h1m2 0h1"/></svg></span><h2 data-org-workspace-title>Overview workspace</h2><p>This organization workspace is ready for page buildout.</p></div></section>
+        <section class="workspace" aria-label="Organization general settings" data-organization-general-settings hidden><div class="workspace-inner"><span class="workspace-icon">⚙</span><h2>General settings</h2><p>General organization settings will be available here.</p></div></section>
         <section class="organization-staff-workspace" data-organization-staff-workspace hidden></section>
+        <section data-organization-payers-workspace hidden><div class="facility-grid" data-payers-grid></div></section>
+        <section data-organization-tpas-workspace hidden><div class="facility-grid" data-tpas-grid></div></section>
+        <section data-organization-tat-workspace hidden><div class="facility-grid" data-tat-grid></div></section>
+        <section data-organization-contracts-workspace hidden><div class="facility-grid" data-organization-contracts-grid></div><section class="contract-details-page" data-organization-contract-details hidden></section></section>
+        <section data-organization-direct-billing-workspace hidden><div class="facility-grid" data-organization-direct-billing-grid></div></section>
+        <section class="facility-grid" data-organization-service-route="service-items" hidden></section>
+        <section class="facility-grid" data-organization-service-route="categories" hidden></section>
+        <section class="facility-grid" data-organization-service-route="groups" hidden></section>
+        <section class="facility-grid" data-organization-service-route="service-catalog" hidden></section>
+        <section class="organization-pricing-workspace" data-organization-pricing-route="master-price-list" hidden><div class="facility-filter-grid"><label class="facility-filter"><span>Facility</span><select data-org-master-facility></select></label></div><iframe class="organization-pricing-frame" data-org-master-frame title="Facility Master Price List"></iframe></section>
+        <section class="facility-grid organization-pricing-workspace" data-organization-pricing-route="price-lists" hidden></section>
+        <section class="facility-grid organization-pricing-workspace" data-organization-pricing-route="premium-pricing" hidden></section>
+        <div class="patient-modal-backdrop" id="tpa-modal" hidden></div>
         <section class="facility-profile-page" data-organization-facility-detail hidden>
           <div class="facility-profile-heading"><div><p class="eyebrow">FACILITY PROFILE</p><h2 data-facility-profile-name></h2><p data-facility-profile-id></p></div><button class="button button-secondary" type="button" data-facility-profile-edit>Edit facility</button></div>
           <div class="facility-profile-sections" data-facility-profile-content></div>

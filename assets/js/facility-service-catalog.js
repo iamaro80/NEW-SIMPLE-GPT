@@ -31,9 +31,9 @@
   const itemByCode = new Map(serviceItems.map((item) => [item.code, item]));
   const categoryByCode = new Map(categories.map((category) => [category.code, category]));
   const seed = [
-    { id: 'catalog-ambulatory', name: 'Ambulatory Care Catalog', description: 'Professional services for primary and follow-up visits.', categoryCode: 'CAT-CONS', groupId: 'group-consultation', itemCodes: ['SV-1001', 'SV-1002'], active: true },
-    { id: 'catalog-laboratory', name: 'Diagnostic Laboratory Catalog', description: 'Core and microbiology laboratory services.', categoryCode: 'CAT-LAB', groupId: 'group-laboratory', itemCodes: ['SV-2001', 'SV-2011'], active: true },
-    { id: 'catalog-imaging', name: 'Diagnostic Imaging Catalog', description: 'Radiology services available at the facility.', categoryCode: 'CAT-IMG', groupId: 'group-imaging', itemCodes: ['SV-3001'], active: true },
+    { id: 'catalog-ambulatory', name: 'Service Catalog 1', description: 'Service catalog description 1', categoryCode: 'CAT-CONS', groupId: 'group-consultation', itemCodes: ['SV-1001', 'SV-1002'], active: true },
+    { id: 'catalog-laboratory', name: 'Service Catalog 2', description: 'Service catalog description 2', categoryCode: 'CAT-LAB', groupId: 'group-laboratory', itemCodes: ['SV-2001', 'SV-2011'], active: true },
+    { id: 'catalog-imaging', name: 'Service Catalog 3', description: 'Service catalog description 3', categoryCode: 'CAT-IMG', groupId: 'group-imaging', itemCodes: ['SV-3001'], active: true },
   ];
   function load() {
     try {

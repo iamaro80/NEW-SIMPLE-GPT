@@ -2,8 +2,11 @@
   const grid = document.querySelector('[data-payers-grid]');
   if (!grid) return;
 
+  const organizationView = document.body.dataset.facilityContext === 'organization';
   const facilityId = String(document.body.dataset.currentFacilityId || '1');
+  const facilities = organizationView ? (window.RcmFacilityStore?.list?.() || []).map((facility) => ({ ...facility, id: String(facility.id) })) : [];
   const storageKey = `rcm-facility-payers:v2:${facilityId}`;
+  const storageKeyFor = (id) => `rcm-facility-payers:v2:${id}`;
   const pageSize = 5;
   const countries = ['Saudi Arabia', 'Bahrain', 'Kuwait', 'United Arab Emirates'];
   const cities = ['Tabuk', 'Hail', 'Al Khari', 'Al Dirah', 'Al Mammafah', 'Makkah', 'Dammam', 'Jeddah', 'Al Taif', 'Buraidah', 'Al Hofuf', 'Madinah', 'Abha', 'Jazan', 'Al Khobar', 'Riyadh'];
@@ -38,12 +41,14 @@
   let page = 1;
   let mode = 'new';
   let activeId = null;
+  let activeFacilityId = facilityId;
   let returnFocus = null;
   let editingContactIndex = -1;
   let editingTpaIndex = -1;
   let toastTimer;
 
   grid.innerHTML = `<div class="branches-toolbar"><div class="branches-add-row"><button class="button button-primary" type="button" data-payer-add>${icons.add}Add Payer</button></div><div class="branches-filter-grid payer-filter-grid" role="search" aria-label="Filter payers">
+      ${organizationView ? `<label class="facility-filter"><span>Facility</span><select data-payer-filter="facilityId"><option value="">All facilities</option>${facilities.map((facility) => `<option value="${escapeHtml(facility.id)}">${escapeHtml(facility.englishName)}</option>`).join('')}</select></label>` : ''}
       <label class="facility-filter"><span>Unified ID</span><input type="search" data-payer-filter="unifiedNumber" placeholder="Search unified ID"></label>
       <label class="facility-filter"><span>Arabic Name</span><input type="search" data-payer-filter="arabicName" placeholder="Search Arabic name" dir="rtl"></label>
       <label class="facility-filter"><span>English Name</span><input type="search" data-payer-filter="englishName" placeholder="Search English name"></label>
@@ -51,11 +56,12 @@
       <label class="facility-filter"><span>CHI ID</span><input type="search" data-payer-filter="chiNumber" placeholder="Search CHI ID"></label>
       <label class="facility-filter"><span>Payer Type</span><select data-payer-filter="payerType">${makeOptions(payerTypes, 'All payer types')}</select></label>
       <label class="facility-filter"><span>Licences Type</span><select data-payer-filter="licenceType">${makeOptions(licenceTypes, 'All licence types')}</select></label>
-    </div></div><div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table payers-table"><thead><tr><th>CHI ID</th><th>Unified ID</th><th>VAT Number</th><th>Arabic Name</th><th>English Name</th><th>Payer Type</th><th>Allowed Contract</th><th>Country</th><th>City</th><th>Status</th><th>Actions</th></tr></thead><tbody data-payer-rows></tbody></table></div><div class="facility-empty" data-payer-empty hidden>No payers match your filters.</div><footer class="facility-pagination"><span data-payer-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-payer-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-payer-page="previous" aria-label="Previous page">‹</button><span data-payer-page-label></span><button class="icon-button" type="button" data-payer-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-payer-page="last" aria-label="Last page">»</button></div></footer></div>`;
+    </div></div><div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table payers-table"><thead><tr>${organizationView ? '<th>Facility</th>' : ''}<th>CHI ID</th><th>Unified ID</th><th>VAT Number</th><th>Arabic Name</th><th>English Name</th><th>Payer Type</th><th>Allowed Contract</th><th>Country</th><th>City</th><th>Status</th><th>Actions</th></tr></thead><tbody data-payer-rows></tbody></table></div><div class="facility-empty" data-payer-empty hidden>No payers match your filters.</div><footer class="facility-pagination"><span data-payer-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-payer-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-payer-page="previous" aria-label="Previous page">‹</button><span data-payer-page-label></span><button class="icon-button" type="button" data-payer-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-payer-page="last" aria-label="Last page">»</button></div></footer></div>`;
 
   const modal = document.createElement('div');
   modal.className = 'patient-modal-backdrop'; modal.id = 'payer-modal'; modal.hidden = true;
   modal.innerHTML = `<section class="patient-modal payer-modal" role="dialog" aria-modal="true" aria-labelledby="payer-modal-title" aria-describedby="payer-modal-description"><header class="patient-modal-header"><div><p class="eyebrow">PAYER RECORD</p><h2 id="payer-modal-title">Add Payer</h2><p id="payer-modal-description">Enter payer information and linked records.</p></div><button type="button" class="icon-button" data-payer-close aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><form data-payer-form><div class="patient-modal-body payer-modal-body">
+    ${organizationView ? `<fieldset class="patient-form-section payer-section" data-payer-facility-section><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="organization-assignment-facility-list" data-payer-facilities>${facilities.map((facility) => `<label class="form-check"><input type="checkbox" value="${escapeHtml(facility.id)}"><span>${escapeHtml(facility.englishName)}</span></label>`).join('')}</div><p class="muted-text" data-payer-facility-note>Select one or more facilities. A separate payer record will be created in each.</p></fieldset>` : ''}
     <fieldset class="patient-form-section payer-section"><legend class="sr-only">Payer Information</legend><div class="facility-form-section-heading">Payer Information</div><div class="patient-form-grid payer-form-grid">
       ${select('payerType', 'Payer Type', payerTypes)}${input('payerCode', 'Payer Code')}
       <label class="form-field"><span>Health Insurance Company</span><input name="healthInsuranceCompany" list="payer-insurer-options"><datalist id="payer-insurer-options">${insurers.map((value) => `<option value="${escapeHtml(value)}"></option>`).join('')}</datalist></label>
@@ -75,26 +81,34 @@
   const toast = document.querySelector('[data-facility-toast]');
 
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
-  function load() {
+  function readFacility(fid) {
     try {
-      const saved = localStorage.getItem(storageKey);
+      const key = storageKeyFor(fid);
+      const saved = localStorage.getItem(key);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed.map((record) => ({ ...record, contacts: Array.isArray(record.contacts) ? record.contacts : [], tpaRows: Array.isArray(record.tpaRows) ? record.tpaRows : [] }));
       }
-      localStorage.setItem(storageKey, JSON.stringify(seed));
+      localStorage.setItem(key, JSON.stringify(seed));
     } catch { /* Keep the prototype usable when browser storage is unavailable. */ }
     return clone(seed);
   }
+  function load() {
+    if (!organizationView) return readFacility(facilityId);
+    return facilities.flatMap((facility) => readFacility(facility.id).map((record) => ({ ...record, __facilityId: facility.id })));
+  }
   function persist() {
-    try { localStorage.setItem(storageKey, JSON.stringify(payers)); } catch { /* Keep changes in memory for this page session. */ }
+    try {
+      if (!organizationView) localStorage.setItem(storageKey, JSON.stringify(payers));
+      else facilities.forEach((facility) => localStorage.setItem(storageKeyFor(facility.id), JSON.stringify(payers.filter((payer) => payer.__facilityId === facility.id).map(({ __facilityId, ...payer }) => payer))));
+    } catch { /* Keep changes in memory for this page session. */ }
   }
   function showToast(message) {
     if (!toast) return;
     toast.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2400);
   }
-  function payerById(id) { return payers.find((payer) => payer.id === id); }
+  function payerById(id, fid = facilityId) { return payers.find((payer) => payer.id === id && (!organizationView || payer.__facilityId === String(fid))); }
   function nextId(prefix, collection) { return `${prefix}-${String(Math.max(0, ...collection.map((item) => Number(String(item.id).split('-').at(-1)) || 0)) + 1).padStart(3, '0')}`; }
   function licenseMatches(payer, type) {
     if (!type) return true;
@@ -108,6 +122,7 @@
         if (filters[key] && !String(payer[key] || '').toLocaleLowerCase().includes(filters[key])) return false;
       }
       if (filters.payerType && payer.payerType !== filters.payerType) return false;
+      if (filters.facilityId && payer.__facilityId !== filters.facilityId) return false;
       if (!licenseMatches(payer, filters.licenceType)) return false;
       return true;
     });
@@ -121,7 +136,7 @@
     const matches = matchingPayers();
     const pages = Math.max(1, Math.ceil(matches.length / pageSize)); page = Math.min(page, pages);
     const visible = matches.slice((page - 1) * pageSize, page * pageSize);
-    rows.innerHTML = visible.map((payer) => `<tr><td>${escapeHtml(payer.chiNumber || '—')}</td><td>${escapeHtml(payer.unifiedNumber || '—')}</td><td>${escapeHtml(payer.vatNumber || '—')}</td><td lang="ar" dir="rtl">${escapeHtml(payer.arabicName || '—')}</td><td><span class="facility-name-en">${escapeHtml(payer.englishName || '—')}</span></td><td>${escapeHtml(payer.payerType || '—')}</td><td>${payer.allowedContract ? 'Yes' : 'No'}</td><td>${escapeHtml(payer.country || '—')}</td><td>${escapeHtml(payer.city || '—')}</td><td><span class="facility-status ${payer.active ? 'is-active' : 'is-inactive'}"><span></span>${payer.active ? 'Active' : 'Inactive'}</span></td><td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-payer-row-menu aria-label="Actions for ${escapeHtml(payer.englishName || 'payer')}" aria-haspopup="menu" aria-expanded="false" data-payer-id="${escapeHtml(payer.id)}">${icons.more}</button><div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-payer-action="view" data-payer-id="${escapeHtml(payer.id)}">${icons.eye}View</button><button type="button" role="menuitem" data-payer-action="edit" data-payer-id="${escapeHtml(payer.id)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-payer-action="status" data-payer-id="${escapeHtml(payer.id)}">${icons.status}${payer.active ? 'Deactivate' : 'Activate'}</button></div></div></td></tr>`).join('');
+    rows.innerHTML = visible.map((payer) => `<tr>${organizationView ? `<td>${escapeHtml(facilities.find((facility) => facility.id === payer.__facilityId)?.englishName || payer.__facilityId)}</td>` : ''}<td>${escapeHtml(payer.chiNumber || '—')}</td><td>${escapeHtml(payer.unifiedNumber || '—')}</td><td>${escapeHtml(payer.vatNumber || '—')}</td><td lang="ar" dir="rtl">${escapeHtml(payer.arabicName || '—')}</td><td><span class="facility-name-en">${escapeHtml(payer.englishName || '—')}</span></td><td>${escapeHtml(payer.payerType || '—')}</td><td>${payer.allowedContract ? 'Yes' : 'No'}</td><td>${escapeHtml(payer.country || '—')}</td><td>${escapeHtml(payer.city || '—')}</td><td><span class="facility-status ${payer.active ? 'is-active' : 'is-inactive'}"><span></span>${payer.active ? 'Active' : 'Inactive'}</span></td><td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-payer-row-menu aria-label="Actions for ${escapeHtml(payer.englishName || 'payer')}" aria-haspopup="menu" aria-expanded="false" data-payer-id="${escapeHtml(payer.id)}" data-facility-id="${escapeHtml(payer.__facilityId || facilityId)}">${icons.more}</button><div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-payer-action="view" data-payer-id="${escapeHtml(payer.id)}" data-facility-id="${escapeHtml(payer.__facilityId || facilityId)}">${icons.eye}View</button><button type="button" role="menuitem" data-payer-action="edit" data-payer-id="${escapeHtml(payer.id)}" data-facility-id="${escapeHtml(payer.__facilityId || facilityId)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-payer-action="status" data-payer-id="${escapeHtml(payer.id)}" data-facility-id="${escapeHtml(payer.__facilityId || facilityId)}">${icons.status}${payer.active ? 'Deactivate' : 'Activate'}</button></div></div></td></tr>`).join('');
     grid.querySelector('[data-payer-empty]').hidden = matches.length > 0;
     grid.querySelector('[data-payer-count]').textContent = `Total Results: ${matches.length}`;
     grid.querySelector('[data-payer-page-label]').textContent = `Page ${matches.length ? page : 0} of ${matches.length ? pages : 0}`;
@@ -156,13 +171,23 @@
     return Object.fromEntries(names.map((name) => [name, String(form.elements.namedItem(name)?.value || '').trim()]));
   }
   function openModal(nextMode, payer = null, trigger = document.activeElement) {
-    mode = nextMode; activeId = payer?.id || null; returnFocus = trigger; form.reset(); resetNestedEditors(); setReadOnly(false);
+    mode = nextMode; activeId = payer?.id || null; activeFacilityId = payer?.__facilityId || facilityId; returnFocus = trigger; form.reset(); resetNestedEditors(); setReadOnly(false);
     const editing = nextMode === 'edit';
     modal.querySelector('#payer-modal-title').textContent = nextMode === 'new' ? 'Add Payer' : nextMode === 'view' ? 'Payer Details' : 'Edit Payer';
     modal.querySelector('#payer-modal-description').textContent = nextMode === 'new' ? 'Enter payer information and linked records.' : nextMode === 'view' ? 'Review payer information and linked records.' : 'Update payer information and linked records.';
     modal.querySelector('[data-payer-save]').textContent = nextMode === 'new' ? 'Create' : 'Save changes';
     const activePayer = payer ? clone(payer) : { contacts: [], tpaRows: [] };
     modal._payerDraft = activePayer;
+    if (organizationView) {
+      const assignment = modal.querySelector('[data-payer-facilities]');
+      assignment.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+        checkbox.checked = payer ? checkbox.value === activeFacilityId : false;
+        checkbox.disabled = Boolean(payer);
+      });
+      modal.querySelector('[data-payer-facility-note]').textContent = payer
+        ? 'This record belongs to one facility. Edit applies only to this facility copy.'
+        : 'Select one or more facilities. A separate payer record will be created in each.';
+    }
     if (payer) {
       for (const [name, value] of Object.entries(payer)) {
         const field = form.elements.namedItem(name);
@@ -215,7 +240,7 @@
     if (trigger) { const menu = trigger.parentElement.querySelector('.facility-row-menu'); const opening = menu.hidden; closeMenus(menu); menu.hidden = !opening; trigger.setAttribute('aria-expanded', String(opening)); return; }
     const action = event.target.closest('[data-payer-action]');
     if (!action) { if (!event.target.closest('.facility-row-action')) closeMenus(); return; }
-    const payer = payerById(action.dataset.payerId); if (!payer) return;
+    const payer = payerById(action.dataset.payerId, action.dataset.facilityId); if (!payer) return;
     const rowTrigger = action.closest('.facility-row-action').querySelector('[data-payer-row-menu]'); closeMenus();
     if (action.dataset.payerAction === 'view' || action.dataset.payerAction === 'edit') { openModal(action.dataset.payerAction, payer, rowTrigger); return; }
     payer.active = !payer.active; persist(); render(); showToast(`${payer.englishName} is now ${payer.active ? 'active' : 'inactive'}.`);
@@ -238,11 +263,14 @@
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     const values = { ...readFormFields(), hasTpa: form.elements.namedItem('hasTpa').checked, contacts: modal._payerDraft.contacts, tpaRows: modal._payerDraft.tpaRows };
-    if (mode === 'new') { const payer = { ...values, id: `payer-${crypto.randomUUID()}`, active: true, allowedContract: false }; payers.push(payer); }
-    else { const payer = payerById(activeId); if (!payer) return; Object.assign(payer, values); }
+    if (mode === 'new') {
+      const assigned = organizationView ? [...modal.querySelectorAll('[data-payer-facilities] input:checked')].map((checkbox) => checkbox.value) : [facilityId];
+      if (!assigned.length) { window.alert('Assign this payer to at least one facility.'); return; }
+      assigned.forEach((fid) => payers.push({ ...clone(values), id: `payer-${crypto.randomUUID()}`, active: true, allowedContract: false, ...(organizationView ? { __facilityId: fid } : {}) }));
+    } else { const payer = payerById(activeId, activeFacilityId); if (!payer) return; Object.assign(payer, values); }
     persist(); closeModal();
     if (mode === 'new') { grid.querySelectorAll('[data-payer-filter]').forEach((field) => { field.value = ''; }); filters = {}; page = Math.ceil(payers.length / pageSize); }
-    render(); showToast(mode === 'new' ? `${values.englishName || 'Payer'} was created successfully.` : `${values.englishName || 'Payer'} was updated successfully.`);
+    render(); const createdCount = organizationView ? modal.querySelectorAll('[data-payer-facilities] input:checked').length : 1; showToast(mode === 'new' ? `${values.englishName || 'Payer'} was created for ${createdCount} ${createdCount === 1 ? 'facility' : 'facilities'}.` : `${values.englishName || 'Payer'} was updated successfully.`);
   });
   modal.querySelector('[data-payer-close]').addEventListener('click', closeModal);
   modal.querySelector('[data-payer-cancel]').addEventListener('click', closeModal);

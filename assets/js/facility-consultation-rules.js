@@ -28,12 +28,12 @@
   const itemCode = (value = '') => value.match(/^\(([^)]+)\)/)?.[1] || '—';
   const itemName = (value = '') => value.replace(/^\([^)]+\)\s*/, '') || '—';
   let departments = readOptions(departmentsKey, [
-    { code: 'DPT-001', name: 'Ambulatory Care Clinic', type: 'Clinic', active: true },
-    { code: 'DPT-002', name: 'Emergency Department', type: 'Ward', active: true },
-    { code: 'DPT-003', name: 'Internal Medicine Ward', type: 'Ward', active: true },
-    { code: 'DPT-004', name: 'Outpatient Pharmacy', type: 'OP Pharmacy', active: true },
-    { code: 'DPT-005', name: 'Clinical Laboratory', type: 'Laboratory', active: true },
-    { code: 'DPT-006', name: 'Diagnostic Imaging', type: 'Imaging Location', active: true },
+    { code: 'DPT-001', name: 'Department 1', type: 'Clinic', active: true },
+    { code: 'DPT-002', name: 'Department 2', type: 'Ward', active: true },
+    { code: 'DPT-003', name: 'Department 3', type: 'Ward', active: true },
+    { code: 'DPT-004', name: 'Department 4', type: 'OP Pharmacy', active: true },
+    { code: 'DPT-005', name: 'Department 5', type: 'Laboratory', active: true },
+    { code: 'DPT-006', name: 'Department 6', type: 'Imaging Location', active: true },
   ]);
   let practitioners = readArray(practitionersKey);
   let clinics = [];

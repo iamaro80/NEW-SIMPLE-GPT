@@ -21,6 +21,7 @@
 
   let facilities = window.RcmFacilityStore.list();
   const hcpOptions = window.RcmFacilityStore.hcpOptions;
+  const addFacilityButton = grid?.querySelector('[data-add-facility]');
 
   const icons = {
     more: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>',
@@ -91,6 +92,10 @@
     grid.querySelectorAll('[data-page]').forEach((button) => {
       button.disabled = matching.length === 0 || (['first', 'previous'].includes(button.dataset.page) ? page === 1 : page === totalPages);
     });
+    if (addFacilityButton) {
+      addFacilityButton.disabled = facilities.length >= 6;
+      addFacilityButton.title = facilities.length >= 6 ? 'The prototype test scope is limited to six facilities.' : '';
+    }
   }
 
   function syncFilterOptions(fieldName, firstLabel, values) {
@@ -230,7 +235,10 @@
   if (!grid) return;
 
   syncAllFilterOptions();
-  grid.querySelector('[data-add-facility]').addEventListener('click', (event) => openFacilityModal('new', null, event.currentTarget));
+  addFacilityButton.addEventListener('click', (event) => {
+    if (facilities.length >= 6) return;
+    openFacilityModal('new', null, event.currentTarget);
+  });
   advancedToggle.addEventListener('click', () => {
     const expanded = advancedToggle.getAttribute('aria-expanded') === 'true';
     advancedToggle.setAttribute('aria-expanded', String(!expanded));

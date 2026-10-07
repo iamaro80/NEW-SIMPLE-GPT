@@ -8,13 +8,14 @@
     ['test', 'B'], ['1111', '111'], ['Mazen11111', 'DMw11111'], ['Mazen11', 'DMw11'],
     ['Mazen', 'DMw'], ['mazentestttttt', 'we'], ['Centeral Clinic', 'CC'],
   ];
-  const seed = Array.from({ length: 7 }, (_, index) => ({
+  const multiBranchSeed = Array.from({ length: 7 }, (_, index) => ({
     code: String(index + 1),
     englishName: `Branch ${index + 1}`,
     arabicName: `الفرع ${index + 1}`,
     prefix: `BR${index + 1}`,
     active: true,
   }));
+  const seed = facilityId === '1' ? multiBranchSeed : [{ code: '1', englishName: 'Branch 1', arabicName: 'الفرع 1', prefix: 'DEF', active: true, isDefault: true }];
 
   const rows = grid.querySelector('[data-branch-rows]');
   const empty = grid.querySelector('[data-branch-empty]');
@@ -52,6 +53,11 @@
       if (saved !== null) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
+          if (!parsed.length) {
+            const defaultBranch = [{ code: '1', englishName: 'Branch 1', arabicName: 'الفرع 1', prefix: 'DEF', active: true, isDefault: true }];
+            localStorage.setItem(storageKey, JSON.stringify(defaultBranch));
+            return defaultBranch;
+          }
           let migrated = false;
           const records = parsed.map((branch) => {
             const seedIndex = extractionSeed.findIndex(([englishName, prefix], index) =>
@@ -69,6 +75,11 @@
             };
           });
           if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
+          if (!records.some((branch) => branch.active !== false)) {
+            const numericCodes = records.map((branch) => Number(branch.code)).filter(Number.isFinite);
+            records.push({ code: String(Math.max(0, ...numericCodes) + 1), englishName: 'Branch 1', arabicName: 'الفرع 1', prefix: 'DEF', active: true, isDefault: true });
+            localStorage.setItem(storageKey, JSON.stringify(records));
+          }
           return records;
         }
       } else {
@@ -97,8 +108,13 @@
     ]));
   }
 
+  function shownBranches() {
+    const active = branches.filter((branch) => branch.active !== false);
+    return active.length <= 1 && active[0]?.isDefault ? [] : branches;
+  }
+
   function filteredBranches() {
-    return branches.filter((branch) => {
+    return shownBranches().filter((branch) => {
       for (const key of ['code', 'englishName', 'arabicName', 'prefix']) {
         if (appliedFilters[key] && !String(branch[key] || '').toLocaleLowerCase().includes(appliedFilters[key])) return false;
       }
@@ -252,6 +268,11 @@
     if (action.dataset.branchAction === 'view' || action.dataset.branchAction === 'edit') {
       closeMenus();
       openModal(action.dataset.branchAction, branch, rowTrigger);
+      return;
+    }
+    if (branch.active !== false && branches.filter((item) => item.active !== false).length <= 1) {
+      window.alert('Every facility must keep at least one active branch. Add another branch before deactivating this one.');
+      closeMenus();
       return;
     }
     branch.active = !branch.active;

@@ -12,12 +12,6 @@
     edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 8.4 15.6 5 4.8 15.8 4 20Z"/></svg>',
   };
   const choices = {
-    divisionType: [
-      ['Clinical', 'Clinical (إكلينيكي)'], ['Administrative', 'Administrative (إداري)'], ['Support', 'Support (دعم)'],
-    ],
-    divisionStatus: [
-      ['Active', 'Active (نشط)'], ['Inactive', 'Inactive (غير نشط)'], ['Suspended', 'Suspended (معلق)'],
-    ],
     locationType: [
       ['Clinical Zone', 'Clinical Zone (منطقة إكلينيكية)'], ['Diagnostic Area', 'Diagnostic Area (منطقة تشخيصية)'], ['Public Space', 'Public Space (مساحة عامة)'],
     ],
@@ -36,29 +30,6 @@
   };
   const configurations = [
     {
-      route: 'divisions', plural: 'Divisions', singular: 'Division', prefix: 'DIV', storage: `rcm-facility-divisions:v1:${facilityId}`,
-      fields: [
-        { key: 'code', label: 'Division Code', kind: 'code', required: true },
-        { key: 'nameEn', label: 'Division Name (EN)', kind: 'text', required: true },
-        { key: 'nameAr', label: 'Division Name (AR)', kind: 'text', required: true, rtl: true },
-        { key: 'parentDepartment', label: 'Parent Department', kind: 'relation', required: true, relation: 'departments' },
-        { key: 'divisionType', label: 'Division Type', kind: 'choice', required: true, choices: choices.divisionType },
-        { key: 'status', label: 'Status', kind: 'choice', required: true, choices: choices.divisionStatus, default: 'Active' },
-      ],
-      columns: [
-        ['code', 'Division Code'], ['nameEn', 'Division Name (EN)'], ['nameAr', 'Division Name (AR)'], ['parentDepartment', 'Parent Department'], ['divisionType', 'Division Type'], ['status', 'Status'],
-      ],
-      filterKeys: ['code', 'nameEn', 'nameAr', 'parentDepartment', 'divisionType', 'status'],
-      seed: [
-        { nameEn: 'Emergency Care Division', nameAr: 'قسم رعاية الطوارئ', parentDepartment: 'DPT-002', divisionType: 'Clinical', status: 'Active' },
-        { nameEn: 'Ambulatory Services Division', nameAr: 'قسم خدمات العيادات الخارجية', parentDepartment: 'DPT-001', divisionType: 'Clinical', status: 'Active' },
-        { nameEn: 'Inpatient Services Division', nameAr: 'قسم خدمات التنويم', parentDepartment: 'DPT-003', divisionType: 'Clinical', status: 'Active' },
-        { nameEn: 'Revenue Operations Division', nameAr: 'قسم العمليات المالية', parentDepartment: 'DPT-004', divisionType: 'Administrative', status: 'Active' },
-        { nameEn: 'Diagnostic Support Division', nameAr: 'قسم دعم التشخيص', parentDepartment: 'DPT-006', divisionType: 'Support', status: 'Active' },
-        { nameEn: 'Laboratory Services Division', nameAr: 'قسم خدمات المختبر', parentDepartment: 'DPT-005', divisionType: 'Clinical', status: 'Active' },
-      ],
-    },
-    {
       route: 'locations', plural: 'Locations', singular: 'Location', prefix: 'LOC', storage: `rcm-facility-locations:v1:${facilityId}`,
       fields: [
         { key: 'code', label: 'Location Code', kind: 'code', required: true },
@@ -73,12 +44,12 @@
       ],
       filterKeys: ['code', 'nameEn', 'nameAr', 'locationType', 'floorNumber', 'status'],
       seed: [
-        { nameEn: 'Emergency Ground Floor Zone', nameAr: 'منطقة الطوارئ - الطابق الأرضي', locationType: 'Clinical Zone', floorNumber: 'Ground Floor', status: 'Operational' },
-        { nameEn: 'Ambulatory West Wing', nameAr: 'الجناح الغربي للعيادات', locationType: 'Clinical Zone', floorNumber: 'Floor 1', status: 'Operational' },
-        { nameEn: 'Central Diagnostic Suite', nameAr: 'جناح التشخيص المركزي', locationType: 'Diagnostic Area', floorNumber: 'Floor 1', status: 'Operational' },
-        { nameEn: 'Main Reception Hall', nameAr: 'صالة الاستقبال الرئيسية', locationType: 'Public Space', floorNumber: 'Ground Floor', status: 'Operational' },
-        { nameEn: 'Lower Level Imaging', nameAr: 'التصوير في الطابق السفلي', locationType: 'Diagnostic Area', floorNumber: 'Basement', status: 'Under Maintenance' },
-        { nameEn: 'Outpatient Check-in Zone', nameAr: 'منطقة تسجيل العيادات الخارجية', locationType: 'Clinical Zone', floorNumber: 'Ground Floor', status: 'Operational' },
+        { nameEn: 'Location 1', nameAr: 'منطقة الطوارئ - الطابق الأرضي', locationType: 'Clinical Zone', floorNumber: 'Ground Floor', status: 'Operational' },
+        { nameEn: 'Location 2', nameAr: 'الجناح الغربي للعيادات', locationType: 'Clinical Zone', floorNumber: 'Floor 1', status: 'Operational' },
+        { nameEn: 'Location 3', nameAr: 'جناح التشخيص المركزي', locationType: 'Diagnostic Area', floorNumber: 'Floor 1', status: 'Operational' },
+        { nameEn: 'Location 4', nameAr: 'صالة الاستقبال الرئيسية', locationType: 'Public Space', floorNumber: 'Ground Floor', status: 'Operational' },
+        { nameEn: 'Location 5', nameAr: 'التصوير في الطابق السفلي', locationType: 'Diagnostic Area', floorNumber: 'Basement', status: 'Under Maintenance' },
+        { nameEn: 'Location 6', nameAr: 'منطقة تسجيل العيادات الخارجية', locationType: 'Clinical Zone', floorNumber: 'Ground Floor', status: 'Operational' },
       ],
     },
     {
@@ -88,21 +59,20 @@
         { key: 'nameEn', label: 'Room Name (EN)', kind: 'text', required: true },
         { key: 'nameAr', label: 'Room Name (AR)', kind: 'text', required: true, rtl: true },
         { key: 'parentLocation', label: 'Parent Location', kind: 'relation', required: true, relation: 'locations' },
-        { key: 'assignedDivision', label: 'Assigned Division', kind: 'relation', required: false, relation: 'divisions' },
         { key: 'classification', label: 'Room Classification', kind: 'choice', required: true, choices: choices.classification },
         { key: 'status', label: 'Availability Status', kind: 'choice', required: true, choices: choices.roomStatus, default: 'Available' },
       ],
       columns: [
-        ['code', 'Room Number / Code'], ['nameEn', 'Room Name (EN)'], ['nameAr', 'Room Name (AR)'], ['parentLocation', 'Parent Location'], ['assignedDivision', 'Assigned Division'], ['classification', 'Room Classification'], ['status', 'Availability Status'],
+        ['code', 'Room Number / Code'], ['nameEn', 'Room Name (EN)'], ['nameAr', 'Room Name (AR)'], ['parentLocation', 'Parent Location'], ['classification', 'Room Classification'], ['status', 'Availability Status'],
       ],
-      filterKeys: ['code', 'nameEn', 'nameAr', 'parentLocation', 'assignedDivision', 'classification', 'status'],
+      filterKeys: ['code', 'nameEn', 'nameAr', 'parentLocation', 'classification', 'status'],
       seed: [
-        { code: 'RM-001', nameEn: 'Emergency Assessment Room', nameAr: 'غرفة تقييم الطوارئ', parentLocation: 'LOC-001', assignedDivision: 'DIV-001', classification: 'Clinical / Non-Sterile', status: 'Available' },
-        { code: 'RM-002', nameEn: 'Emergency Treatment Room', nameAr: 'غرفة علاج الطوارئ', parentLocation: 'LOC-001', assignedDivision: 'DIV-001', classification: 'Clinical / Sterile', status: 'Occupied' },
-        { code: 'RM-003', nameEn: 'Family Medicine Room 1', nameAr: 'غرفة طب الأسرة ١', parentLocation: 'LOC-002', assignedDivision: 'DIV-002', classification: 'Clinical / Non-Sterile', status: 'Available' },
-        { code: 'RM-004', nameEn: 'Family Medicine Room 2', nameAr: 'غرفة طب الأسرة ٢', parentLocation: 'LOC-002', assignedDivision: 'DIV-002', classification: 'Clinical / Non-Sterile', status: 'Reserved' },
-        { code: 'RM-005', nameEn: 'Diagnostic Consultation Room', nameAr: 'غرفة الاستشارة التشخيصية', parentLocation: 'LOC-003', assignedDivision: 'DIV-005', classification: 'Clinical / Non-Sterile', status: 'Available' },
-        { code: 'RM-006', nameEn: 'Operations Office', nameAr: 'مكتب العمليات', parentLocation: 'LOC-004', assignedDivision: '', classification: 'Administrative Office', status: 'Available' },
+        { code: 'RM-001', nameEn: 'Room 1', nameAr: 'غرفة تقييم الطوارئ', parentLocation: 'LOC-001', classification: 'Clinical / Non-Sterile', status: 'Available' },
+        { code: 'RM-002', nameEn: 'Room 2', nameAr: 'غرفة علاج الطوارئ', parentLocation: 'LOC-001', classification: 'Clinical / Sterile', status: 'Occupied' },
+        { code: 'RM-003', nameEn: 'Room 3', nameAr: 'غرفة طب الأسرة ١', parentLocation: 'LOC-002', classification: 'Clinical / Non-Sterile', status: 'Available' },
+        { code: 'RM-004', nameEn: 'Room 4', nameAr: 'غرفة طب الأسرة ٢', parentLocation: 'LOC-002', classification: 'Clinical / Non-Sterile', status: 'Reserved' },
+        { code: 'RM-005', nameEn: 'Room 5', nameAr: 'غرفة الاستشارة التشخيصية', parentLocation: 'LOC-003', classification: 'Clinical / Non-Sterile', status: 'Available' },
+        { code: 'RM-006', nameEn: 'Room 6', nameAr: 'مكتب العمليات', parentLocation: 'LOC-004', classification: 'Administrative Office', status: 'Available' },
       ],
     },
   ];
@@ -237,7 +207,6 @@
   function displayValue(state, key, value) {
     if (key === 'parentDepartment') return relationName('departments', value);
     if (key === 'parentLocation') return relationName('locations', value);
-    if (key === 'assignedDivision') return relationName('divisions', value);
     return value || '—';
   }
 

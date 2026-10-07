@@ -6,11 +6,11 @@
   const storageKey = `rcm-facility-users:v1:${facilityId}`;
   const branchKey = `rcm-facility-branches:v1:${facilityId}`;
   const usersSeed = [
-    { username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', branchCode: '1', branchCodes: ['1'], notes: '', active: true, roleIds: [] },
-    { username: 'k.alharbi', englishName: 'Khalid Alharbi', arabicName: 'خالد الحربي', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', branchCode: '2', branchCodes: ['2'], notes: '', active: true, roleIds: [] },
-    { username: 'n.aldosari', englishName: 'Noura Aldosari', arabicName: 'نورة الدوسري', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', branchCode: '1', branchCodes: ['1'], notes: '', active: true, roleIds: [] },
-    { username: 'f.alqahtani', englishName: 'Faisal Alqahtani', arabicName: 'فيصل القحطاني', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', branchCode: '3', branchCodes: ['3'], notes: '', active: false, roleIds: [] },
-    { username: 's.alshammari', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', branchCode: '4', branchCodes: ['4'], notes: '', active: true, roleIds: [] },
+    { username: 'a.alotaibi', englishName: 'User 1', arabicName: 'مستخدم 1', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', branchCode: '1', branchCodes: ['1'], notes: '', active: true, roleIds: [] },
+    { username: 'k.alharbi', englishName: 'User 2', arabicName: 'مستخدم 2', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', branchCode: '2', branchCodes: ['2'], notes: '', active: true, roleIds: [] },
+    { username: 'n.aldosari', englishName: 'User 3', arabicName: 'مستخدم 3', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', branchCode: '1', branchCodes: ['1'], notes: '', active: true, roleIds: [] },
+    { username: 'f.alqahtani', englishName: 'User 4', arabicName: 'مستخدم 4', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', branchCode: '3', branchCodes: ['3'], notes: '', active: false, roleIds: [] },
+    { username: 's.alshammari', englishName: 'User 5', arabicName: 'مستخدم 5', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', branchCode: '4', branchCodes: ['4'], notes: '', active: true, roleIds: [] },
   ].map((record) => ({ ...record, facilityId }));
   const userTypes = ['Business Center', 'Overtimer', 'System Administrator', 'Employee'];
   const icons = {
@@ -24,12 +24,15 @@
   };
   const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   const branches = loadBranches();
+  const visibleBranches = branches.length <= 1 ? [] : branches;
+  const implicitBranchCodes = branches.length === 1 ? [String(branches[0].code)] : [];
   let users = loadUsers();
   let page = 1;
   let pageSize = 8;
   let mode = 'new';
   let currentUsername = null;
   let selectedRoleIds = [];
+  let selectedRoleBranchCodesById = {};
   let selectedBranchCodes = [];
   const assignmentPickerOpen = { branch: false, role: false };
   let suppressPickerFocusOpen = false;
@@ -44,7 +47,7 @@
       <label class="facility-filter"><span>Arabic Name</span><input type="search" data-user-filter="arabicName" placeholder="Search Arabic name" dir="rtl"></label>
       <label class="facility-filter"><span>Email</span><input type="search" data-user-filter="email" placeholder="Search email"></label>
       <label class="facility-filter"><span>User Type</span><select data-user-filter="userType"><option value="">All user types</option>${userTypes.map((item) => `<option>${escapeHtml(item)}</option>`).join('')}</select></label>
-      <label class="facility-filter"><span>Branch</span><select data-user-filter="branchCode"><option value="">All branches</option>${branches.map((item) => `<option value="${escapeHtml(item.code)}">${escapeHtml(item.englishName)}</option>`).join('')}</select></label>
+      <label class="facility-filter"><span>Branch</span><select data-user-filter="branchCode"><option value="">All branches</option>${visibleBranches.map((item) => `<option value="${escapeHtml(item.code)}">${escapeHtml(item.englishName)}</option>`).join('')}</select></label>
       <label class="facility-filter"><span>Status</span><select data-user-filter="status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
     </div></div>
     <div class="facility-table-card"><div class="facility-table-scroll"><table class="facility-table users-table"><thead><tr><th>English Name</th><th>User Name</th><th>Email</th><th>Mobile Number</th><th>User Type</th><th>Branch</th><th>Status</th><th>Actions</th></tr></thead><tbody data-user-rows></tbody></table></div>
@@ -64,8 +67,8 @@
         <label class="form-field user-notes"><span>Notes</span><textarea name="notes" rows="3"></textarea></label>
         <label class="form-field user-practitioner-link"><span>Practitioner</span><select name="practitionerId" data-user-practitioner-select><option value="">No practitioner linked</option><option value="__create__">+ Create New Practitioner</option></select><small>Link a practitioner assigned to this facility or create one here.</small></label>
       </div></fieldset>
-      <fieldset class="patient-form-section user-section user-assignment-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="user-multiselect" data-user-branch-assignment><div class="user-multiselect-control" data-user-branch-control><div class="user-role-chips" data-user-branch-chips aria-live="polite"></div><input type="search" data-user-branch-search placeholder="Select branches..." aria-label="Search branches" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-branch-options"><button class="user-multiselect-toggle" type="button" data-user-branch-toggle aria-label="Show branches" aria-expanded="false">⌄</button></div><div class="user-multiselect-options" id="user-branch-options" data-user-branch-options role="group" aria-label="Branches available to this facility" hidden></div><p class="user-role-help" data-user-branch-help>Choose any branches assigned to this user; branch assignment is optional.</p></div></fieldset>
-      <fieldset class="patient-form-section user-section user-assignment-section"><legend class="sr-only">Role Assignment</legend><div class="facility-form-section-heading">Role Assignment</div><div class="user-multiselect" data-user-role-assignment><div class="user-multiselect-control" data-user-role-control><div class="user-role-chips" data-user-role-chips aria-live="polite"></div><input type="search" data-user-role-search placeholder="Select roles..." aria-label="Search roles" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-role-options"><button class="user-multiselect-toggle" type="button" data-user-role-toggle aria-label="Show roles" aria-expanded="false">⌄</button></div><div class="user-multiselect-options" id="user-role-options" data-user-role-options role="group" aria-label="Roles available to this facility" hidden></div><p class="user-role-help" data-user-role-help>Select one or more active roles for this user.</p></div></fieldset>
+      <fieldset class="patient-form-section user-section user-assignment-section" data-user-branch-section><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><div class="user-multiselect" data-user-branch-assignment><div class="user-multiselect-control" data-user-branch-control><div class="user-role-chips" data-user-branch-chips aria-live="polite"></div><input type="search" data-user-branch-search placeholder="Select branches..." aria-label="Search branches" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-branch-options"><button class="user-multiselect-toggle" type="button" data-user-branch-toggle aria-label="Show branches" aria-expanded="false">⌄</button></div><div class="user-multiselect-options" id="user-branch-options" data-user-branch-options role="group" aria-label="Branches available to this facility" hidden></div><p class="user-role-help" data-user-branch-help>Choose any branches assigned to this user; branch assignment is optional.</p></div></fieldset>
+      <fieldset class="patient-form-section user-section user-assignment-section"><legend class="sr-only">Role Assignment</legend><div class="facility-form-section-heading">Role Assignment</div><div class="user-multiselect" data-user-role-assignment><div class="user-multiselect-control" data-user-role-control><div class="user-role-chips" data-user-role-chips aria-live="polite"></div><input type="search" data-user-role-search placeholder="Select roles..." aria-label="Search roles" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-role-options"><button class="user-multiselect-toggle" type="button" data-user-role-toggle aria-label="Show roles" aria-expanded="false">⌄</button></div><div class="user-multiselect-options" id="user-role-options" data-user-role-options role="group" aria-label="Roles available to this facility" hidden></div><p class="user-role-help" data-user-role-help>Select one or more active roles for this user.</p><div data-user-role-branch-grants></div></div></fieldset>
     </div><footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-user-cancel>Cancel</button><button type="submit" class="button button-primary" data-user-save>Create</button></div></footer></form></section>`;
   document.body.append(userModal);
 
@@ -87,7 +90,7 @@
     const user = Object.fromEntries(['englishName','arabicName','email','mobileCode','mobile'].map((name) => [name, userForm.elements.namedItem(name).value.trim()]));
     let departments = [];
     try { departments = JSON.parse(localStorage.getItem(`rcm-facility-departments:v1:${facilityId}`) || '[]'); } catch { departments = []; }
-    if (!departments.length) departments = [{ code: 'DPT-001', name: 'Ambulatory Care Clinic' }, { code: 'DPT-002', name: 'Emergency Department' }, { code: 'DPT-003', name: 'Internal Medicine Ward' }];
+    if (!departments.length) departments = [{ code: 'DPT-001', name: 'Department 1' }, { code: 'DPT-002', name: 'Department 2' }, { code: 'DPT-003', name: 'Department 3' }];
     const child = document.createElement('div'); child.className = 'patient-modal-backdrop practitioner-child-backdrop';
     const consultationItems = ['(90487-002) ANTENATAL C.T.G. (30 MIN)', '(182519) MYELIN OLIGODENDROCYTE GLYCOPROTEIN ABS TO BIO', '(182476) CENTO ARRAY CYTO HD TO CENTOGENE', '(182453) MSI BY PCR (MICROSATELLITE INSTABILITY BY PCR)', '(182436) CASPR 2 AB', '(182411) MYELOPROLIFERATIVE NEOPLASM (CALR)', '(182407) BRAF (SEND OUT TO UNILABS)', '(182402) NRAS (SEND OUT TO UNILABS)', '(182343) ONCOTYPE DX TEST', '(182264) BRAF-PCR', '(181809) DNA EXTRACTION FOR BANKING', '(132137) KAPPA'];
     child.innerHTML = `<section class="patient-modal practitioner-child-modal" role="dialog" aria-modal="true"><header class="patient-modal-header"><div><p class="eyebrow">PRACTITIONER RECORD</p><h2>Create Practitioner</h2><p>Saved immediately. It will link when you save this user.</p></div><button class="icon-button" type="button" data-child-close aria-label="Close">×</button></header><form><div class="patient-modal-body"><fieldset class="patient-form-section"><legend class="sr-only">Practitioner Information</legend><div class="facility-form-section-heading">Practitioner Information</div><div class="patient-form-grid"><label class="form-field"><span>Document ID <b>*</b></span><input name="documentId" required></label><label class="form-field"><span>English Name <b>*</b></span><input name="englishName" required value="${escapeHtml(user.englishName)}"></label><label class="form-field"><span>Arabic Name</span><input name="arabicName" dir="rtl" value="${escapeHtml(user.arabicName)}"></label><label class="form-field"><span>Email</span><input name="email" type="email" value="${escapeHtml(user.email)}"></label><label class="form-field"><span>Mobile Number</span><span class="phone-control"><select name="mobileCode"><option ${user.mobileCode === '+966' || !user.mobileCode ? 'selected' : ''}>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="mobile" type="tel" value="${escapeHtml(user.mobile)}"></span></label><label class="form-field"><span>Phone Number</span><span class="phone-control"><select name="phoneCode"><option selected>+966</option><option>+962</option><option>+20</option><option>+1</option><option>+44</option></select><input name="phone" type="tel"></span></label><label class="form-field"><span>Ext.</span><input name="extension"></label><label class="form-field"><span>Practitioner Role <b>*</b></span><select name="role" required><option value="">Select role</option>${['Doctor','Nurse','Pharmacist','Researcher','Teacher/educator','Dentist','Physiotherapist','Speechtherapist','ICT professional'].map((value) => `<option>${value}</option>`).join('')}</select></label><label class="form-field"><span>Document Type <b>*</b></span><select name="documentType" required><option value="">Select document type</option>${['National ID','Permanent Resident Card Number','Passport number','Visitor Permit','Medical record number','Border Number','Displaced person'].map((value) => `<option>${value}</option>`).join('')}</select></label><label class="form-field"><span>Prefix</span><input name="prefix"></label><label class="form-field"><span>Degree</span><input name="degree"></label><label class="form-field"><span>License Number</span><input name="licenseNumber"></label><label class="form-field"><span>License Start</span><input name="licenseStart" type="date"></label><label class="form-field"><span>License End</span><input name="licenseEnd" type="date"></label><label class="form-field"><span>Practitioner Specialty <b>*</b></span><select name="specialty" required><option value="">Select specialty</option>${['Anesthesiology Specialty','Ambulatory Anesthesia','Neuro-Anesthesia','Community Health','Dermatology Specialty','Emergency Medicine Specialty','Adult Emergency Medicine'].map((value) => `<option>${value}</option>`).join('')}</select></label><label class="form-field"><span>Designation <b>*</b></span><select name="designation" required><option value="">Select designation</option>${['Assistant Consultant','Associate Consultant','Board Certified Physician','Consultant','Dental Hygienist','Dentist','Division Head','Emergency Consultant'].map((value) => `<option>${value}</option>`).join('')}</select></label><label class="form-field"><span>Consultation Item</span><select name="consultationItem"><option value="">Select consultation item</option>${consultationItems.map((item) => `<option>${escapeHtml(item)}</option>`).join('')}</select></label><label class="form-field"><span>Follow Up</span><select name="followUp"><option value="">Select follow up</option>${consultationItems.slice(0, 6).map((item) => `<option>${escapeHtml(item)}</option>`).join('')}</select></label></div></fieldset><fieldset class="patient-form-section"><legend class="sr-only">Facility Assignment</legend><div class="facility-form-section-heading">Facility Assignment</div><p class="muted">${escapeHtml(window.RcmFacilityStore?.list?.().find((item) => String(item.id) === String(facilityId))?.englishName || 'Current Facility')}</p><div class="form-field"><span>Departments <b>*</b></span><div class="practitioner-child-checklist">${departments.map((item) => `<label class="form-check"><input type="checkbox" name="departmentCodes" value="${escapeHtml(item.code)}"><span>${escapeHtml(item.name || item.englishName || item.code)}</span></label>`).join('')}</div></div></fieldset></div><footer class="patient-modal-footer"><span><small><b>*</b> Required fields</small></span><div><button type="button" class="button button-secondary" data-child-cancel>Cancel</button><button type="submit" class="button button-primary">Create Practitioner</button></div></footer></form></section>`;
@@ -128,9 +131,23 @@
   function loadBranches() {
     try {
       const stored = JSON.parse(localStorage.getItem(branchKey) || 'null');
-      if (Array.isArray(stored)) return stored;
+      if (Array.isArray(stored) && stored.length) {
+        const active = stored.filter((branch) => branch.active !== false);
+        if (active.length) return active;
+        const numericCodes = stored.map((branch) => Number(branch.code)).filter(Number.isFinite);
+        const defaultBranch = { code: String(Math.max(0, ...numericCodes) + 1), englishName: 'Branch 1', arabicName: 'الفرع 1', prefix: 'DEF', active: true, isDefault: true };
+        localStorage.setItem(branchKey, JSON.stringify([...stored, defaultBranch])); return [defaultBranch];
+      }
+      if (Array.isArray(stored) && !stored.length) {
+        const defaultBranch = [{ code: '1', englishName: 'Branch 1', arabicName: 'الفرع 1', active: true, isDefault: true }];
+        localStorage.setItem(branchKey, JSON.stringify(defaultBranch)); return defaultBranch;
+      }
     } catch { /* Use facility-scoped mock choices below. */ }
-    return Array.from({ length: 7 }, (_, index) => ({ code: String(index + 1), englishName: `Branch ${index + 1}`, arabicName: `الفرع ${index + 1}` }));
+    const defaultBranch = facilityId === '1'
+      ? Array.from({ length: 7 }, (_, index) => ({ code: String(index + 1), englishName: `Branch ${index + 1}`, arabicName: `الفرع ${index + 1}`, active: true }))
+      : [{ code: '1', englishName: 'Branch 1', arabicName: 'الفرع 1', active: true, isDefault: true }];
+    try { localStorage.setItem(branchKey, JSON.stringify(defaultBranch)); } catch { /* use memory */ }
+    return defaultBranch;
   }
 
   function loadUsers() {
@@ -146,7 +163,10 @@
             const { badgeNumber, permissionIds, ...cleanRecord } = record;
             if (badgeNumber !== undefined || permissionIds !== undefined || !Array.isArray(record.roleIds)) migrated = true;
             const branchCodes = (Array.isArray(record.branchCodes) ? record.branchCodes : record.branchCode ? [record.branchCode] : []).map(String);
-            return { ...cleanRecord, facilityId, branchCodes, branchCode: branchCodes[0] || '', roleIds: Array.isArray(record.roleIds) ? record.roleIds : [] };
+            const roleIds = Array.isArray(record.roleIds) ? record.roleIds : [];
+            const roleBranchCodesById = { ...(record.roleBranchCodesById || {}) };
+            roleIds.forEach((roleId) => { if (!Object.hasOwn(roleBranchCodesById, roleId)) roleBranchCodesById[roleId] = []; });
+            return { ...cleanRecord, facilityId, branchCodes, branchCode: branchCodes[0] || '', roleIds, roleBranchCodesById };
           });
           const sharedRows = window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, records);
           const result = sharedRows?.length ? sharedRows : records;
@@ -158,7 +178,7 @@
       const sharedRows = window.RcmOrganizationStaffStore?.saveFacility('users', facilityId, usersSeed);
       if (sharedRows?.length) { localStorage.setItem(storageKey, JSON.stringify(sharedRows)); return sharedRows; }
     } catch { /* Keep mock state usable if browser storage is unavailable. */ }
-    return usersSeed.map((record) => ({ ...record, branchCodes: (record.branchCodes || (record.branchCode ? [record.branchCode] : [])).map(String), roleIds: [...record.roleIds] }));
+    return usersSeed.map((record) => ({ ...record, branchCodes: (record.branchCodes || (record.branchCode ? [record.branchCode] : [])).map(String), roleIds: [...record.roleIds], roleBranchCodesById: {} }));
   }
 
   function save() {
@@ -169,7 +189,7 @@
 
   function branchName(code) { return branches.find((item) => String(item.code) === String(code))?.englishName || '—'; }
   function userBranchCodes(user) { return (Array.isArray(user.branchCodes) ? user.branchCodes : user.branchCode ? [user.branchCode] : []).map(String); }
-  function userBranchNames(user) { const names = userBranchCodes(user).map(branchName).filter((name) => name !== '—'); return names.join(', ') || '—'; }
+  function userBranchNames(user) { if (branches.length <= 1) return '—'; const names = userBranchCodes(user).map(branchName).filter((name) => name !== '—'); return names.join(', ') || '—'; }
   function showToast(message) {
     toast.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2400);
@@ -226,10 +246,13 @@
     userModal.querySelector('#user-modal-description').textContent = isNew ? 'Enter user information, branch, and roles.' : nextMode === 'view' ? 'Review user information, branch, and assigned roles.' : 'Update user information, branch, and roles.';
     userModal.querySelector('[data-user-save]').textContent = isNew ? 'Create' : 'Save changes';
     selectedRoleIds = (user?.roleIds || []).map(String);
+    selectedRoleBranchCodesById = Object.fromEntries(Object.entries(user?.roleBranchCodesById || {}).map(([id, codes]) => [String(id), (codes || []).map(String)]));
     assignmentPickerOpen.branch = false; assignmentPickerOpen.role = false;
     userModal.querySelector('[data-user-role-search]').value = '';
     renderPractitionerChoices(user?.practitionerId || '');
     selectedBranchCodes = user ? userBranchCodes(user) : [];
+    if (implicitBranchCodes.length && !selectedBranchCodes.length) selectedBranchCodes = [...implicitBranchCodes];
+    userModal.querySelector('[data-user-branch-section]').hidden = branches.length <= 1 && branches[0]?.isDefault;
     userModal.querySelector('[data-user-branch-search]').value = '';
     if (user) {
       for (const name of ['arabicName', 'englishName', 'username', 'email', 'mobile', 'userType', 'notes']) {
@@ -257,7 +280,12 @@
   function renderRoleChoices(user) {
     const list = permissionsModal.querySelector('[data-permission-list]');
     const selectableRoles = (window.RcmFacilityRoles?.list?.() || []).filter((role) => role.active || user.roleIds.includes(role.id));
-    list.innerHTML = selectableRoles.length ? selectableRoles.map((role) => `<label class="form-check"><input type="checkbox" name="roleIds" value="${escapeHtml(role.id)}" ${user.roleIds.includes(role.id) ? 'checked' : ''} ${role.active ? '' : 'disabled'}><span><strong>${escapeHtml(role.englishName)}${role.active ? '' : ' · Inactive'}</strong><small lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</small></span></label>`).join('') : '<p class="user-permission-empty">No active roles are available. Add or activate a role in Settings first.</p>';
+    const memberships = userBranchCodes(user).length ? userBranchCodes(user) : implicitBranchCodes;
+    list.innerHTML = selectableRoles.length ? selectableRoles.map((role) => {
+      const checked = user.roleIds.map(String).includes(String(role.id));
+      const grants = new Set((user.roleBranchCodesById?.[role.id]?.length ? user.roleBranchCodesById[role.id] : (checked ? memberships : [])).map(String));
+      return `<div class="user-role-grant-row"><label class="form-check"><input type="checkbox" name="roleIds" value="${escapeHtml(role.id)}" ${checked ? 'checked' : ''} ${role.active ? '' : 'disabled'}><span><strong>${escapeHtml(role.englishName)}${role.active ? '' : ' · Inactive'}</strong><small lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</small></span></label>${role.branchScope === 'branch' ? `<div class="user-role-grant-branches"${checked ? '' : ' hidden'}>${visibleBranches.filter((branch) => memberships.includes(String(branch.code))).map((branch) => `<label class="form-check"><input type="checkbox" data-permission-role-branch data-role-id="${escapeHtml(role.id)}" value="${escapeHtml(branch.code)}" ${grants.has(String(branch.code)) ? 'checked' : ''}><span>${escapeHtml(branchName(branch.code))}</span></label>`).join('') || (implicitBranchCodes.length && memberships.includes(implicitBranchCodes[0]) ? '<small>The default branch is assigned automatically.</small>' : '<small>No branch membership is assigned.</small>')}</div>` : '<small class="user-role-scope-note">Facility-wide · all active branches</small>'}</div>`;
+    }).join('') : '<p class="user-permission-empty">No active roles are available. Add or activate a role in Settings first.</p>';
     permissionsModal.querySelector('[data-permission-search]').value = '';
     list.querySelectorAll('.form-check').forEach((item) => { item.hidden = false; });
   }
@@ -282,12 +310,19 @@
       const searchable = `${role.englishName} ${role.arabicName || ''}`.toLocaleLowerCase();
       return `<label class="user-role-option"${query && !searchable.includes(query) ? ' hidden' : ''}><input type="checkbox" data-user-role-choice value="${escapeHtml(role.id)}" ${isSelected ? 'checked' : ''} ${!role.active && isSelected ? 'disabled' : ''}><span>${escapeHtml(role.englishName)}${!role.active ? ' · Inactive' : ''}${role.arabicName ? `<small lang="ar" dir="rtl">${escapeHtml(role.arabicName)}</small>` : ''}</span></label>`;
     }).join('') : '<p class="user-role-empty">No active roles are available. Add or activate a role in Settings first.</p>';
+    userModal.querySelector('[data-user-role-branch-grants]').innerHTML = chosen.filter((role) => role.branchScope === 'branch').map((role) => {
+      const roleId = String(role.id), assigned = new Set((selectedRoleBranchCodesById[roleId]?.length ? selectedRoleBranchCodesById[roleId] : selectedBranchCodes).map(String));
+      const eligibleBranches = visibleBranches.filter((branch) => selectedBranchCodes.includes(String(branch.code)));
+      const grantRows = eligibleBranches.map((branch) => `<label class="form-check"><input type="checkbox" data-role-branch-grant data-role-id="${escapeHtml(roleId)}" value="${escapeHtml(branch.code)}" ${assigned.has(String(branch.code)) ? 'checked' : ''} ${readOnly ? 'disabled' : ''}><span>${escapeHtml(branch.englishName)}</span></label>`).join('');
+      return `<fieldset class="user-role-branch-grant"><legend>${escapeHtml(role.englishName)} · Branch access</legend><div class="user-role-branch-list">${grantRows || (implicitBranchCodes.length && selectedBranchCodes.includes(implicitBranchCodes[0]) ? '<small>The default branch is assigned automatically.</small>' : '<small>Select the user’s branches first.</small>')}</div></fieldset>`;
+    }).join('');
     setAssignmentPickerOpen('role', assignmentPickerOpen.role && !readOnly);
     if (restoreSearch) { searchInput.focus(); searchInput.setSelectionRange(cursor, cursor); }
     else if (focusedChoice !== null) [...list.querySelectorAll('[data-user-role-choice]')].find((input) => input.value === focusedChoice)?.focus();
   }
   function renderUserBranchAssignment(readOnly = mode === 'view') {
     const selected = new Set(selectedBranchCodes.map(String));
+    userModal.querySelector('[data-user-branch-section]').hidden = visibleBranches.length === 0;
     const searchInput = userModal.querySelector('[data-user-branch-search]');
     const focused = document.activeElement;
     const restoreSearch = focused === searchInput;
@@ -397,6 +432,14 @@
         ? [...new Set([...selectedBranchCodes.map(String), branchCode])]
         : selectedBranchCodes.filter((code) => String(code) !== branchCode);
       renderUserBranchAssignment();
+      renderUserRoleAssignment();
+      return;
+    }
+    if (event.target.matches('[data-role-branch-grant]')) {
+      const roleId = String(event.target.dataset.roleId), branchCode = String(event.target.value);
+      const selected = new Set((selectedRoleBranchCodesById[roleId] || []).map(String));
+      if (event.target.checked) selected.add(branchCode); else selected.delete(branchCode);
+      selectedRoleBranchCodesById[roleId] = [...selected];
       return;
     }
     if (!event.target.matches('[data-user-role-choice]')) return;
@@ -410,7 +453,9 @@
     const removeBranch = event.target.closest('[data-user-branch-remove]');
     if (removeBranch) {
       selectedBranchCodes = selectedBranchCodes.filter((code) => String(code) !== String(removeBranch.dataset.userBranchRemove));
+      Object.keys(selectedRoleBranchCodesById).forEach((roleId) => { selectedRoleBranchCodesById[roleId] = (selectedRoleBranchCodesById[roleId] || []).filter((code) => selectedBranchCodes.includes(String(code))); });
       renderUserBranchAssignment();
+      renderUserRoleAssignment();
       userModal.querySelector('[data-user-branch-search]').focus();
       return;
     }
@@ -428,13 +473,18 @@
       usernameField.setCustomValidity('This user name is already in use for this facility.'); usernameField.reportValidity(); return;
     }
     if (!userForm.reportValidity()) return;
+    const roleRows = (window.RcmFacilityRoles?.list?.() || []).filter((role) => selectedRoleIds.includes(String(role.id)) && role.branchScope === 'branch');
+    for (const role of roleRows) {
+      const grants = selectedRoleBranchCodesById[String(role.id)]?.length ? selectedRoleBranchCodesById[String(role.id)] : (implicitBranchCodes.length ? implicitBranchCodes : []);
+      if (!grants.some((code) => selectedBranchCodes.includes(String(code)))) { window.alert(`Select at least one assigned branch for the ${role.englishName} role.`); return; }
+    }
     const values = {
       arabicName: userForm.elements.namedItem('arabicName').value.trim(),
       englishName: userForm.elements.namedItem('englishName').value.trim(), username: usernameField.value.trim(),
       email: userForm.elements.namedItem('email').value.trim(), mobileCode: userForm.elements.namedItem('mobileCode').value,
       mobile: userForm.elements.namedItem('mobile').value.trim(), userType: userForm.elements.namedItem('userType').value,
       notes: userForm.elements.namedItem('notes').value.trim(),
-      branchCode: selectedBranchCodes[0] || '', branchCodes: [...selectedBranchCodes], facilityId, roleIds: [...selectedRoleIds],
+      branchCode: selectedBranchCodes[0] || '', branchCodes: [...selectedBranchCodes], facilityId, roleIds: [...selectedRoleIds], roleBranchCodesById: Object.fromEntries(selectedRoleIds.map((roleId) => [String(roleId), (selectedRoleBranchCodesById[String(roleId)]?.length ? selectedRoleBranchCodesById[String(roleId)] : implicitBranchCodes).filter((code) => selectedBranchCodes.includes(String(code)))])),
       practitionerId: userForm.elements.namedItem('practitionerId').value || '',
     };
     const linkedPractitioner = values.practitionerId && (window.RcmOrganizationStaffStore?.list('practitioners') || []).find((item) => String(item.id) === String(values.practitionerId));
@@ -452,6 +502,7 @@
       window.RcmOrganizationStaffStore?.link('users', record.id, values.practitionerId);
     }
   });
+
   passwordModal.querySelector('form').addEventListener('submit', (event) => {
     event.preventDefault();
     const form = event.currentTarget; const password = form.elements.namedItem('password'); const confirmation = form.elements.namedItem('confirmPassword');
@@ -464,9 +515,24 @@
     const query = event.target.value.toLocaleLowerCase();
     permissionsModal.querySelectorAll('.user-permission-list .form-check').forEach((item) => { item.hidden = !item.textContent.toLocaleLowerCase().includes(query); });
   });
+  permissionsModal.querySelector('[data-permission-list]').addEventListener('change', (event) => {
+    const roleCheckbox = event.target.closest('[name="roleIds"]');
+    if (roleCheckbox) roleCheckbox.closest('.user-role-grant-row')?.querySelector('.user-role-grant-branches')?.toggleAttribute('hidden', !roleCheckbox.checked);
+  });
   permissionsModal.querySelector('form').addEventListener('submit', (event) => {
     event.preventDefault(); const user = userByName(currentUsername); if (!user) return;
-    user.roleIds = [...permissionsModal.querySelectorAll('[name="roleIds"]:checked')].map((input) => input.value);
+    const roleIds = [...permissionsModal.querySelectorAll('[name="roleIds"]:checked')].map((input) => String(input.value));
+    const roleBranchCodesById = { ...(user.roleBranchCodesById || {}) };
+    const roleList = window.RcmFacilityRoles?.list?.() || [];
+    for (const roleId of roleIds) {
+      const role = roleList.find((item) => String(item.id) === roleId);
+      if (role?.branchScope !== 'branch') { delete roleBranchCodesById[roleId]; continue; }
+      const grants = [...permissionsModal.querySelectorAll(`[data-permission-role-branch][data-role-id="${CSS.escape(roleId)}"]:checked`)].map((input) => String(input.value));
+      if (!grants.length && implicitBranchCodes.length) grants.push(...implicitBranchCodes);
+      if (!grants.length) { window.alert(`Select at least one branch for the ${role.englishName} role.`); return; }
+      roleBranchCodesById[roleId] = grants;
+    }
+    user.roleIds = roleIds; user.roleBranchCodesById = roleBranchCodesById;
     save(); closeModal(permissionsModal); showToast(`Roles updated for ${user.englishName}.`);
   });
   window.addEventListener('rcm:roles-changed', () => {

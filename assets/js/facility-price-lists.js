@@ -3,6 +3,8 @@
   if (!root) return;
 
   const pageSize = 6;
+  const facilityId = String(document.body.dataset.currentFacilityId || '1');
+  const storageKey = `rcm-facility-price-lists:v1:${facilityId}`;
   const itemPageSize = 6;
   const esc = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   const icons = {
@@ -15,7 +17,7 @@
     upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>',
     close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   };
-  const items = [
+  const fallbackItems = [
     { code: 'SV-1001', hospitalCode: 'HSP-OP-001', hospitalDescription: 'Outpatient Consultation', description: 'Primary care consultation', chapter: 'Consultation Services', block: 'Primary Care' },
     { code: 'SV-1002', hospitalCode: 'HSP-OP-002', hospitalDescription: 'Follow-up Visit', description: 'Follow-up consultation', chapter: 'Consultation Services', block: 'Primary Care' },
     { code: 'SV-2001', hospitalCode: 'HSP-LAB-001', hospitalDescription: 'Core Laboratory', description: 'Complete blood count', chapter: 'Laboratory Services', block: 'Hematology' },
@@ -24,15 +26,28 @@
     { code: 'SV-4001', hospitalCode: 'HSP-PT-001', hospitalDescription: 'Rehabilitation Services', description: 'Physiotherapy session', chapter: 'Rehabilitation Services', block: 'Therapeutic Services' },
     { code: 'SV-5001', hospitalCode: 'HSP-PH-003', hospitalDescription: 'Outpatient Pharmacy', description: 'Medication dispensing service', chapter: 'Pharmacy Services', block: 'Dispensing' },
   ];
+  const savedItems = (() => { try { const value = JSON.parse(localStorage.getItem(`rcm-facility-service-items:v1:${facilityId}`) || 'null'); return Array.isArray(value) ? value : null; } catch { return null; } })();
+  const items = savedItems?.length ? savedItems.map((item) => ({ code: item.code, hospitalCode: item.hospitalCode || '', hospitalDescription: item.hospitalDescription || '', description: item.shortDescription || item.longDescription || item.code, chapter: item.chapter || '', block: item.block || '' })) : fallbackItems;
   const itemByCode = new Map(items.map((item) => [item.code, item]));
   const chapters = [...new Set(items.map((item) => item.chapter))];
   const entries = (codes, prices) => codes.map((code, index) => ({ code, discount: index === 1 ? '0.05' : '0', price: prices[index] ?? '', vat: 'Standard', approval: index === 2 ? '101' : '100' }));
-  const records = [
-    { id: 'pl-ambulatory', name: 'Ambulatory Care Rates', description: 'Professional fees for outpatient and follow-up services.', status: 'Active', discountRate: '0', startDate: '2026-09-01', endDate: '', versions: [{ version: 2, status: 'Active', startDate: '2026-09-01', endDate: '', entries: entries(['SV-1001', 'SV-1002', 'SV-2001'], ['165.00', '95.00', '42.00']) }, { version: 1, status: 'Inactive', startDate: '2026-08-01', endDate: '2026-08-31', entries: entries(['SV-1001', 'SV-1002'], ['155.00', '90.00']) }] },
-    { id: 'pl-diagnostics', name: 'Diagnostic Services Schedule', description: 'Contracted pricing for laboratory and imaging services.', status: 'Active', discountRate: '0.03', startDate: '2026-07-01', endDate: '', versions: [{ version: 1, status: 'Active', startDate: '2026-07-01', endDate: '', entries: entries(['SV-2001', 'SV-2011', 'SV-3001'], ['40.00', '88.00', '135.00']) }] },
-    { id: 'pl-rehabilitation', name: 'Rehabilitation Package Rates', description: 'Physiotherapy and rehabilitation service pricing.', status: 'Inactive', discountRate: '0', startDate: '2026-03-01', endDate: '2026-08-31', versions: [{ version: 1, status: 'Inactive', startDate: '2026-03-01', endDate: '2026-08-31', entries: entries(['SV-4001'], ['120.00']) }] },
-    { id: 'pl-pharmacy', name: 'Pharmacy Service Fees', description: 'Outpatient medication dispensing fees and approvals.', status: 'Active', discountRate: '0', startDate: '2026-06-01', endDate: '', versions: [{ version: 1, status: 'Active', startDate: '2026-06-01', endDate: '', entries: entries(['SV-5001', 'SV-1001'], ['18.00', '150.00']) }] },
+  const seedRecords = [
+    { id: 'pl-ambulatory', name: 'Price List 1', description: 'Price list description 1', status: 'Active', discountRate: '0', startDate: '2026-09-01', endDate: '', versions: [{ version: 2, status: 'Active', startDate: '2026-09-01', endDate: '', entries: entries(['SV-1001', 'SV-1002', 'SV-2001'], ['165.00', '95.00', '42.00']) }, { version: 1, status: 'Inactive', startDate: '2026-08-01', endDate: '2026-08-31', entries: entries(['SV-1001', 'SV-1002'], ['155.00', '90.00']) }] },
+    { id: 'pl-diagnostics', name: 'Price List 2', description: 'Price list description 2', status: 'Active', discountRate: '0.03', startDate: '2026-07-01', endDate: '', versions: [{ version: 1, status: 'Active', startDate: '2026-07-01', endDate: '', entries: entries(['SV-2001', 'SV-2011', 'SV-3001'], ['40.00', '88.00', '135.00']) }] },
+    { id: 'pl-rehabilitation', name: 'Price List 3', description: 'Price list description 3', status: 'Inactive', discountRate: '0', startDate: '2026-03-01', endDate: '2026-08-31', versions: [{ version: 1, status: 'Inactive', startDate: '2026-03-01', endDate: '2026-08-31', entries: entries(['SV-4001'], ['120.00']) }] },
+    { id: 'pl-pharmacy', name: 'Price List 4', description: 'Price list description 4', status: 'Active', discountRate: '0', startDate: '2026-06-01', endDate: '', versions: [{ version: 1, status: 'Active', startDate: '2026-06-01', endDate: '', entries: entries(['SV-5001', 'SV-1001'], ['18.00', '150.00']) }] },
   ];
+  const records = (() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored !== null) { const parsed = JSON.parse(stored); if (Array.isArray(parsed)) return parsed; }
+      const seeded = seedRecords.map((record) => ({ ...record, versions: record.versions.map((version) => ({ ...version, entries: version.entries.filter((entry) => itemByCode.has(entry.code)) })) }));
+      localStorage.setItem(storageKey, JSON.stringify(seeded));
+      return seeded;
+    } catch { /* keep the screen usable if storage is unavailable */ }
+    return seedRecords.map((record) => ({ ...record, versions: record.versions.map((version) => ({ ...version, entries: version.entries.filter((entry) => itemByCode.has(entry.code)) })) }));
+  })();
+  function persist() { try { localStorage.setItem(storageKey, JSON.stringify(records)); } catch { /* retain in-memory changes */ } }
   let filters = { name: '', startDate: '', endDate: '', status: '' };
   let page = 1;
   let itemPage = 1;
@@ -103,7 +118,7 @@
     itemChapter = '';
     itemPage = 1;
     if (modeName === 'new') formValues = { name: '', description: '', discountRate: '0', startDate: '', endDate: '', versions: [{ version: 1, status: 'Active', startDate: '', endDate: '', entries: [] }] };
-    else formValues = { ...currentRecord() };
+    else formValues = JSON.parse(JSON.stringify(currentRecord()));
     renderDetail();
   }
   function renderDetail() {
@@ -162,6 +177,11 @@
   root.addEventListener('input', (event) => {
     if (event.target.matches('[data-price-filter]')) { filters[event.target.dataset.priceFilter] = event.target.value.toLowerCase(); page = 1; renderList(); }
     else if (event.target.matches('[data-price-field]')) formValues[event.target.dataset.priceField] = event.target.value;
+    else if (event.target.matches('.price-list-cell-input, .price-list-cell-select')) {
+      const row = event.target.closest('tr'); const code = row?.querySelector('.price-list-code')?.textContent;
+      const entry = currentVersion(formValues).entries.find((item) => item.code === code);
+      if (entry) { const cellIndex = [...row.querySelectorAll('input,select')].indexOf(event.target); if (event.target.matches('input')) { const inputs = row.querySelectorAll('input'); entry.discount = inputs[0].value; entry.price = inputs[1].value; } else { const selects = row.querySelectorAll('select'); entry.vat = selects[0].value; entry.approval = selects[1].value; } }
+    }
     else if (event.target.matches('[data-price-item-search]')) {
       const cursor = event.target.selectionStart;
       itemQuery = event.target.value.toLowerCase();
@@ -179,6 +199,11 @@
     else if (event.target.matches('[data-price-version]')) { selectedVersion = Number(event.target.value); itemPage = 1; renderDetail(); }
     else if (event.target.matches('[data-price-picker-chapter]')) { pickerPage = 1; renderPicker(); }
     else if (event.target.matches('[data-price-select-code]')) { if (event.target.checked) selectedCodes.add(event.target.dataset.priceSelectCode); else selectedCodes.delete(event.target.dataset.priceSelectCode); renderPicker(); }
+    else if (event.target.matches('.price-list-cell-input, .price-list-cell-select')) {
+      const row = event.target.closest('tr'); const code = row?.querySelector('.price-list-code')?.textContent;
+      const entry = currentVersion(formValues).entries.find((item) => item.code === code);
+      if (entry) { const inputs = row.querySelectorAll('input'); const selects = row.querySelectorAll('select'); entry.discount = inputs[0]?.value || '0'; entry.price = inputs[1]?.value || ''; entry.vat = selects[0]?.value || 'Standard'; entry.approval = selects[1]?.value || '100'; }
+    }
     else if (event.target.matches('[data-price-picker-all]')) {
       root.querySelectorAll('[data-price-select-code]').forEach((checkbox) => { if (event.target.checked) selectedCodes.add(checkbox.dataset.priceSelectCode); else selectedCodes.delete(checkbox.dataset.priceSelectCode); });
       renderPicker();
@@ -199,10 +224,16 @@
     if (event.target.closest('[data-price-add]')) { screen('new'); return; }
     if (event.target.closest('[data-price-export], [data-price-sample], [data-price-upload]')) { showToast('This prototype control is for screen preview only.'); return; }
     if (event.target.closest('[data-price-back], [data-price-cancel]')) { screen('list'); return; }
-    if (event.target.closest('[data-price-save]')) { if (detailScreen.querySelector('form')?.reportValidity?.() === false) return; showToast('Screen preview only — price list changes are not saved.'); return; }
+    if (event.target.closest('[data-price-save]')) {
+      const form = detailScreen.querySelector('form'); if (form && !form.reportValidity()) return;
+      const activeVersion = currentVersion(formValues); activeVersion.entries = activeVersion.entries.filter((entry) => itemByCode.has(entry.code));
+      if (mode === 'new') { formValues.id = `price-list-${Date.now()}`; formValues.status = 'Active'; records.unshift(JSON.parse(JSON.stringify(formValues))); }
+      else { const index = records.findIndex((record) => record.id === activeId); if (index >= 0) records[index] = JSON.parse(JSON.stringify(formValues)); }
+      persist(); showToast('Price List saved.'); screen('list'); return;
+    }
     if (event.target.closest('[data-price-detail-history]')) { openHistory(currentRecord()); return; }
     if (event.target.closest('[data-price-add-multiple]')) { selectedCodes = new Set((currentVersion(formValues)?.entries || []).map((entry) => entry.code)); pickerQuery = ''; itemsModal.hidden = false; document.body.classList.add('modal-open'); renderPicker(); return; }
-    if (event.target.closest('[data-price-picker-add]')) { closeModal(itemsModal); showToast(`${selectedCodes.size} item${selectedCodes.size === 1 ? '' : 's'} selected for preview; changes are not saved.`); return; }
+    if (event.target.closest('[data-price-picker-add]')) { const version = currentVersion(formValues); const old = new Map(version.entries.map((entry) => [entry.code, entry])); version.entries = [...selectedCodes].filter((code) => itemByCode.has(code)).map((code) => old.get(code) || { code, discount: '0', price: '', vat: 'Standard', approval: '100' }); renderDetail(); closeModal(itemsModal); showToast(`${selectedCodes.size} item${selectedCodes.size === 1 ? '' : 's'} selected.`); return; }
     if (event.target.closest('[data-price-picker-cancel], [data-price-picker-close]')) { closeModal(itemsModal); return; }
     if (event.target.closest('[data-price-history-close]')) { closeModal(historyModal); return; }
     const pageButton = event.target.closest('[data-price-page]');
@@ -218,4 +249,6 @@
   window.addEventListener('keydown', (event) => { if (event.key === 'Escape') { if (!itemsModal.hidden) closeModal(itemsModal); else if (!historyModal.hidden) closeModal(historyModal); else if (mode !== 'list') screen('list'); } });
   root.hidden = location.hash.slice(1) !== 'price-lists';
   renderList();
+  const deepLink = new URLSearchParams(location.search);
+  if (deepLink.get('recordId') && ['view', 'edit'].includes(deepLink.get('mode'))) screen(deepLink.get('mode'), deepLink.get('recordId'));
 })();

@@ -6,13 +6,21 @@
   const storageKey = `rcm-facility-departments:v1:${facilityId}`;
   const branchStorageKey = `rcm-facility-branches:v1:${facilityId}`;
   const seed = [
-    { name: 'Ambulatory Care Clinic', parentBranch: '1', type: 'Clinic', specialty: 'Family Medicine', profile: 'Clinic', category: 'Billing' },
-    { name: 'Emergency Department', parentBranch: '2', type: 'Ward', specialty: 'Emergency Medicine', profile: 'Hospital', category: 'Billing' },
-    { name: 'Internal Medicine Ward', parentBranch: '3', type: 'Ward', specialty: 'Internal Medicine', profile: 'Hospital', category: 'Billing' },
-    { name: 'Outpatient Pharmacy', parentBranch: '4', type: 'OP Pharmacy', specialty: 'Pharmacy', profile: 'Pharmacy', category: 'Billing' },
-    { name: 'Clinical Laboratory', parentBranch: '5', type: 'Laboratory', specialty: 'Laboratory Medicine', profile: 'Laboratory', category: 'Billing' },
-    { name: 'Diagnostic Imaging', parentBranch: '6', type: 'Imaging Location', specialty: 'Radiology', profile: 'Diagnostic Center', category: 'Billing' },
+    { name: 'Department 1', branchCodes: ['1'], type: 'Clinic', specialty: 'Family Medicine', category: 'Billing' },
+    { name: 'Department 2', branchCodes: ['2'], type: 'Ward', specialty: 'Emergency Medicine', category: 'Billing' },
+    { name: 'Department 3', branchCodes: ['3'], type: 'Ward', specialty: 'Internal Medicine', category: 'Billing' },
+    { name: 'Department 4', branchCodes: ['4'], type: 'OP Pharmacy', specialty: 'Pharmacy', category: 'Billing' },
+    { name: 'Department 5', branchCodes: ['5'], type: 'Laboratory', specialty: 'Laboratory Medicine', category: 'Billing' },
+    { name: 'Department 6', branchCodes: ['6'], type: 'Imaging Location', specialty: 'Radiology', category: 'Billing' },
   ].map((record, index) => ({ code: `DPT-${String(index + 1).padStart(3, '0')}`, ...record, active: true }));
+
+  function facilitySeed() {
+    const activeCodes = activeBranches().map((branch) => String(branch.code));
+    return seed.map((department, index) => {
+      const assigned = (department.branchCodes || []).map(String).filter((code) => activeCodes.includes(code));
+      return { ...department, branchCodes: assigned.length ? assigned : [activeCodes[index % activeCodes.length] || ''] };
+    });
+  }
 
   const rows = grid.querySelector('[data-department-rows]');
   const empty = grid.querySelector('[data-department-empty]');
@@ -24,6 +32,16 @@
   const modalDescription = document.querySelector('#department-modal-description');
   const saveButton = document.querySelector('[data-department-save]');
   const toast = document.querySelector('[data-facility-toast]');
+  const specialtyCatalog = [...new Set(window.RcmDepartmentSpecialties || [])];
+  const branchSearch = form.querySelector('[data-department-branch-search]');
+  const branchOptions = form.querySelector('[data-department-branch-options]');
+  const branchChips = form.querySelector('[data-department-branch-chips]');
+  const branchToggle = form.querySelector('[data-department-branch-toggle]');
+  const singleBranchNote = form.querySelector('[data-department-single-branch]');
+  const specialtySearch = form.querySelector('[data-department-specialty-search]');
+  const specialtyValue = form.elements.namedItem('specialty');
+  const specialtyOptions = form.querySelector('[data-department-specialty-options]');
+  const specialtyToggle = form.querySelector('[data-department-specialty-toggle]');
   const pageSize = 5;
   let page = 1;
   let mode = 'new';
@@ -33,6 +51,13 @@
   let appliedFilters = {};
   let branches = loadBranches();
   let departments = load();
+  let selectedBranchCodes = [];
+  let branchPickerOpen = false;
+  let specialtyPickerOpen = false;
+  let specialtyQuery = '';
+  let selectedSpecialty = '';
+  let legacySpecialty = '';
+  refreshSpecialtyFilter();
   appliedFilters = readFilters();
 
   const icons = {
@@ -50,28 +75,134 @@
     try {
       const saved = localStorage.getItem(branchStorageKey);
       const parsed = saved && JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length) return parsed;
+      if (Array.isArray(parsed) && parsed.length) {
+        if (!parsed.some((branch) => branch.active !== false)) {
+          const numericCodes = parsed.map((branch) => Number(branch.code)).filter(Number.isFinite);
+          parsed.push({ code: String(Math.max(0, ...numericCodes) + 1), englishName: 'Branch 1', arabicName: 'الفرع 1', prefix: 'DEF', active: true, isDefault: true });
+          localStorage.setItem(branchStorageKey, JSON.stringify(parsed));
+        }
+        return parsed;
+      }
+      if (Array.isArray(parsed) && !parsed.length) {
+        const created = [{ code: '1', englishName: 'Branch 1', arabicName: 'الفرع 1', prefix: 'DEF', active: true, isDefault: true }];
+        localStorage.setItem(branchStorageKey, JSON.stringify(created));
+        return created;
+      }
     } catch { /* Use the standard branch choices if stored data is unavailable. */ }
-    return Array.from({ length: 7 }, (_, index) => ({ code: String(index + 1), englishName: `Branch ${index + 1}` }));
+    const created = facilityId === '1'
+      ? Array.from({ length: 7 }, (_, index) => ({ code: String(index + 1), englishName: `Branch ${index + 1}`, arabicName: `الفرع ${index + 1}`, prefix: `BR${index + 1}`, active: true }))
+      : [{ code: '1', englishName: 'Branch 1', arabicName: 'الفرع 1', prefix: 'DEF', active: true, isDefault: true }];
+    try { localStorage.setItem(branchStorageKey, JSON.stringify(created)); } catch { /* use memory */ }
+    return created;
   }
 
+  function activeBranches() { return branches.filter((branch) => branch.active !== false); }
   function branchName(code) {
-    return branches.find((branch) => String(branch.code) === String(code))?.englishName || '';
+    const branch = branches.find((item) => String(item.code) === String(code));
+    return branch?.englishName || branch?.name || `Branch ${code}`;
+  }
+  function departmentBranches(department) {
+    return (Array.isArray(department.branchCodes) ? department.branchCodes : department.parentBranch ? [department.parentBranch] : []).map(String);
+  }
+
+  function refreshSpecialtyFilter() {
+    const select = grid.querySelector('[data-department-filter="specialty"]');
+    const current = select.value;
+    const values = [...new Set([...specialtyCatalog, ...departments.map((department) => String(department.specialty || '').trim()).filter(Boolean)])];
+    select.innerHTML = '<option value="">All specialties</option>' + values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+    if (values.includes(current)) select.value = current;
+  }
+
+  function renderBranchChips() {
+    const readOnly = mode === 'view';
+    const selected = [...new Set(selectedBranchCodes.map(String))];
+    branchChips.innerHTML = selected.map((code) => `<span class="practitioner-department-chip"><span>${escapeHtml(branchName(code))}</span>${readOnly ? '' : `<button type="button" data-department-branch-remove="${escapeHtml(code)}" aria-label="Remove ${escapeHtml(branchName(code))}">×</button>`}</span>`).join('') || '<span class="practitioner-department-placeholder">No branches selected</span>';
+  }
+
+  function drawBranchChoices() {
+    const query = branchSearch.value.trim().toLocaleLowerCase();
+    const available = activeBranches().filter((branch) => branchListName(branch).toLocaleLowerCase().includes(query));
+    branchOptions.innerHTML = available.length ? available.map((branch) => {
+      const code = String(branch.code);
+      return `<label class="form-check practitioner-department-option"><input type="checkbox" data-department-branch-option value="${escapeHtml(code)}" ${selectedBranchCodes.includes(code) ? 'checked' : ''}><span>${escapeHtml(branchListName(branch))}</span></label>`;
+    }).join('') : `<span class="practitioner-no-departments">${query ? 'No matching branches.' : 'No active branches are configured.'}</span>`;
+    renderBranchChips();
+    validateBranchSelection();
+  }
+
+  function branchListName(branch) { return branch.englishName || branch.name || `Branch ${branch.code}`; }
+
+  function validateBranchSelection() {
+    const required = activeBranches().length > 1;
+    branchSearch.required = required;
+    branchSearch.setCustomValidity(required && !selectedBranchCodes.length ? 'Select at least one branch.' : '');
+    branchSearch.setAttribute('aria-required', String(required));
+  }
+
+  function setBranchPickerOpen(open) {
+    branchPickerOpen = Boolean(open) && activeBranches().length > 1 && mode !== 'view';
+    branchOptions.hidden = !branchPickerOpen;
+    branchSearch.setAttribute('aria-expanded', String(branchPickerOpen));
+    branchToggle.setAttribute('aria-expanded', String(branchPickerOpen));
+    if (branchPickerOpen) drawBranchChoices();
+  }
+
+  function specialtyChoices() {
+    return [...new Set([...specialtyCatalog, ...(legacySpecialty ? [legacySpecialty] : [])])];
+  }
+
+  function drawSpecialtyChoices() {
+    const query = specialtyQuery.trim().toLocaleLowerCase();
+    const choices = specialtyChoices().filter((value) => value.toLocaleLowerCase().includes(query));
+    specialtyOptions.innerHTML = choices.length ? choices.map((value) => `<button type="button" role="option" aria-selected="${value === selectedSpecialty}" data-department-specialty-option="${escapeHtml(value)}">${escapeHtml(value)}${value === legacySpecialty && !specialtyCatalog.includes(value) ? ' <small>(existing value)</small>' : ''}</button>`).join('') : `<span class="department-specialty-empty">No matching specialties.</span>`;
+  }
+
+  function setSpecialtyPickerOpen(open) {
+    specialtyPickerOpen = Boolean(open) && mode !== 'view';
+    specialtyOptions.hidden = !specialtyPickerOpen;
+    specialtySearch.setAttribute('aria-expanded', String(specialtyPickerOpen));
+    specialtyToggle.setAttribute('aria-expanded', String(specialtyPickerOpen));
+    if (specialtyPickerOpen) {
+      specialtyQuery = '';
+      specialtySearch.value = '';
+      drawSpecialtyChoices();
+    } else {
+      specialtyQuery = '';
+      specialtySearch.value = selectedSpecialty;
+    }
   }
 
   function refreshBranchOptions() {
-    const formSelect = form.elements.namedItem('parentBranch');
-    const filterSelect = grid.querySelector('[data-department-filter="parentBranch"]');
-    const selectedForm = formSelect.value;
+    const branchList = activeBranches();
+    const selectableBranches = branchList.length <= 1 ? [] : branchList;
+    const filterSelect = grid.querySelector('[data-department-filter="branchCode"]');
     const selectedFilter = filterSelect.value;
-    formSelect.innerHTML = '<option value="">Select parent branch</option>' + branches.map((branch) =>
+    filterSelect.innerHTML = '<option value="">All branches</option>' + selectableBranches.map((branch) =>
       `<option value="${escapeHtml(branch.code)}">${escapeHtml(branch.englishName || branch.name || `Branch ${branch.code}`)}</option>`,
     ).join('');
-    filterSelect.innerHTML = '<option value="">All parent branches</option>' + branches.map((branch) =>
-      `<option value="${escapeHtml(branch.code)}">${escapeHtml(branch.englishName || branch.name || `Branch ${branch.code}`)}</option>`,
-    ).join('');
-    if (branches.some((branch) => String(branch.code) === selectedForm)) formSelect.value = selectedForm;
-    if (branches.some((branch) => String(branch.code) === selectedFilter)) filterSelect.value = selectedFilter;
+    if (selectableBranches.some((branch) => String(branch.code) === selectedFilter)) filterSelect.value = selectedFilter;
+    const host = form.querySelector('[data-department-branch-picker]');
+    const control = form.querySelector('[data-department-branch-control]');
+    if (branchList.length <= 1) {
+      singleBranchNote.hidden = false;
+      singleBranchNote.textContent = `${branchListName(branchList[0] || { code: '1' })} is assigned automatically.`;
+      host.hidden = true;
+      control.hidden = true;
+      branchSearch.hidden = true;
+      branchToggle.hidden = true;
+      selectedBranchCodes = branchList[0] ? [String(branchList[0].code)] : [];
+      branchPickerOpen = false;
+      branchOptions.hidden = true;
+    } else {
+      singleBranchNote.hidden = true;
+      host.hidden = false;
+      control.hidden = false;
+      branchSearch.hidden = false;
+      branchToggle.hidden = false;
+      drawBranchChoices();
+    }
+    renderBranchChips();
+    validateBranchSelection();
   }
 
   function load() {
@@ -84,20 +215,27 @@
           const records = parsed.map((department, index) => {
             const sample = seed.find((item) => item.code === department.code && item.name === department.name);
             const next = { ...department };
-            if (sample && department.category === 'Medical') next.category = 'Billing';
-            if (!next.parentBranch || !branches.some((branch) => String(branch.code) === String(next.parentBranch))) {
-              next.parentBranch = sample?.parentBranch || String(branches[index % branches.length]?.code || '');
-            }
-            if (next.category !== department.category || next.parentBranch !== department.parentBranch) migrated = true;
+            const oldCodes = Array.isArray(next.branchCodes) ? next.branchCodes.map(String) : next.parentBranch ? [String(next.parentBranch)] : [];
+            const activeCodes = activeBranches().map((branch) => String(branch.code));
+            const validCodes = oldCodes.filter((code) => activeCodes.includes(code));
+            const sampleCodes = (sample?.branchCodes || []).map(String).filter((code) => activeCodes.includes(code));
+            next.branchCodes = validCodes.length ? [...new Set(validCodes)] : sampleCodes.length ? [...new Set(sampleCodes)] : [activeCodes[index % activeCodes.length] || ''];
+            delete next.parentBranch;
+            if (JSON.stringify(next.branchCodes) !== JSON.stringify(oldCodes) || department.parentBranch !== undefined) migrated = true;
             return next;
           });
           if (migrated) localStorage.setItem(storageKey, JSON.stringify(records));
           return records;
         }
-      } else localStorage.setItem(storageKey, JSON.stringify(seed));
+      } else {
+        const initial = facilitySeed();
+        localStorage.setItem(storageKey, JSON.stringify(initial));
+        return initial;
+      }
     } catch { /* Keep the prototype usable if browser storage is unavailable. */ }
-    try { localStorage.setItem(storageKey, JSON.stringify(seed)); } catch { /* Keep seeded rows available in memory. */ }
-    return seed.map((department) => ({ ...department }));
+    const initial = facilitySeed();
+    try { localStorage.setItem(storageKey, JSON.stringify(initial)); } catch { /* Keep seeded rows available in memory. */ }
+    return initial;
   }
 
   function persist() {
@@ -121,8 +259,8 @@
 
   function filteredDepartments() {
     return departments.filter((department) => ['code', 'name', 'type', 'specialty', 'category'].every((key) =>
-      !appliedFilters[key] || String(department[key] || '').toLocaleLowerCase().includes(appliedFilters[key]),
-    ) && (!appliedFilters.parentBranch || String(department.parentBranch || '') === appliedFilters.parentBranch));
+      !appliedFilters[key] || (key === 'specialty' ? String(department[key] || '').toLocaleLowerCase() === appliedFilters[key] : String(department[key] || '').toLocaleLowerCase().includes(appliedFilters[key])),
+    ) && (!appliedFilters.branchCode || departmentBranches(department).includes(appliedFilters.branchCode)));
   }
 
   function closeMenus(except) {
@@ -142,10 +280,9 @@
     rows.innerHTML = visible.map((department) => `<tr>
       <td class="branch-code">${escapeHtml(department.code)}</td>
       <td><span class="facility-name-en">${escapeHtml(department.name)}</span></td>
-      <td>${escapeHtml(branchName(department.parentBranch) || '—')}</td>
+      <td>${escapeHtml(activeBranches().length <= 1 ? 'Single location' : departmentBranches(department).map((code) => activeBranches().find((branch) => String(branch.code) === code)?.englishName || code).join(', ') || '—')}</td>
       <td>${escapeHtml(department.type)}</td><td>${escapeHtml(department.specialty)}</td>
-      <td>${escapeHtml(department.profile || '—')}</td><td>${escapeHtml(department.category)}</td>
-      <td><span class="facility-status ${department.active ? 'is-active' : 'is-inactive'}"><span></span>${department.active ? 'Active' : 'Inactive'}</span></td>
+      <td>${escapeHtml(department.category)}</td><td><span class="facility-status ${department.active ? 'is-active' : 'is-inactive'}"><span></span>${department.active ? 'Active' : 'Inactive'}</span></td>
       <td><div class="facility-row-action"><button class="facility-menu-trigger" type="button" data-department-row-menu aria-label="Actions for ${escapeHtml(department.name)}" aria-haspopup="menu" aria-expanded="false" data-code="${escapeHtml(department.code)}">${icons.more}</button>
         <div class="facility-row-menu" role="menu" hidden><button type="button" role="menuitem" data-department-action="view" data-code="${escapeHtml(department.code)}">${icons.eye}View</button><button type="button" role="menuitem" data-department-action="edit" data-code="${escapeHtml(department.code)}">${icons.edit}Edit</button><button type="button" role="menuitem" data-department-action="toggle-status" data-code="${escapeHtml(department.code)}">${icons.status}${department.active ? 'Deactivate' : 'Activate'}</button></div></div></td>
     </tr>`).join('');
@@ -163,7 +300,16 @@
   }
 
   function setReadOnly(readOnly) {
-    ['name', 'parentBranch', 'type', 'specialty', 'profile', 'category'].forEach((name) => { form.elements.namedItem(name).disabled = readOnly; });
+    ['name', 'type', 'specialty', 'category'].forEach((name) => { form.elements.namedItem(name).disabled = readOnly; });
+    specialtySearch.disabled = readOnly;
+    branchSearch.disabled = readOnly;
+    branchToggle.disabled = readOnly;
+    specialtyToggle.disabled = readOnly;
+    if (readOnly) {
+      setBranchPickerOpen(false);
+      setSpecialtyPickerOpen(false);
+    }
+    renderBranchChips();
     saveButton.hidden = readOnly;
     modal.querySelector('[data-department-cancel]').textContent = readOnly ? 'Back' : 'Cancel';
   }
@@ -175,12 +321,26 @@
     form.reset();
     refreshBranchOptions();
     setReadOnly(false);
+    setBranchPickerOpen(false);
+    setSpecialtyPickerOpen(false);
     const isNew = nextMode === 'new';
     modalTitle.textContent = isNew ? 'Add Department' : nextMode === 'view' ? 'Department Details' : 'Edit Department';
     modalDescription.textContent = isNew ? 'Enter the department details.' : nextMode === 'view' ? 'Review department details.' : 'Update the department details.';
     saveButton.textContent = isNew ? 'Create' : 'Save changes';
-    const record = isNew ? { code: nextCode(), parentBranch: branches[0]?.code || '' } : department;
-    ['code', 'name', 'parentBranch', 'type', 'specialty', 'profile', 'category'].forEach((name) => { form.elements.namedItem(name).value = record?.[name] || ''; });
+    const record = isNew ? { code: nextCode(), branchCodes: [], category: 'Billing' } : department;
+    ['code', 'name', 'type', 'category'].forEach((name) => { form.elements.namedItem(name).value = record?.[name] || ''; });
+    selectedSpecialty = String(record?.specialty || '');
+    specialtyValue.value = selectedSpecialty;
+    specialtySearch.value = selectedSpecialty;
+    specialtySearch.setCustomValidity(selectedSpecialty ? '' : 'Select a specialty.');
+    legacySpecialty = selectedSpecialty && !specialtyCatalog.includes(selectedSpecialty) ? selectedSpecialty : '';
+    specialtyQuery = '';
+    const selectedCodes = departmentBranches(record);
+    const onlyBranch = activeBranches()[0];
+    selectedBranchCodes = activeBranches().length <= 1 && onlyBranch ? [String(onlyBranch.code)] : selectedCodes;
+    branchSearch.value = '';
+    validateBranchSelection();
+    drawBranchChoices();
     if (nextMode === 'view') setReadOnly(true);
     modal.hidden = false;
     document.body.classList.add('patient-modal-open');
@@ -195,13 +355,21 @@
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    validateBranchSelection();
+    specialtySearch.setCustomValidity(specialtyValue.value ? '' : 'Select a specialty from the list.');
     if (!form.reportValidity()) return;
-    const values = Object.fromEntries(['code', 'name', 'parentBranch', 'type', 'specialty', 'profile', 'category'].map((name) => [name, form.elements.namedItem(name).value.trim()]));
+    const branchCodes = activeBranches().length <= 1 ? [String(activeBranches()[0]?.code || '')].filter(Boolean) : [...new Set(selectedBranchCodes.map(String))];
+    if (!branchCodes.length) { window.alert('Assign this department to at least one active branch.'); return; }
+    const values = Object.fromEntries(['code', 'name', 'category'].map((name) => [name, form.elements.namedItem(name).value.trim()]));
+    values.type = form.elements.namedItem('type').value.trim();
+    values.specialty = specialtyValue.value.trim();
+    values.branchCodes = branchCodes;
     if (mode === 'new') {
       const department = { ...values, active: true };
       departments.push(department);
       persist();
       grid.querySelectorAll('[data-department-filter]').forEach((field) => { field.value = ''; });
+      refreshSpecialtyFilter();
       appliedFilters = {};
       page = Math.ceil(departments.length / pageSize);
       closeModal();
@@ -213,6 +381,7 @@
       if (!department) return;
       Object.assign(department, values);
       persist();
+      refreshSpecialtyFilter();
       closeModal();
       render();
       rows.querySelector(`[data-department-row-menu][data-code="${CSS.escape(department.code)}"]`)?.focus();
@@ -228,6 +397,63 @@
       closeMenus();
       render();
     });
+  });
+
+  branchSearch.addEventListener('focus', () => setBranchPickerOpen(true));
+  branchSearch.addEventListener('click', () => setBranchPickerOpen(true));
+  branchSearch.addEventListener('input', () => { if (!branchPickerOpen) setBranchPickerOpen(true); drawBranchChoices(); });
+  branchToggle.addEventListener('click', () => setBranchPickerOpen(!branchPickerOpen));
+  branchOptions.addEventListener('change', (event) => {
+    const input = event.target.closest('[data-department-branch-option]');
+    if (!input) return;
+    const code = String(input.value);
+    selectedBranchCodes = input.checked
+      ? [...new Set([...selectedBranchCodes.map(String), code])]
+      : selectedBranchCodes.filter((item) => String(item) !== code);
+    renderBranchChips();
+    validateBranchSelection();
+  });
+  branchChips.addEventListener('click', (event) => {
+    const remove = event.target.closest('[data-department-branch-remove]');
+    if (!remove) return;
+    selectedBranchCodes = selectedBranchCodes.filter((code) => String(code) !== remove.dataset.departmentBranchRemove);
+    branchOptions.querySelectorAll('[data-department-branch-option]').forEach((input) => { input.checked = selectedBranchCodes.includes(String(input.value)); });
+    renderBranchChips();
+    validateBranchSelection();
+    branchSearch.focus();
+    setBranchPickerOpen(true);
+  });
+
+  specialtySearch.addEventListener('focus', () => setSpecialtyPickerOpen(true));
+  specialtySearch.addEventListener('click', () => setSpecialtyPickerOpen(true));
+  specialtySearch.addEventListener('input', () => {
+    selectedSpecialty = '';
+    specialtyValue.value = '';
+    specialtyQuery = specialtySearch.value;
+    specialtySearch.setCustomValidity('Select a specialty from the list.');
+    if (!specialtyPickerOpen) specialtyPickerOpen = true;
+    specialtyOptions.hidden = false;
+    specialtySearch.setAttribute('aria-expanded', 'true');
+    specialtyToggle.setAttribute('aria-expanded', 'true');
+    drawSpecialtyChoices();
+  });
+  specialtyToggle.addEventListener('click', () => {
+    if (specialtyPickerOpen) setSpecialtyPickerOpen(false);
+    else { setSpecialtyPickerOpen(true); specialtySearch.focus(); }
+  });
+  specialtyOptions.addEventListener('click', (event) => {
+    const option = event.target.closest('[data-department-specialty-option]');
+    if (!option) return;
+    selectedSpecialty = option.dataset.departmentSpecialtyOption;
+    specialtyValue.value = selectedSpecialty;
+    specialtySearch.value = selectedSpecialty;
+    specialtySearch.setCustomValidity('');
+    legacySpecialty = selectedSpecialty && !specialtyCatalog.includes(selectedSpecialty) ? selectedSpecialty : '';
+    setSpecialtyPickerOpen(false);
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('[data-department-branch-picker]')) setBranchPickerOpen(false);
+    if (!event.target.closest('[data-department-specialty-picker]')) setSpecialtyPickerOpen(false);
   });
   grid.querySelectorAll('[data-department-page]').forEach((button) => button.addEventListener('click', () => {
     const totalPages = Math.max(1, Math.ceil(filteredDepartments().length / pageSize));
@@ -273,7 +499,15 @@
   modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
   document.addEventListener('click', (event) => { if (!event.target.closest('.facility-row-action')) closeMenus(); });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') { if (!modal.hidden) closeModal(); else closeMenus(); }
+    if (event.key === 'Escape') {
+      if (!modal.hidden && (branchPickerOpen || specialtyPickerOpen)) {
+        if (branchPickerOpen) setBranchPickerOpen(false);
+        if (specialtyPickerOpen) setSpecialtyPickerOpen(false);
+        event.stopPropagation();
+        return;
+      }
+      if (!modal.hidden) closeModal(); else closeMenus();
+    }
     if (modal.hidden || event.key !== 'Tab') return;
     const focusable = [...modal.querySelectorAll('button:not([hidden]):not(:disabled), input:not(:disabled), select:not(:disabled)')];
     const first = focusable[0];
@@ -292,7 +526,7 @@
     if (event.key !== storageKey || !event.newValue) return;
     try {
       const updated = JSON.parse(event.newValue);
-      if (Array.isArray(updated)) { departments = updated; render(); }
+      if (Array.isArray(updated)) { departments = updated; refreshSpecialtyFilter(); render(); }
     } catch { /* Ignore invalid external updates. */ }
   });
 

@@ -15,12 +15,12 @@
     status: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v8M6.4 6.4a8 8 0 1 0 11.2 0"/></svg>',
   };
   const seed = [
-    { code: 'CAT-CONS', description: 'Consultation', alias: 'Clinical consultation', active: true },
-    { code: 'CAT-LAB', description: 'Laboratory', alias: 'Diagnostic laboratory', active: true },
-    { code: 'CAT-IMG', description: 'Imaging', alias: 'Radiology and imaging', active: true },
-    { code: 'CAT-PHARM', description: 'Pharmacy', alias: 'Medication services', active: true },
-    { code: 'CAT-PROC', description: 'Clinical Procedures', alias: 'Procedures', active: true },
-    { code: 'CAT-THER', description: 'Therapeutic Services', alias: '', active: true },
+    { code: 'CAT-CONS', description: 'Category 1', alias: 'Category 1 alias', active: true },
+    { code: 'CAT-LAB', description: 'Category 2', alias: 'Category 2 alias', active: true },
+    { code: 'CAT-IMG', description: 'Category 3', alias: 'Category 3 alias', active: true },
+    { code: 'CAT-PHARM', description: 'Category 4', alias: 'Category 4 alias', active: true },
+    { code: 'CAT-PROC', description: 'Category 5', alias: 'Category 5 alias', active: true },
+    { code: 'CAT-THER', description: 'Category 6', alias: '', active: true },
   ];
   function load() {
     try {

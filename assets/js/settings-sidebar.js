@@ -18,11 +18,12 @@
     return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.reference}</svg>`;
   };
   const sections = [
-    { label: 'Facility Setup', icon: 'building', items: ['Facility Profile', 'Branches', 'Departments', 'Divisions', 'Locations', 'Rooms', 'Billing Period', 'Cost Centers', 'Consultation Rules'] },
+    { label: 'Facility Setup', icon: 'building', items: ['Facility Profile', 'Branches', 'Departments', 'Locations', 'Rooms', 'Billing Period', 'Cost Centers', 'Consultation Rules'] },
     { label: 'Staff & Access', icon: 'users', items: ['Practitioners', 'Users', 'Roles'] },
     { label: 'Payers Setup', icon: 'payer', items: ['Payers', 'TPAs', 'TAT Management'] },
     { label: 'Insurance Setup', icon: 'shield', items: ['Policies', 'Plans', 'Benefits'] },
     { label: 'Payer Contracts', icon: 'contract', items: ['Contracts', 'Direct Billing'] },
+    { label: 'Other Settings', icon: 'reference', items: [{ label: 'General', route: 'general' }] },
     { label: 'Services and Pricing', icon: 'services', items: ['Service Items', 'Categories', 'Groups', 'Service Catalog', 'Master Price List', 'Price Lists', 'Premium Pricing', 'Discounts'] },
     { label: 'HIS Management', icon: 'his', items: [] },
     { label: 'Reference Data', icon: 'reference', items: ['Global Dictionary'] },
@@ -45,7 +46,14 @@
     if (!section.items.length) {
       return `<a class="nav-link settings-leaf" href="#${routeFor(section.label)}" data-label="${section.label}" data-route="${routeFor(section.label)}">${icon(section.icon)}<span>${section.label}</span></a>`;
     }
-    const children = section.items.map((item) => `<a class="nav-link settings-leaf" href="#${routeFor(item)}" data-label="${item}" data-route="${routeFor(item)}"><span class="nav-icon" aria-hidden="true"></span><span>${item}</span></a>`).join('');
+    const children = section.items.map((item) => {
+      const label = typeof item === 'string' ? item : item.label;
+      const route = typeof item === 'string' ? routeFor(label) : item.route || routeFor(label);
+      const link = `<a class="nav-link settings-leaf" href="#${route}" data-label="${label}" data-route="${route}"><span class="nav-icon" aria-hidden="true"></span><span>${label}</span></a>`;
+      if (!item.children?.length) return link;
+      const nested = item.children.map((child) => `<a class="nav-link settings-leaf" href="#${child.route || routeFor(child.label)}" data-label="${child.label}" data-route="${child.route || routeFor(child.label)}"><span class="nav-icon" aria-hidden="true"></span><span>${child.label}</span></a>`).join('');
+      return `${link}<div class="nav-subchildren">${nested}</div>`;
+    }).join('');
     return `<section class="nav-group"><button class="nav-group-button" type="button" aria-expanded="${index === 0}" aria-controls="settings-group-${index}">${icon(section.icon)}<span>${section.label}</span>${icon('chevron', 'chevron')}</button><div id="settings-group-${index}" class="nav-children"${index === 0 ? '' : ' hidden'}>${children}</div></section>`;
   }).join('');
 
@@ -81,7 +89,8 @@
     const showPremiumPricing = matching?.dataset.route === 'premium-pricing';
     const showDiscounts = matching?.dataset.route === 'discounts';
     const showDirectBilling = matching?.dataset.route === 'direct-billing';
-    const showFacilityStructure = ['divisions', 'locations', 'rooms', 'billing-period', 'cost-centers'].includes(matching?.dataset.route);
+    const showGeneralSettings = matching?.dataset.route === 'general';
+    const showFacilityStructure = ['locations', 'rooms', 'billing-period', 'cost-centers'].includes(matching?.dataset.route);
     document.querySelector('[data-current-facility-profile]')?.toggleAttribute('hidden', !showFacilityProfile);
     document.querySelector('[data-branches-grid]')?.toggleAttribute('hidden', !showBranches);
     document.querySelector('[data-departments-grid]')?.toggleAttribute('hidden', !showDepartments);
@@ -107,8 +116,9 @@
     document.querySelector('[data-premium-pricing]')?.toggleAttribute('hidden', !showPremiumPricing);
     document.querySelector('[data-discounts]')?.toggleAttribute('hidden', !showDiscounts);
     document.querySelector('[data-direct-billing-settings]')?.toggleAttribute('hidden', !showDirectBilling);
+    document.querySelector('[data-facility-general-settings]')?.toggleAttribute('hidden', !showGeneralSettings);
     document.querySelector('[data-structure-workspace]')?.toggleAttribute('hidden', !showFacilityStructure);
-    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts || showDirectBilling || showTat || showConsultationRules || showServiceItems || showCategories || showGroups || showServiceCatalog || showMasterPriceList || showPriceLists || showPremiumPricing || showDiscounts);
+    document.querySelector('[data-settings-overview]')?.toggleAttribute('hidden', showFacilityProfile || showBranches || showDepartments || showFacilityStructure || showPractitioners || showUsers || showRoles || showPayers || showTpas || showBenefits || showPlans || showPolicies || showContracts || showDirectBilling || showGeneralSettings || showTat || showConsultationRules || showServiceItems || showCategories || showGroups || showServiceCatalog || showMasterPriceList || showPriceLists || showPremiumPricing || showDiscounts);
     document.querySelectorAll('.settings-leaf').forEach((item) => {
       const active = item === matching;
       item.classList.toggle('active', active);

@@ -1,6 +1,8 @@
 (() => {
   const root = document.querySelector('[data-premium-pricing]');
   if (!root) return;
+  const facilityId = String(document.body.dataset.currentFacilityId || '1');
+  const storageKey = `rcm-facility-premium-pricing:v1:${facilityId}`;
 
   const esc = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   const icons = {
@@ -12,12 +14,21 @@
     export: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg>',
     upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>',
   };
-  let records = [
-    { id: 'premium-newborn', name: 'Newborn Essential Subscription', description: 'Daily subscription fees for newborn care services.', alias: 'Newborn Essential', active: true, isNewBorn: true, fees: [{ id: 'fee-nb-1', type: 'Day', isNewBorn: true, from: '0', to: '30', fees: '74.00', vat: '15', billingPeriod: 'Daily', updatedBy: 'admin' }] },
-    { id: 'premium-family', name: 'Family Care Subscription', description: 'Monthly premium subscription for family outpatient services.', alias: 'Family Care', active: true, isNewBorn: false, fees: [{ id: 'fee-family-1', type: 'Year', from: '0', to: '17', fees: '115.00', vat: '15', billingPeriod: 'Monthly', updatedBy: 'admin' }, { id: 'fee-family-2', type: 'Year', from: '18', to: '64', fees: '148.00', vat: '15', billingPeriod: 'Monthly', updatedBy: 'admin' }] },
-    { id: 'premium-senior', name: 'Senior Wellness Premium', description: 'Annual premium subscription for older adult wellness.', alias: 'Senior Wellness', active: true, isNewBorn: false, fees: [{ id: 'fee-senior-1', type: 'Year', from: '65', to: '110', fees: '790.00', vat: '15', billingPeriod: 'Annual', updatedBy: 'admin' }] },
-    { id: 'premium-visit', name: 'Short Stay Care Subscription', description: 'Specific-period subscription for temporary care packages.', alias: 'Short Stay', active: false, isNewBorn: false, fees: [{ id: 'fee-stay-1', type: 'Day', from: '0', to: '90', fees: '210.00', vat: '15', billingPeriod: 'Specific Period', updatedBy: 'admin' }] },
+  const seedRecords = [
+    { id: 'premium-newborn', name: 'Premium Pricing 1', description: 'Premium pricing description 1', alias: 'Premium alias 1', active: true, isNewBorn: true, fees: [{ id: 'fee-nb-1', type: 'Day', isNewBorn: true, from: '0', to: '30', fees: '74.00', vat: '15', billingPeriod: 'Daily', updatedBy: 'admin' }] },
+    { id: 'premium-family', name: 'Premium Pricing 2', description: 'Premium pricing description 2', alias: 'Premium alias 2', active: true, isNewBorn: false, fees: [{ id: 'fee-family-1', type: 'Year', from: '0', to: '17', fees: '115.00', vat: '15', billingPeriod: 'Monthly', updatedBy: 'admin' }, { id: 'fee-family-2', type: 'Year', from: '18', to: '64', fees: '148.00', vat: '15', billingPeriod: 'Monthly', updatedBy: 'admin' }] },
+    { id: 'premium-senior', name: 'Premium Pricing 3', description: 'Premium pricing description 3', alias: 'Premium alias 3', active: true, isNewBorn: false, fees: [{ id: 'fee-senior-1', type: 'Year', from: '65', to: '110', fees: '790.00', vat: '15', billingPeriod: 'Annual', updatedBy: 'admin' }] },
+    { id: 'premium-visit', name: 'Premium Pricing 4', description: 'Premium pricing description 4', alias: 'Premium alias 4', active: false, isNewBorn: false, fees: [{ id: 'fee-stay-1', type: 'Day', from: '0', to: '90', fees: '210.00', vat: '15', billingPeriod: 'Specific Period', updatedBy: 'admin' }] },
   ];
+  let records = (() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored !== null) { const parsed = JSON.parse(stored); if (Array.isArray(parsed)) return parsed; }
+      localStorage.setItem(storageKey, JSON.stringify(seedRecords));
+    } catch { /* keep the screen usable without storage */ }
+    return seedRecords.map((record) => ({ ...record }));
+  })();
+  function persist() { try { localStorage.setItem(storageKey, JSON.stringify(records)); } catch { /* keep in-memory changes */ } }
   let query = '';
   let screenMode = 'list';
   let activeId = null;
@@ -108,7 +119,7 @@
       closeMenus();
       if (rowAction.dataset.premiumAction === 'edit') openForm('edit', record.id);
       else if (record.active) { deactivatingId = record.id; root.querySelector('[name="reason"]').value = ''; confirmModal.hidden = false; document.body.classList.add('modal-open'); }
-      else { record.active = true; renderList(); showToast('Premium Pricing activated for this preview.'); }
+      else { record.active = true; persist(); renderList(); showToast('Premium Pricing activated.'); }
       return;
     }
     if (event.target.closest('[data-premium-add]')) { openForm('add'); return; }
@@ -124,7 +135,7 @@
       draft.feeDraft = { type: 'Day', from: '0', to: '', fees: '', vat: '15', billingPeriod: 'Monthly' };
       editingFeeId = null;
       renderForm();
-      showToast('Subscription fee updated in this preview.');
+      showToast('Subscription fee updated.');
       return;
     }
     const editFee = event.target.closest('[data-premium-fee-edit]');
@@ -134,21 +145,28 @@
       return;
     }
     const deleteFee = event.target.closest('[data-premium-fee-delete]');
-    if (deleteFee) { draft.fees = draft.fees.filter((fee) => fee.id !== deleteFee.dataset.premiumFeeDelete); renderForm(); showToast('Subscription fee removed from this preview.'); return; }
+    if (deleteFee) { draft.fees = draft.fees.filter((fee) => fee.id !== deleteFee.dataset.premiumFeeDelete); renderForm(); showToast('Subscription fee removed.'); return; }
     if (event.target.closest('[data-premium-confirm-close]')) { closeConfirmation(); return; }
     const pageButton = event.target.closest('[data-premium-page]');
     if (pageButton) { const pages = Math.max(1, Math.ceil(records.filter((record) => `${record.name} ${record.alias}`.toLowerCase().includes(query)).length / pageSize)); const next = { first: 1, previous: page - 1, next: page + 1, last: pages }[pageButton.dataset.premiumPage]; page = Math.max(1, Math.min(pages, next)); renderList(); }
   });
   root.addEventListener('submit', (event) => {
-    if (event.target.matches('[data-premium-record-form]')) { event.preventDefault(); if (event.target.reportValidity()) showToast('Screen preview only — Premium Pricing changes are not saved.'); }
+    if (event.target.matches('[data-premium-record-form]')) {
+      event.preventDefault(); if (!event.target.reportValidity()) return;
+      draft.name = event.target.elements.name.value.trim(); draft.description = event.target.elements.description.value.trim(); draft.alias = event.target.elements.alias.value.trim();
+      if (screenMode === 'edit') { const index = records.findIndex((item) => item.id === activeId); if (index >= 0) records[index] = { ...records[index], ...draft }; }
+      else { draft.id = `premium-${facilityId}-${Date.now()}`; draft.active = true; records.unshift({ ...draft }); }
+      persist(); formScreen.hidden = true; listScreen.hidden = false; renderList(); showToast('Premium Pricing saved.');
+    }
     if (event.target.matches('[data-premium-confirm-form]')) {
       event.preventDefault();
       if (!event.target.reportValidity()) return;
       const record = records.find((item) => item.id === deactivatingId);
       if (record) record.active = false;
+      persist();
       closeConfirmation();
       renderList();
-      showToast('Premium Pricing deactivated for this preview.');
+      showToast('Premium Pricing deactivated.');
     }
   });
   confirmModal.addEventListener('click', (event) => { if (event.target === confirmModal) closeConfirmation(); });
@@ -156,4 +174,6 @@
   window.addEventListener('keydown', (event) => { if (event.key === 'Escape') { if (!confirmModal.hidden) closeConfirmation(); else if (!formScreen.hidden) { formScreen.hidden = true; listScreen.hidden = false; } } });
   root.hidden = location.hash.slice(1) !== 'premium-pricing';
   renderList();
+  const deepLink = new URLSearchParams(location.search);
+  if (deepLink.get('recordId') && ['edit'].includes(deepLink.get('mode'))) openForm('edit', deepLink.get('recordId'));
 })();

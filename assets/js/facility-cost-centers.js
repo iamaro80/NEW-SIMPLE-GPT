@@ -13,19 +13,19 @@
     close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   };
   const seed = [
-    { code: 'CC-ER', name: 'Emergency Services', pharmaceuticals: false },
-    { code: 'CC-AMB', name: 'Ambulatory Care', pharmaceuticals: false },
-    { code: 'CC-LAB', name: 'Laboratory Services', pharmaceuticals: false },
-    { code: 'CC-PHARM', name: 'Pharmacy Services', pharmaceuticals: true },
-    { code: 'CC-DIAG', name: 'Diagnostic Imaging', pharmaceuticals: false },
+    { code: 'CC-ER', name: 'Cost Center 1', pharmaceuticals: false },
+    { code: 'CC-AMB', name: 'Cost Center 2', pharmaceuticals: false },
+    { code: 'CC-LAB', name: 'Cost Center 3', pharmaceuticals: false },
+    { code: 'CC-PHARM', name: 'Cost Center 4', pharmaceuticals: true },
+    { code: 'CC-DIAG', name: 'Cost Center 5', pharmaceuticals: false },
   ];
   const childSeed = [
-    { code: 'CC-ER-TRI', name: 'Emergency Triage', parentCode: 'CC-ER', pharmaceuticals: false, glCode: '5101-01' },
-    { code: 'CC-ER-TREAT', name: 'Emergency Treatment', parentCode: 'CC-ER', pharmaceuticals: false, glCode: '5101-02' },
-    { code: 'CC-AMB-FAM', name: 'Family Medicine Clinic', parentCode: 'CC-AMB', pharmaceuticals: false, glCode: '5201-01' },
-    { code: 'CC-LAB-CORE', name: 'Core Laboratory', parentCode: 'CC-LAB', pharmaceuticals: false, glCode: '5301-01' },
-    { code: 'CC-PHARM-OP', name: 'Outpatient Pharmacy', parentCode: 'CC-PHARM', pharmaceuticals: true, glCode: '5401-01' },
-    { code: 'CC-DIAG-RAD', name: 'Radiology Services', parentCode: 'CC-DIAG', pharmaceuticals: false, glCode: '5501-01' },
+    { code: 'CC-ER-TRI', name: 'Sub Cost Center 1', parentCode: 'CC-ER', pharmaceuticals: false, glCode: '5101-01' },
+    { code: 'CC-ER-TREAT', name: 'Sub Cost Center 2', parentCode: 'CC-ER', pharmaceuticals: false, glCode: '5101-02' },
+    { code: 'CC-AMB-FAM', name: 'Sub Cost Center 3', parentCode: 'CC-AMB', pharmaceuticals: false, glCode: '5201-01' },
+    { code: 'CC-LAB-CORE', name: 'Sub Cost Center 4', parentCode: 'CC-LAB', pharmaceuticals: false, glCode: '5301-01' },
+    { code: 'CC-PHARM-OP', name: 'Sub Cost Center 5', parentCode: 'CC-PHARM', pharmaceuticals: true, glCode: '5401-01' },
+    { code: 'CC-DIAG-RAD', name: 'Sub Cost Center 6', parentCode: 'CC-DIAG', pharmaceuticals: false, glCode: '5501-01' },
   ];
 
   function load() {

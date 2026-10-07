@@ -31,7 +31,7 @@
     return contracts.filter((contract) => contract.status === 'Active' && payerCategoryForContract(contract) === expected);
   };
   const seed = [
-    { id: 'tat-rule-001', codingType: 'ICD-10', payerType: 'Insurance', contractId: 'contract-001', contractLabel: 'Oasis Inpatient Services', visitReason: 'Emergency', authorizationType: 'Required', day: 0, hours: 4.5 },
+    { id: 'tat-rule-001', codingType: 'ICD-10', payerType: 'Insurance', contractId: 'contract-001', contractLabel: 'Contract 1', visitReason: 'Emergency', authorizationType: 'Required', day: 0, hours: 4.5 },
     { id: 'tat-rule-002', codingType: 'CPT', payerType: 'Corporate', contractId: '', contractLabel: '—', visitReason: 'Outpatient', authorizationType: 'Not Required', day: 1, hours: 2 },
     { id: 'tat-rule-003', codingType: 'TransportationSrca', payerType: 'Cash', contractId: '', contractLabel: '—', visitReason: 'All', authorizationType: 'All', day: 0, hours: 1 },
   ];

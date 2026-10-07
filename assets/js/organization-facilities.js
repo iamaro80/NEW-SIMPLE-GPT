@@ -19,7 +19,6 @@
     { label: 'Facility Profile', route: 'facility-profile' },
     { label: 'Branches', route: 'branches' },
     { label: 'Departments', route: 'departments' },
-    { label: 'Divisions', route: 'divisions' },
     { label: 'Locations', route: 'locations' },
     { label: 'Rooms', route: 'rooms' },
     { label: 'Billing Period', route: 'billing-period' },
@@ -80,7 +79,7 @@
 
   function setSectionContent(facility, section) {
     const isProfile = section.route === 'facility-profile';
-    const embeddedRoutes = new Set(['branches', 'departments', 'divisions', 'locations', 'billing-period', 'cost-centers', 'consultation-rules']);
+    const embeddedRoutes = new Set(['branches', 'departments', 'locations', 'rooms', 'billing-period', 'cost-centers', 'consultation-rules']);
     const useEmbeddedPage = embeddedRoutes.has(section.route);
     detail.hidden = !isProfile;
     placeholder.hidden = isProfile || useEmbeddedPage;

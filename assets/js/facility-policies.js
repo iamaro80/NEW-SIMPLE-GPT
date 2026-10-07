@@ -11,9 +11,9 @@
   const benefitsKey = `rcm-facility-benefits:v1:${facilityId}`;
   const pageSize = 6;
   const seed = [
-    { id: 'policy-001', policyHolderName: 'Layan Al-Mutairi', payerId: 'payer-001', tpaId: 'TPA-001', policyNo: 'HZN-2026-1042', issueDate: '2025-12-15', startDate: '2026-01-01', endDate: '2026-12-31', planId: 'PLAN-2026-001', isIndependent: false, remarks: 'Comprehensive inpatient and specialist coverage.', status: 'Active' },
-    { id: 'policy-002', policyHolderName: 'Omar Al-Qahtani', payerId: 'payer-002', tpaId: 'TPA-002', policyNo: 'HZN-2026-2087', issueDate: '2026-02-01', startDate: '2026-03-01', endDate: '2027-02-28', planId: 'PLAN-2026-002', isIndependent: false, remarks: 'Regional outpatient plan for employee dependants.', status: 'Draft' },
-    { id: 'policy-003', policyHolderName: 'Maha Al-Dosari', payerId: 'payer-003', tpaId: '', policyNo: 'PEHF-2026-3116', issueDate: '2025-11-20', startDate: '2026-01-01', endDate: '2026-12-31', planId: 'PLAN-2026-003', isIndependent: true, remarks: 'Annual family plan.', status: 'Inactive' },
+    { id: 'policy-001', policyHolderName: 'Policy Holder 1', payerId: 'payer-001', tpaId: 'TPA-001', policyNo: 'HZN-2026-1042', issueDate: '2025-12-15', startDate: '2026-01-01', endDate: '2026-12-31', planId: 'PLAN-2026-001', isIndependent: false, remarks: 'Policy remarks 1', status: 'Active' },
+    { id: 'policy-002', policyHolderName: 'Policy Holder 2', payerId: 'payer-002', tpaId: 'TPA-002', policyNo: 'HZN-2026-2087', issueDate: '2026-02-01', startDate: '2026-03-01', endDate: '2027-02-28', planId: 'PLAN-2026-002', isIndependent: false, remarks: 'Policy remarks 2', status: 'Draft' },
+    { id: 'policy-003', policyHolderName: 'Policy Holder 3', payerId: 'payer-003', tpaId: '', policyNo: 'PEHF-2026-3116', issueDate: '2025-11-20', startDate: '2026-01-01', endDate: '2026-12-31', planId: 'PLAN-2026-003', isIndependent: true, remarks: 'Policy remarks 3', status: 'Inactive' },
   ];
   const icons = {
     add: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',

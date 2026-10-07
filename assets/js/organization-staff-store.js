@@ -40,7 +40,7 @@
     legacyByFacility.forEach(({ fid, oldRoles }) => oldRoles.forEach((role, i) => {
       let target = roles.find((item) => String(item.legacyFacilityId) === fid && String(item.legacyRoleId) === String(role.id));
       if (!target && recover.roles) {
-        target = { ...role, id: `org-role-${fid}-${role.id || i + 1}`, facilityIds: [fid], legacyFacilityId: fid, legacyRoleId: String(role.id || i + 1) };
+        target = { ...role, branchScope: 'facility', id: `org-role-${fid}-${role.id || i + 1}`, facilityIds: [fid], legacyFacilityId: fid, legacyRoleId: String(role.id || i + 1) };
         roles.push(target);
       }
       if (target) roleIdMap.set(`${fid}:${role.id}`, target.id);
@@ -51,7 +51,7 @@
     })));
     if (recover.users) legacyByFacility.forEach(({ fid, oldUsers }) => oldUsers.forEach((row, i) => users.push({
       ...row, id: `org-user-${fid}-${i + 1}`, facilityIds: [fid],
-      assignmentsByFacility: { [fid]: { branchCode: row.branchCode || '', branchCodes: (Array.isArray(row.branchCodes) ? row.branchCodes : row.branchCode ? [row.branchCode] : []).map(String), roleIds: (row.roleIds || []).map((id) => roleIdMap.get(`${fid}:${id}`)).filter(Boolean) } },
+      assignmentsByFacility: { [fid]: { branchCode: row.branchCode || '', branchCodes: (Array.isArray(row.branchCodes) ? row.branchCodes : row.branchCode ? [row.branchCode] : []).map(String), roleIds: (row.roleIds || []).map((id) => roleIdMap.get(`${fid}:${id}`)).filter(Boolean), roleBranchCodesById: row.roleBranchCodesById || {} } },
     })));
     // If the browser has no facility seeds either, initialize realistic
     // organization sample data for the primary facility so the grids are not
@@ -59,30 +59,30 @@
     const primaryFacilityId = String(facilities[0]?.id ?? 1);
     if (recover.practitioners && !practitioners.length) {
       practitioners = [
-        { id: 'org-practitioner-seed-001', documentId: '1093847562', englishName: 'Lina Alharbi', arabicName: 'لينا الحربي', role: 'Doctor', documentType: 'National ID', specialty: 'Community Health', designation: 'Consultant', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-001'] } },
-        { id: 'org-practitioner-seed-002', documentId: '1082763451', englishName: 'Omar Alotaibi', arabicName: 'عمر العتيبي', role: 'Doctor', documentType: 'National ID', specialty: 'Emergency Medicine Specialty', designation: 'Emergency Consultant', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-002', 'DPT-006'] } },
-        { id: 'org-practitioner-seed-003', documentId: '1071654328', englishName: 'Maha Alqahtani', arabicName: 'مها القحطاني', role: 'Nurse', documentType: 'National ID', specialty: 'Community Health', designation: 'Clinical Scientist', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-003'] } },
-        { id: 'org-practitioner-seed-004', documentId: '1069382714', englishName: 'Yousef Almutairi', arabicName: 'يوسف المطيري', role: 'Pharmacist', documentType: 'National ID', specialty: 'Community Medicine Specialty', designation: 'Associate Consultant', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-004'] } },
-        { id: 'org-practitioner-seed-005', documentId: '1058273649', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', role: 'Doctor', documentType: 'National ID', specialty: 'Adult Emergency Medicine', designation: 'Assistant Consultant', active: false, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-005', 'DPT-006'] } },
-        { id: 'org-practitioner-seed-006', documentId: '1047162538', englishName: 'Khalid Alzahrani', arabicName: 'خالد الزهراني', role: 'Physiotherapist', documentType: 'National ID', specialty: 'Community Medicine Specialty', designation: 'Clinical Scientist', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-001', 'DPT-003'] } },
+        { id: 'org-practitioner-seed-001', documentId: '1093847562', englishName: 'Practitioner 1', arabicName: 'ممارس 1', role: 'Doctor', documentType: 'National ID', specialty: 'Community Health', designation: 'Consultant', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-001'] } },
+        { id: 'org-practitioner-seed-002', documentId: '1082763451', englishName: 'Practitioner 2', arabicName: 'ممارس 2', role: 'Doctor', documentType: 'National ID', specialty: 'Emergency Medicine Specialty', designation: 'Emergency Consultant', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-002', 'DPT-006'] } },
+        { id: 'org-practitioner-seed-003', documentId: '1071654328', englishName: 'Practitioner 3', arabicName: 'ممارس 3', role: 'Nurse', documentType: 'National ID', specialty: 'Community Health', designation: 'Clinical Scientist', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-003'] } },
+        { id: 'org-practitioner-seed-004', documentId: '1069382714', englishName: 'Practitioner 4', arabicName: 'ممارس 4', role: 'Pharmacist', documentType: 'National ID', specialty: 'Community Medicine Specialty', designation: 'Associate Consultant', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-004'] } },
+        { id: 'org-practitioner-seed-005', documentId: '1058273649', englishName: 'Practitioner 5', arabicName: 'ممارس 5', role: 'Doctor', documentType: 'National ID', specialty: 'Adult Emergency Medicine', designation: 'Assistant Consultant', active: false, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-005', 'DPT-006'] } },
+        { id: 'org-practitioner-seed-006', documentId: '1047162538', englishName: 'Practitioner 6', arabicName: 'ممارس 6', role: 'Physiotherapist', documentType: 'National ID', specialty: 'Community Medicine Specialty', designation: 'Clinical Scientist', active: true, facilityIds: [primaryFacilityId], departmentsByFacility: { [primaryFacilityId]: ['DPT-001', 'DPT-003'] } },
       ];
     }
     if (recover.roles && !roles.length) {
       roles = [
-        { id: 'org-role-seed-001', arabicName: 'مدير المنشأة', englishName: 'Facility Administrator', permissionIds: permissions.map((item) => item.id), active: true, facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
-        { id: 'org-role-seed-002', arabicName: 'منسق وصول المرضى', englishName: 'Patient Access Coordinator', permissionIds: ['PERM-001', 'PERM-002', 'PERM-003', 'PERM-004', 'PERM-005', 'PERM-006', 'PERM-007'], active: true, facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
-        { id: 'org-role-seed-003', arabicName: 'أخصائي الفوترة', englishName: 'Billing Specialist', permissionIds: ['PERM-004', 'PERM-008'], active: true, facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
-        { id: 'org-role-seed-004', arabicName: 'مدقق سريري', englishName: 'Clinical Auditor', permissionIds: ['PERM-004', 'PERM-005', 'PERM-008'], active: true, facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
+        { id: 'org-role-seed-001', arabicName: 'دور 1', englishName: 'Role 1', permissionIds: permissions.map((item) => item.id), active: true, branchScope: 'facility', facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
+        { id: 'org-role-seed-002', arabicName: 'دور 2', englishName: 'Role 2', permissionIds: ['PERM-001', 'PERM-002', 'PERM-003', 'PERM-004', 'PERM-005', 'PERM-006', 'PERM-007'], active: true, branchScope: 'facility', facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
+        { id: 'org-role-seed-003', arabicName: 'دور 3', englishName: 'Role 3', permissionIds: ['PERM-004', 'PERM-008'], active: true, branchScope: 'facility', facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
+        { id: 'org-role-seed-004', arabicName: 'دور 4', englishName: 'Role 4', permissionIds: ['PERM-004', 'PERM-005', 'PERM-008'], active: true, branchScope: 'facility', facilityIds: facilities.map((item) => String(item.id)), organizationWide: true },
       ];
     }
   if (recover.users && !users.length) {
       const seedRoleIds = roles.slice(0, 3).map((role) => role.id);
       users = [
-        { id: 'org-user-seed-001', username: 'a.alotaibi', englishName: 'Amal Alotaibi', arabicName: 'أمل العتيبي', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '1', branchCodes: ['1'], roleIds: [seedRoleIds[1]] } } },
-        { id: 'org-user-seed-002', username: 'k.alharbi', englishName: 'Khalid Alharbi', arabicName: 'خالد الحربي', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '2', branchCodes: ['2'], roleIds: [seedRoleIds[2]] } } },
-        { id: 'org-user-seed-003', username: 'n.aldosari', englishName: 'Noura Aldosari', arabicName: 'نورة الدوسري', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '1', branchCodes: ['1'], roleIds: [seedRoleIds[0]] } } },
-        { id: 'org-user-seed-004', username: 'f.alqahtani', englishName: 'Faisal Alqahtani', arabicName: 'فيصل القحطاني', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', active: false, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '3', branchCodes: ['3'], roleIds: [] } } },
-        { id: 'org-user-seed-005', username: 's.alshammari', englishName: 'Sara Alshammari', arabicName: 'سارة الشمري', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '4', branchCodes: ['4'], roleIds: [seedRoleIds[1]] } } },
+        { id: 'org-user-seed-001', username: 'a.alotaibi', englishName: 'User 1', arabicName: 'مستخدم 1', email: 'amal.alotaibi@example.com', mobileCode: '+966', mobile: '501234567', userType: 'Employee', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '1', branchCodes: ['1'], roleIds: [seedRoleIds[1]] } } },
+        { id: 'org-user-seed-002', username: 'k.alharbi', englishName: 'User 2', arabicName: 'مستخدم 2', email: 'khalid.alharbi@example.com', mobileCode: '+966', mobile: '502345678', userType: 'Business Center', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '2', branchCodes: ['2'], roleIds: [seedRoleIds[2]] } } },
+        { id: 'org-user-seed-003', username: 'n.aldosari', englishName: 'User 3', arabicName: 'مستخدم 3', email: 'noura.aldosari@example.com', mobileCode: '+966', mobile: '503456789', userType: 'System Administrator', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '1', branchCodes: ['1'], roleIds: [seedRoleIds[0]] } } },
+        { id: 'org-user-seed-004', username: 'f.alqahtani', englishName: 'User 4', arabicName: 'مستخدم 4', email: 'faisal.alqahtani@example.com', mobileCode: '+966', mobile: '504567890', userType: 'Overtimer', active: false, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '3', branchCodes: ['3'], roleIds: [] } } },
+        { id: 'org-user-seed-005', username: 's.alshammari', englishName: 'Practitioner 5', arabicName: 'ممارس 5', email: 'sara.alshammari@example.com', mobileCode: '+966', mobile: '505678901', userType: 'Employee', active: true, facilityIds: [primaryFacilityId], assignmentsByFacility: { [primaryFacilityId]: { branchCode: '4', branchCodes: ['4'], roleIds: [seedRoleIds[1]] } } },
       ];
     }
     Object.entries(recover).forEach(([kind, shouldRecover]) => { if (shouldRecover) write(kind, kind === 'practitioners' ? practitioners : kind === 'users' ? users : roles); });
@@ -108,10 +108,11 @@
   const roleIdMap = new Map(), roleBySignature = new Map(), organizationRoles = [];
   roles.forEach((role) => {
     const permissionIds = [...new Set((role.permissionIds || []).map(String))].sort();
-    const signature = [String(role.englishName || '').trim().toLocaleLowerCase(), String(role.arabicName || '').trim(), Boolean(role.active), permissionIds.join('|')].join('::');
+    const branchScope = role.branchScope || 'facility';
+    const signature = [String(role.englishName || '').trim().toLocaleLowerCase(), String(role.arabicName || '').trim(), Boolean(role.active), branchScope, permissionIds.join('|')].join('::');
     let canonical = roleBySignature.get(signature);
     if (!canonical) {
-      canonical = { ...role, permissionIds };
+      canonical = { ...role, branchScope, permissionIds };
       roleBySignature.set(signature, canonical);
       organizationRoles.push(canonical);
     } else rolesChanged = true;
@@ -119,15 +120,19 @@
   });
   roles = organizationRoles.map((role) => {
     const normalizedIds = [...organizationFacilityIds];
-    if (role.organizationWide !== true || JSON.stringify((role.facilityIds || []).map(String)) !== JSON.stringify(normalizedIds)) rolesChanged = true;
-    return { ...role, facilityIds: normalizedIds, organizationWide: true };
+    const branchScope = role.branchScope || 'facility';
+    if (!role.branchScope || role.organizationWide !== true || JSON.stringify((role.facilityIds || []).map(String)) !== JSON.stringify(normalizedIds)) rolesChanged = true;
+    return { ...role, branchScope, facilityIds: normalizedIds, organizationWide: true };
   });
   users = users.map((user) => {
     const assignmentsByFacility = { ...(user.assignmentsByFacility || {}) };
     Object.entries(assignmentsByFacility).forEach(([fid, assignment]) => {
       const prior = (assignment.roleIds || []).map(String), roleIds = [...new Set(prior.map((id) => roleIdMap.get(id) || id))];
       if (roleIds.length !== prior.length || roleIds.some((id, index) => id !== prior[index])) usersChanged = true;
-      assignmentsByFacility[fid] = { ...assignment, roleIds };
+      const roleBranchCodesById = { ...(assignment.roleBranchCodesById || {}) };
+      roleIds.forEach((id) => { if (!Object.hasOwn(roleBranchCodesById, id)) roleBranchCodesById[id] = []; });
+      if (!assignment.roleBranchCodesById) usersChanged = true;
+      assignmentsByFacility[fid] = { ...assignment, roleIds, roleBranchCodesById };
     });
     return { ...user, assignmentsByFacility };
   });
@@ -142,7 +147,7 @@
       ...clone(row), facilityId: fid, departmentCodes: [...(row.departmentsByFacility?.[fid] || [])],
     }));
     if (kind === 'users') return users.filter((row) => row.facilityIds?.map(String).includes(fid)).map((row) => ({
-      ...clone(row), facilityId: fid, branchCode: row.assignmentsByFacility?.[fid]?.branchCode || row.assignmentsByFacility?.[fid]?.branchCodes?.[0] || '', branchCodes: (Array.isArray(row.assignmentsByFacility?.[fid]?.branchCodes) ? row.assignmentsByFacility[fid].branchCodes : row.assignmentsByFacility?.[fid]?.branchCode ? [row.assignmentsByFacility[fid].branchCode] : []).map(String), roleIds: [...(row.assignmentsByFacility?.[fid]?.roleIds || [])],
+      ...clone(row), facilityId: fid, branchCode: row.assignmentsByFacility?.[fid]?.branchCode || row.assignmentsByFacility?.[fid]?.branchCodes?.[0] || '', branchCodes: (Array.isArray(row.assignmentsByFacility?.[fid]?.branchCodes) ? row.assignmentsByFacility[fid].branchCodes : row.assignmentsByFacility?.[fid]?.branchCode ? [row.assignmentsByFacility[fid].branchCode] : []).map(String), roleIds: [...(row.assignmentsByFacility?.[fid]?.roleIds || [])], roleBranchCodesById: clone(row.assignmentsByFacility?.[fid]?.roleBranchCodesById || {}),
     }));
     if (kind === 'roles') return roles.filter((row) => row.facilityIds?.map(String).includes(fid)).map((row) => clone(row));
     return [];
@@ -161,11 +166,11 @@
       } else if (kind === 'users') {
         record = users.find((row) => row.id === projection.id) || users.find((row) => row.facilityIds?.map(String).includes(fid) && row.username === projection.username);
         if (!record) { record = { ...projection, id: projection.id || idFor('user'), facilityIds: [fid], assignmentsByFacility: {} }; users.push(record); }
-        Object.assign(record, projection, { id: record.id, facilityId: undefined, branchCode: undefined, branchCodes: undefined, roleIds: undefined });
+        Object.assign(record, projection, { id: record.id, facilityId: undefined, branchCode: undefined, branchCodes: undefined, roleIds: undefined, roleBranchCodesById: undefined });
         record.facilityIds = [...new Set([...(record.facilityIds || []).map(String), fid])];
         const branchCodes = (Array.isArray(projection.branchCodes) ? projection.branchCodes : projection.branchCode ? [projection.branchCode] : []).map(String);
-        record.assignmentsByFacility = { ...(record.assignmentsByFacility || {}), [fid]: { branchCode: branchCodes[0] || '', branchCodes, roleIds: [...(projection.roleIds || [])] } };
-        delete record.facilityId; delete record.branchCode; delete record.branchCodes; delete record.roleIds;
+        record.assignmentsByFacility = { ...(record.assignmentsByFacility || {}), [fid]: { branchCode: branchCodes[0] || '', branchCodes, roleIds: [...(projection.roleIds || [])], roleBranchCodesById: clone(projection.roleBranchCodesById || {}) } };
+        delete record.facilityId; delete record.branchCode; delete record.branchCodes; delete record.roleIds; delete record.roleBranchCodesById;
       } else if (kind === 'roles') {
         record = roles.find((row) => row.id === projection.id) || roles.find((row) => row.facilityIds?.map(String).includes(fid) && row.englishName === projection.englishName && row.arabicName === projection.arabicName);
         if (!record) { record = { ...projection, id: projection.id || idFor('role'), facilityIds: [fid] }; roles.push(record); }

@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8f7f3">
   <title>Facility Settings · RCM SMB</title>
-  <link rel="stylesheet" href="../../assets/css/shadcn.css?v=multiselect-chip-colors-1">
+  <link rel="stylesheet" href="../../assets/css/shadcn.css?v=org-pricing-2">
   <script src="../../assets/js/theme.js" data-theme-view="facility"></script>
   <script src="../../assets/js/facility-settings-context.js?v=org-facility-pilot-2" defer></script>
-  <script src="../../assets/js/settings-sidebar.js?v=settings-sidebar-groups-2" defer></script>
+  <script src="../../assets/js/settings-sidebar.js?v=branch-aware-1" defer></script>
   <script src="../../assets/js/sidebar-collapse.js?v=facility-focus-2" defer></script>
-  <script src="../../assets/js/facility-store.js?v=facility-focus-2" defer></script>
-  <script src="../../assets/js/organization-staff-store.js?v=practitioner-user-links-1" defer></script>
-  <script src="../../assets/js/facility-grid.js?v=facility-record-workspace-1" defer></script>
+  <script src="../../assets/js/facility-store.js?v=test-six-facilities-1" defer></script>
+  <script src="../../assets/js/facility-test-data.js?v=test-six-facilities-1" defer></script>
+  <script src="../../assets/js/organization-staff-store.js?v=branch-aware-1" defer></script>
+  <script src="../../assets/js/facility-grid.js?v=test-six-facilities-1" defer></script>
   <script src="../../assets/js/facility-settings-profile.js?v=1" defer></script>
-  <script src="../../assets/js/facility-branches.js?v=2" defer></script>
-  <script src="../../assets/js/facility-departments.js?v=3" defer></script>
+  <script src="../../assets/js/facility-branches.js?v=branch-aware-2" defer></script>
+  <script src="../../assets/js/facility-department-specialties.js?v=20261007-1" defer></script>
+  <script src="../../assets/js/facility-departments.js?v=department-picker-1" defer></script>
   <script src="../../assets/js/facility-structure.js?v=4" defer></script>
   <script src="../../assets/js/facility-billing-periods.js?v=3" defer></script>
   <script src="../../assets/js/facility-cost-centers.js?v=1" defer></script>
@@ -32,13 +34,13 @@
   <script src="../../assets/js/facility-groups.js?v=3" defer></script>
   <script src="../../assets/js/facility-service-catalog.js?v=1" defer></script>
   <script src="../../assets/js/facility-master-price-list.js?v=2" defer></script>
-  <script src="../../assets/js/facility-price-lists.js?v=2" defer></script>
-  <script src="../../assets/js/facility-premium-pricing.js?v=4" defer></script>
+  <script src="../../assets/js/facility-price-lists.js?v=org-pricing-2" defer></script>
+  <script src="../../assets/js/facility-premium-pricing.js?v=org-pricing-2" defer></script>
   <script src="../../assets/js/facility-discounts.js?v=5" defer></script>
   <script src="../../assets/js/facility-direct-billing-setting.js?v=1" defer></script>
-  <script src="../../assets/js/facility-practitioners.js?v=practitioner-user-links-1" defer></script>
-  <script src="../../assets/js/facility-roles.js?v=organization-staff-2" defer></script>
-  <script src="../../assets/js/facility-users.js?v=practitioner-user-links-1" defer></script>
+  <script src="../../assets/js/facility-practitioners.js?v=branch-aware-2" defer></script>
+  <script src="../../assets/js/facility-roles.js?v=branch-aware-2" defer></script>
+  <script src="../../assets/js/facility-users.js?v=branch-aware-2" defer></script>
 </head>
 <body data-root="../../" data-current-facility-id="1">
   <div class="app-shell">
@@ -70,6 +72,7 @@
             <label class="direct-billing-switch"><input type="checkbox" role="switch" aria-label="Enable Direct Billing Enrollment" data-direct-billing-toggle><span class="direct-billing-switch-track" aria-hidden="true"><span></span></span><span class="direct-billing-switch-label" data-direct-billing-status></span></label>
           </div>
         </section>
+        <section class="workspace" aria-label="General facility settings" data-facility-general-settings hidden><div class="workspace-inner"><span class="workspace-icon">⚙</span><h2>General settings</h2><p>General facility settings will be available here.</p></div></section>
         <section class="facility-profile-page" aria-label="Current facility profile" data-current-facility-profile hidden>
           <div class="facility-profile-heading"><div><p class="eyebrow">FACILITY PROFILE</p><h2 data-current-facility-name></h2><p data-current-facility-id-label></p></div><button class="button button-secondary" type="button" data-current-facility-edit>Edit Facility</button></div>
           <div class="facility-profile-sections" data-current-facility-sections></div>
@@ -97,14 +100,14 @@
             <div class="branches-filter-grid department-filter-grid" role="search" aria-label="Filter departments">
               <label class="facility-filter"><span>Code</span><input type="search" data-department-filter="code" placeholder="Search code"></label>
               <label class="facility-filter"><span>Department Name</span><input type="search" data-department-filter="name" placeholder="Search department name"></label>
-              <label class="facility-filter"><span>Parent Branch</span><select data-department-filter="parentBranch"><option value="">All parent branches</option></select></label>
+              <label class="facility-filter"><span>Branch</span><select data-department-filter="branchCode"><option value="">All branches</option></select></label>
               <label class="facility-filter"><span>Type</span><select data-department-filter="type"><option value="">All types</option><option>Clinic</option><option>Ward</option><option>OP Pharmacy</option><option>Laboratory</option><option>IP Pharmacy</option><option>Imaging Location</option><option>Other</option></select></label>
-              <label class="facility-filter"><span>Specialty</span><input type="search" data-department-filter="specialty" placeholder="Search specialty"></label>
+              <label class="facility-filter"><span>Specialty</span><select data-department-filter="specialty"><option value="">All specialties</option></select></label>
               <label class="facility-filter"><span>Category</span><select data-department-filter="category"><option value="">All categories</option><option>Medical</option><option selected>Billing</option></select></label>
             </div>
           </div>
           <div class="facility-table-card">
-            <div class="facility-table-scroll"><table class="facility-table departments-table"><thead><tr><th scope="col">Code</th><th scope="col">Department Name</th><th scope="col">Parent Branch</th><th scope="col">Type</th><th scope="col">Specialty</th><th scope="col">Profile</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody data-department-rows></tbody></table></div>
+            <div class="facility-table-scroll"><table class="facility-table departments-table"><thead><tr><th scope="col">Code</th><th scope="col">Department Name</th><th scope="col">Branches</th><th scope="col">Type</th><th scope="col">Specialty</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody data-department-rows></tbody></table></div>
             <div class="facility-empty" data-department-empty hidden>No departments match your filters.</div>
             <footer class="facility-pagination"><span data-department-result-count></span><div class="facility-page-controls"><button class="icon-button" type="button" data-department-page="first" aria-label="First page">«</button><button class="icon-button" type="button" data-department-page="previous" aria-label="Previous page">‹</button><span data-department-page-label></span><button class="icon-button" type="button" data-department-page="next" aria-label="Next page">›</button><button class="icon-button" type="button" data-department-page="last" aria-label="Last page">»</button></div></footer>
           </div>
@@ -205,11 +208,10 @@
       <form id="department-form"><div class="patient-modal-body"><fieldset class="patient-form-section"><legend class="sr-only">Department Information</legend><div class="facility-form-section-heading">Department Information</div><div class="patient-form-grid">
         <label class="form-field"><span>Department Code</span><input name="code" readonly aria-describedby="department-code-help"><small id="department-code-help">Generated automatically.</small></label>
         <label class="form-field"><span>Department Name <b>*</b></span><input name="name" required autocomplete="off"></label>
-        <label class="form-field"><span>Parent Branch <b>*</b></span><select name="parentBranch" required><option value="">Select parent branch</option></select></label>
+        <div class="form-field department-branch-assignment"><span>Branches <b>*</b></span><p class="department-single-branch" data-department-single-branch hidden></p><div class="practitioner-department-picker" data-department-branch-picker><div class="practitioner-department-control" data-department-branch-control><div class="practitioner-department-chips" data-department-branch-chips aria-live="polite"></div><input type="search" data-department-branch-search placeholder="Select branches..." aria-label="Search branches" aria-haspopup="listbox" aria-expanded="false" aria-controls="department-branch-options"><button class="practitioner-department-toggle" type="button" data-department-branch-toggle aria-label="Show branches" aria-expanded="false">⌄</button></div><div class="practitioner-department-options" id="department-branch-options" data-department-branch-options role="group" aria-label="Branches" hidden></div></div><small data-department-branch-help>Select one or more branches for this department.</small></div>
         <label class="form-field"><span>Type <b>*</b></span><select name="type" required><option value="">Select type</option><option>Clinic</option><option>Ward</option><option>OP Pharmacy</option><option>Laboratory</option><option>IP Pharmacy</option><option>Imaging Location</option><option>Other</option></select></label>
-        <label class="form-field"><span>Specialty <b>*</b></span><input name="specialty" list="department-specialty-options" required autocomplete="off" placeholder="Search or select specialty"><datalist id="department-specialty-options"><option>Anesthesiology</option><option>Cardiology</option><option>Dermatology</option><option>Emergency Medicine</option><option>Family Medicine</option><option>Internal Medicine</option><option>Laboratory Medicine</option><option>Neurology</option><option>Obstetrics &amp; Gynecology</option><option>Orthopedics</option><option>Pediatrics</option><option>Pharmacy</option><option>Radiology</option><option>General Surgery</option></datalist></label>
-        <label class="form-field"><span>Profile</span><select name="profile"><option value="">No profile</option><option>Hospital</option><option>Clinic</option><option>General Medical Complex</option><option>Specialized Medical Complex</option><option>Pharmacy</option><option>Diagnostic Center</option><option>Laboratory</option><option>Physiotherapy Center</option><option>Radiotherapy Center</option></select></label>
-        <label class="form-field"><span>Category <b>*</b></span><select name="category" required><option value="">Select category</option><option>Medical</option><option>Billing</option></select></label>
+        <div class="form-field department-specialty-field"><span>Specialty <b>*</b></span><div class="department-specialty-picker" data-department-specialty-picker><div class="department-specialty-control"><input type="search" data-department-specialty-search required autocomplete="off" placeholder="Search or select specialty" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="department-specialty-options"><input type="hidden" name="specialty"><button class="department-specialty-toggle" type="button" data-department-specialty-toggle aria-label="Show specialties" aria-expanded="false">⌄</button></div><div class="department-specialty-options" id="department-specialty-options" data-department-specialty-options role="listbox" aria-label="Specialty choices" hidden></div></div></div>
+        <label class="form-field"><span>Category <b>*</b></span><select name="category" required><option>Billing</option><option>Medical</option></select></label>
       </div></fieldset></div><footer class="patient-modal-footer"><span class="required-hint"><b>*</b> Required fields</span><div><button type="button" class="button button-secondary" data-department-cancel>Cancel</button><button type="submit" class="button button-primary" data-department-save>Create</button></div></footer></form>
     </section>
   </div>
