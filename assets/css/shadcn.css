@@ -1209,6 +1209,13 @@ html.organization-embedded .settings-page-container { width: 100%; max-width: no
 .organization-permission-list small { color: hsl(var(--muted-foreground)); }
 .organization-staff-modal .form-check { min-width: 0; }
 .organization-staff-modal .form-check input[type="checkbox"] { width: 16px; height: 16px; flex: 0 0 16px; }
+/* Organization Cost Center and Billing Period facility assignment */
+.cc-assignment { grid-column: 1 / -1; min-width: 0; margin: 0; padding: 12px; border: 1px solid hsl(var(--border)); border-radius: 8px; }
+.cc-assignment > legend { padding: 0 5px; font-size: 11px; font-weight: 650; }
+.cc-facility-checks, .bp-facilities { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; max-height: 220px; overflow: auto; padding: 5px 2px; }
+.cc-facility-checks label, .bp-facilities label { display: flex; min-width: 0; align-items: center; gap: 8px; font-size: 12px; }
+.cc-facility-checks input, .bp-facilities input { width: 15px; height: 15px; flex: 0 0 15px; margin: 0; accent-color: hsl(var(--primary)); }
+@media (max-width: 580px) { .cc-facility-checks, .bp-facilities { grid-template-columns: 1fr; } }
 @media (max-width: 760px) {
   .organization-staff-modal .facility-modal-section > .patient-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
